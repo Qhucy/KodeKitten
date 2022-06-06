@@ -5,8 +5,10 @@ import lombok.Getter;
 import lombok.NonNull;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.SelfUser;
 
+import javax.annotation.Nullable;
 import javax.security.auth.login.LoginException;
 import java.io.BufferedReader;
 import java.io.File;
@@ -156,6 +158,33 @@ public class Bot
     public boolean isConnected()
     {
         return bot != null;
+    }
+
+    /**
+     * Sets the status message of the bot.
+     * If the status message is null it clears the status message.
+     * If the activity type is null the default is a default status.
+     */
+    public void setStatus(@Nullable Activity.ActivityType activityType, @Nullable final String statusMessage)
+    {
+        if (statusMessage == null)
+        {
+            bot.getPresence().setActivity(null);
+            return;
+        }
+
+        if (activityType == null)
+        {
+            activityType = Activity.ActivityType.DEFAULT;
+        }
+
+        bot.getPresence().setActivity(Activity.of(activityType, statusMessage));
+        KodeKitten.logInfo("Changed status message to '" + statusMessage + "'");
+    }
+
+    public void setStatus(@Nullable final String statusMessage)
+    {
+        setStatus(null, statusMessage);
     }
 
 }
