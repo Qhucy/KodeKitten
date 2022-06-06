@@ -35,13 +35,13 @@ public final class KodeKitten
         }
 
         // The bot is now connected to Discord.
-        System.out.println(getBotUser().getName() + "#" + getBotUser().getDiscriminator() + " connected to Discord!");
+        logInfo(getBotUser().getName() + "#" + getBotUser().getDiscriminator() + " connected to Discord!");
 
         // Read console commands while the bot is running.
         readConsoleCommands();
 
         // The program is now exiting.
-        System.out.println("Exiting the program");
+        logInfo("Exiting the program");
 
         bot.disconnect();
         System.exit(0);
