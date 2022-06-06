@@ -19,7 +19,7 @@ import java.util.Scanner;
 /**
  * Holds data for a JDA object and its connection token.
  */
-public final class Bot
+public class Bot
 {
 
     // The path to the file that contains the Discord bot token.
