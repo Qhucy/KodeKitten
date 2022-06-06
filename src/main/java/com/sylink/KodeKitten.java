@@ -1,5 +1,6 @@
 package com.sylink;
 
+import com.sylink.account.AccountManager;
 import lombok.NonNull;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.SelfUser;
@@ -24,6 +25,13 @@ public final class KodeKitten
      */
     public static void main(@NonNull final String[] args)
     {
+        // Whether or not a connection was successfully opened.
+        if (!AccountManager.openDatabaseConnection())
+        {
+            System.exit(0);
+            return;
+        }
+
         bot = new Bot(Bot.findToken());
 
         bot.connect();
@@ -44,6 +52,7 @@ public final class KodeKitten
         logInfo("Exiting the program");
 
         bot.disconnect();
+        AccountManager.closeDatabaseConnection();
         System.exit(0);
     }
 
