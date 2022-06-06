@@ -16,12 +16,17 @@ public final class AccountManager
 {
 
     // JDBC URL to the accounts database.
-    private final static String DATABASE_URL = "";
+    private final static String DATABASE_URL = "jdbc:sqlite:database.db";
     // Connection to the accounts database.
-    private static Connection dbConnection = null;
+    private static Connection connection = null;
+    private static long connectionActivityTime = System.currentTimeMillis();
     // Map the stores the Discord Id associated with its account.
     private final static Map<Long, Account> accounts = new HashMap<>();
 
+    /**
+     * Returns the account from its discord id.
+     * If it does not exist in the internal database, it loads it from the database file.
+     */
     public static Account getAccount(final long discordId)
     {
         if (accounts.containsKey(discordId))
@@ -31,7 +36,33 @@ public final class AccountManager
 
         final Account account = new Account(discordId);
 
+        if (!account.loadFromDatabase())
+        {
+            KodeKitten.logWarning(String.format("Unable to load account data for discord id %d in the accounts " +
+                    "database.", discordId));
+            return null;
+        }
 
+        accounts.put(discordId, account);
+
+        return account;
+    }
+
+    /**
+     * Returns the opened connection to the database.
+     * If the connection is not open then it opens a connection.
+     */
+    public static Connection getConnection()
+    {
+        if (connection == null)
+        {
+            openDatabaseConnection();
+        }
+
+        // Connection has been accessed so we reset connection activity time.
+        connectionActivityTime = System.currentTimeMillis();
+
+        return connection;
     }
 
     /**
@@ -41,25 +72,35 @@ public final class AccountManager
     {
         try
         {
-            dbConnection = DriverManager.getConnection(DATABASE_URL);
-            final Statement statement = dbConnection.createStatement();
+            Class.forName("org.sqlite.JDBC");
 
-            statement.executeUpdate("""
-                    CREATE TABLE IF NOT EXISTS accounts
-                    (
-                        id BIGINT NOT NULL UNIQUE,
-                        balance DOUBLE NOT NULL DEFAULT 0.0
-                    );
-                    """);
+            connection = DriverManager.getConnection(DATABASE_URL);
+            connectionActivityTime = System.currentTimeMillis();
 
-            statement.close();
+            try (final Statement statement = connection.createStatement())
+            {
+                statement.executeUpdate("""
+                        CREATE TABLE IF NOT EXISTS accounts
+                        (
+                            id BIGINT NOT NULL UNIQUE,
+                            balance DOUBLE NOT NULL DEFAULT 0.0
+                        );
+                        """);
+            }
             return true;
-        } catch (final SQLException sqlException)
+        }
+        catch (final SQLException sqlException)
         {
             KodeKitten.logSevere("Unable to access 'database.db' database");
             sqlException.printStackTrace();
             return false;
         }
+         catch (final ClassNotFoundException classNotFoundException)
+         {
+             KodeKitten.logSevere("Unable to access JDBC SQLite drivers");
+             classNotFoundException.printStackTrace();
+             return false;
+         }
     }
 
     /**
@@ -69,11 +110,35 @@ public final class AccountManager
     {
         try
         {
-            dbConnection.close();
-        } catch (final SQLException sqlException)
+            connection.close();
+        }
+        catch (final SQLException sqlException)
         {
             KodeKitten.logSevere("Unable to properly close database connection.");
             sqlException.printStackTrace();
+        }
+        finally
+        {
+            connection = null;
+        }
+    }
+
+    /**
+     * Closes the account database connection if it has been inactive for over 5 minutes.
+     */
+    public static void checkConnection()
+    {
+        if (connection == null)
+        {
+            return;
+        }
+
+        int seconds = (int) ((System.currentTimeMillis() - connectionActivityTime) / 1000);
+
+        // Been over 5 minutes.
+        if (seconds > 300)
+        {
+            closeDatabaseConnection();
         }
     }
 
