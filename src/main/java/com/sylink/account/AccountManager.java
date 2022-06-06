@@ -19,6 +19,7 @@ public final class AccountManager
     private final static String DATABASE_URL = "jdbc:sqlite:database.db";
     // Connection to the accounts database.
     private static Connection connection = null;
+    // Connection activity time to track how long a connection has been inactive.
     private static long connectionActivityTime = System.currentTimeMillis();
     // Map the stores the Discord Id associated with its account.
     private final static Map<Long, Account> accounts = new HashMap<>();
@@ -139,6 +140,27 @@ public final class AccountManager
         if (seconds > 300)
         {
             closeDatabaseConnection();
+        }
+    }
+
+    /**
+     * Removes accounts flagged as inactive from internal memory.
+     * Saves all account data before removing them.
+     */
+    public static void checkAccounts()
+    {
+        for (var entry : accounts.entrySet())
+        {
+            final Account account = entry.getValue();
+
+            if (account.isInactive())
+            {
+                // Remove account from memory after saving it from the database successfully or if the account is dead.
+                if (account.saveToDatabase() || account.isDead())
+                {
+                    accounts.remove(entry.getKey());
+                }
+            }
         }
     }
 

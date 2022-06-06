@@ -15,6 +15,8 @@ public class Account
 {
 
     private final long discordId;
+    // Last activity time to track how long an account has been inactive in memory.
+    private long lastActivityTime = System.currentTimeMillis();
 
     private double balance = 0.0;
 
@@ -29,6 +31,34 @@ public class Account
     public final long getDiscordId()
     {
         return discordId;
+    }
+
+    /**
+     * Sets the last activity time to the current time.
+     */
+    public final void bumpLastActivityTime()
+    {
+        lastActivityTime = System.currentTimeMillis();
+    }
+
+    /**
+     * Returns true if the last activity time of the account was over 10 minutes ago.
+     */
+    public final boolean isInactive()
+    {
+        int seconds = (int) ((System.currentTimeMillis() - lastActivityTime) / 1000);
+
+        return seconds > 600;
+    }
+
+    /**
+     * Returns true if the last activity time of the account was over 1 hour ago.
+     */
+    public final boolean isDead()
+    {
+        int seconds = (int) ((System.currentTimeMillis() - lastActivityTime) / 1000);
+
+        return seconds > 3600;
     }
 
     public final double getBalance()
