@@ -88,7 +88,7 @@ public final class KodeKitten
 
     public static void log(@NonNull final Level logLevel, @Nullable final String... messages)
     {
-        if (messages == null)
+        if (messages == null || messages.length == 0)
         {
             return;
         }
@@ -101,7 +101,7 @@ public final class KodeKitten
 
     public static void logInfo(@Nullable final String... messages)
     {
-        if (messages == null)
+        if (messages == null || messages.length == 0)
         {
             return;
         }
@@ -114,7 +114,7 @@ public final class KodeKitten
 
     public static void logWarning(@Nullable final String... messages)
     {
-        if (messages == null)
+        if (messages == null || messages.length == 0)
         {
             return;
         }
@@ -127,7 +127,7 @@ public final class KodeKitten
 
     public static void logSevere(@Nullable final String... messages)
     {
-        if (messages == null)
+        if (messages == null || messages.length == 0)
         {
             return;
         }
