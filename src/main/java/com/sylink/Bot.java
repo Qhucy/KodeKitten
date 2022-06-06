@@ -52,9 +52,9 @@ public final class Bot
         try (final FileReader fileReader = new FileReader(file);
              final BufferedReader bufferedReader = new BufferedReader(fileReader))
         {
-            final String token = bufferedReader.readLine().trim();
+            final String token = bufferedReader.readLine();
 
-            return (token.isEmpty()) ? null : token;
+            return (token == null || token.isBlank()) ? null : token;
         }
         catch (@NonNull final IOException ignored)
         {
