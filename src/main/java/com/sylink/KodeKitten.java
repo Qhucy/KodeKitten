@@ -78,6 +78,8 @@ public final class KodeKitten
         {
             input = scanner.nextLine();
 
+            String[] args = input.split(" ");
+
 
         } while (!input.equalsIgnoreCase("stop") && input.equalsIgnoreCase("exit"));
 
