@@ -110,7 +110,7 @@ public class Bot
 
     public SelfUser getSelfUser()
     {
-        return bot.getSelfUser();
+        return (bot == null) ? null : bot.getSelfUser();
     }
 
     /**
