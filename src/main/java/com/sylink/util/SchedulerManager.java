@@ -20,7 +20,7 @@ public final class SchedulerManager
      */
     public static void startTimers()
     {
-        executorService.scheduleAtFixedRate(AccountManager::checkConnection, 0, 1, TimeUnit.MINUTES);
+        executorService.scheduleAtFixedRate(minuteTimer, 0, 1, TimeUnit.MINUTES);
     }
 
     /**
@@ -30,5 +30,18 @@ public final class SchedulerManager
     {
         executorService.shutdown();
     }
+
+    /**
+     * Runnable method that runs every minute.
+     */
+    private static Runnable minuteTimer = new Runnable()
+    {
+        @Override
+        public void run()
+        {
+            AccountManager.checkConnection();
+            AccountManager.checkAccounts();
+        }
+    };
 
 }
