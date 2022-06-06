@@ -1,6 +1,7 @@
 package com.sylink;
 
 import com.sylink.account.AccountManager;
+import com.sylink.commands.CommandHandler;
 import com.sylink.util.SchedulerManager;
 import lombok.NonNull;
 import net.dv8tion.jda.api.JDA;
@@ -16,6 +17,21 @@ import java.util.logging.Logger;
  */
 public final class KodeKitten
 {
+
+    /**
+     * TODO
+     * -----
+     *
+     * Unit tests for new Bot methods.
+     * Unit tests for Account.
+     * Unit tests for AccountsManager.
+     * Implement Command Handler.
+     * Make it so it bumps account activity when they speak in chat.
+     * Implement EventHandler.
+     * timer for status messages so the status message changes every once in a while
+     * test accounts when loading, the command handler loading of accounts doesn't work find out how to do
+     * slash commands correctly
+     */
 
     private static final Logger logger = Logger.getLogger(KodeKitten.class.getName());
 
@@ -47,6 +63,9 @@ public final class KodeKitten
         logInfo(getBotUser().getName() + "#" + getBotUser().getDiscriminator() + " connected to Discord!");
 
         SchedulerManager.startTimers();
+        getBot().addEventListener(new CommandHandler());
+
+        bot.setStatus("hiya :3");
 
         // Read console commands while the bot is running.
         readConsoleCommands();
