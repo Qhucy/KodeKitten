@@ -16,7 +16,7 @@ public class Account
 
     private final long discordId;
     // Last activity time to track how long an account has been inactive in memory.
-    private long lastActivityTime = System.currentTimeMillis();
+    private long lastActivityTime = 0;
 
     private double balance = 0.0;
 
@@ -115,6 +115,7 @@ public class Account
                 balance = resultSet.getDouble("balance");
             }
 
+            lastActivityTime = System.currentTimeMillis();
             return true;
         } catch (final SQLException sqlException)
         {
@@ -168,6 +169,15 @@ public class Account
             sqlException.printStackTrace();
             return false;
         }
+    }
+
+    /**
+     * Returns true if the account data was loaded from the database.
+     */
+    public boolean isLoaded()
+    {
+        // Last activity time is 0 when first loaded and non-zero when loaded.
+        return lastActivityTime != 0;
     }
 
 }
