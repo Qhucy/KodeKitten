@@ -1,6 +1,7 @@
 package com.sylink;
 
 import com.sylink.account.AccountManager;
+import com.sylink.util.SchedulerManager;
 import lombok.NonNull;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.SelfUser;
@@ -45,12 +46,15 @@ public final class KodeKitten
         // The bot is now connected to Discord.
         logInfo(getBotUser().getName() + "#" + getBotUser().getDiscriminator() + " connected to Discord!");
 
+        SchedulerManager.startTimers();
+
         // Read console commands while the bot is running.
         readConsoleCommands();
 
         // The program is now exiting.
         logInfo("Exiting the program");
 
+        SchedulerManager.stopTimers();
         bot.disconnect();
         AccountManager.closeDatabaseConnection();
         System.exit(0);
