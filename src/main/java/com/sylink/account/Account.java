@@ -23,7 +23,7 @@ public class Account
     // The list of statements to run to update user data in the SQL database.
     private final List<String> updateStatements = new ArrayList<>();
 
-    public Account(final long discordId)
+    protected Account(final long discordId)
     {
         this.discordId = discordId;
     }
