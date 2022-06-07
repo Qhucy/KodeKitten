@@ -16,7 +16,7 @@ public class Account
 
     private final long discordId;
     // Last activity time to track how long an account has been inactive in memory.
-    private long lastActivityTime = 0;
+    private long lastActivity = 0;
 
     private double balance = 0.0;
 
@@ -38,7 +38,7 @@ public class Account
      */
     public final void bumpLastActivityTime()
     {
-        lastActivityTime = System.currentTimeMillis();
+        lastActivity = System.currentTimeMillis();
     }
 
     /**
@@ -46,7 +46,7 @@ public class Account
      */
     public final boolean isInactive()
     {
-        int seconds = (int) ((System.currentTimeMillis() - lastActivityTime) / 1000);
+        int seconds = (int) ((System.currentTimeMillis() - lastActivity) / 1000);
 
         return seconds > 600;
     }
@@ -56,7 +56,7 @@ public class Account
      */
     public final boolean isDead()
     {
-        int seconds = (int) ((System.currentTimeMillis() - lastActivityTime) / 1000);
+        int seconds = (int) ((System.currentTimeMillis() - lastActivity) / 1000);
 
         return seconds > 3600;
     }
@@ -115,7 +115,7 @@ public class Account
                 balance = resultSet.getDouble("balance");
             }
 
-            lastActivityTime = System.currentTimeMillis();
+            lastActivity = System.currentTimeMillis();
             return true;
         } catch (final SQLException sqlException)
         {
@@ -177,7 +177,7 @@ public class Account
     public boolean isLoaded()
     {
         // Last activity time is 0 when first loaded and non-zero when loaded.
-        return lastActivityTime != 0;
+        return lastActivity != 0;
     }
 
 }
