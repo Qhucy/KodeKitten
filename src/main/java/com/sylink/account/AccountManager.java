@@ -20,7 +20,7 @@ public final class AccountManager
     // Connection to the accounts database.
     private static Connection connection = null;
     // Connection activity time to track how long a connection has been inactive.
-    private static long connectionActivityTime = System.currentTimeMillis();
+    private static long connectionLastActivity = System.currentTimeMillis();
     // Map the stores the Discord Id associated with its account.
     private final static Map<Long, Account> accounts = new HashMap<>();
 
@@ -61,7 +61,7 @@ public final class AccountManager
         }
 
         // Connection has been accessed so we reset connection activity time.
-        connectionActivityTime = System.currentTimeMillis();
+        connectionLastActivity = System.currentTimeMillis();
 
         return connection;
     }
@@ -76,7 +76,7 @@ public final class AccountManager
             Class.forName("org.sqlite.JDBC");
 
             connection = DriverManager.getConnection(DATABASE_URL);
-            connectionActivityTime = System.currentTimeMillis();
+            connectionLastActivity = System.currentTimeMillis();
 
             try (final Statement statement = connection.createStatement())
             {
@@ -134,7 +134,7 @@ public final class AccountManager
             return;
         }
 
-        int seconds = (int) ((System.currentTimeMillis() - connectionActivityTime) / 1000);
+        int seconds = (int) ((System.currentTimeMillis() - connectionLastActivity) / 1000);
 
         // Been over 5 minutes.
         if (seconds > 300)
