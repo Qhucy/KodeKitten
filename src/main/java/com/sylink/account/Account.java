@@ -3,7 +3,9 @@ package com.sylink.account;
 import com.sylink.KodeKitten;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NonNull;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -104,12 +106,9 @@ public class Account
     /**
      * Loads all account data from the database connection and returns whether the data was loaded.
      */
-    public boolean loadFromDatabase()
+    public boolean loadFromDatabase(@NonNull final Connection connection)
     {
-        if (AccountManager.getConnection() == null)
-            return false;
-
-        try(final Statement statement = AccountManager.getConnection().createStatement();
+        try(final Statement statement = connection.createStatement();
             final ResultSet resultSet = statement.executeQuery(String.format("""
                     SELECT
                         balance
@@ -140,18 +139,15 @@ public class Account
      *
      * @return True if data was saved to the database if needed.
      */
-    public boolean saveToDatabase()
+    public boolean saveToDatabase(@NonNull final Connection connection)
     {
         if (!needsToSync)
             return true;
 
-        if (AccountManager.getConnection() == null)
-            return false;
-
-        try (final Statement statement = AccountManager.getConnection().createStatement())
+        try (final Statement statement = connection.createStatement())
         {
             // Insert into database as a new column.
-            if (!existsInDatabase())
+            if (!existsInDatabase(connection))
             {
                 statement.executeUpdate(String.format("INSERT INTO accounts (%s) VALUES(%g)", discordId, balance));
             }
@@ -179,12 +175,9 @@ public class Account
     /**
      * Returns true if the account exists as a column in the database.
      */
-    public boolean existsInDatabase()
+    public boolean existsInDatabase(@NonNull final Connection connection)
     {
-        if (AccountManager.getConnection() == null)
-            return false;
-
-        try (final Statement statement = AccountManager.getConnection().createStatement();
+        try (final Statement statement = connection.createStatement();
              final ResultSet resultSet = statement.executeQuery("SELECT id FROM accounts WHERE id=" + discordId))
         {
             return resultSet.next();
