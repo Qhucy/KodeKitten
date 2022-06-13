@@ -12,6 +12,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Class that contains all data about a user account.
@@ -28,6 +31,8 @@ public class Account
     @Getter(AccessLevel.PUBLIC)
     private long lastActivityTime = 0;
 
+    // List of permission strings for this account.
+    private List<String> permissions;
     @Getter(AccessLevel.PUBLIC)
     private double balance = 0.0;
 
@@ -91,6 +96,74 @@ public class Account
         return needsToSync;
     }
 
+    private void loadPermissions(@NonNull final String permissionData)
+    {
+        if (permissionData.isBlank())
+        {
+            permissions = new ArrayList<>();
+        }
+        else
+        {
+            permissions = new ArrayList<>(Arrays.asList(permissionData.split(",")));
+        }
+    }
+
+    private String getPermissionData()
+    {
+        if (permissions.isEmpty())
+            return "";
+
+        final StringBuilder stringBuilder = new StringBuilder();
+
+        for (final String permission : permissions)
+        {
+            if (stringBuilder.isEmpty())
+            {
+                stringBuilder.append(permission);
+            }
+            else
+            {
+                stringBuilder.append(permission).append(",");
+            }
+        }
+
+        return stringBuilder.toString();
+    }
+
+    public final boolean hasPermission(@NonNull final String permission)
+    {
+        for (final String perm : permissions)
+        {
+            if (perm.equalsIgnoreCase(permission))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public final void addPermission(@NonNull final String permission)
+    {
+        if (hasPermission(permission))
+            return;
+
+        permissions.add(permission);
+        needsToSync = true;
+    }
+
+    public final void removePermission(@NonNull final String permission)
+    {
+        for (final String perm : permissions)
+        {
+            if (perm.equalsIgnoreCase(permission))
+            {
+                permissions.remove(perm);
+                return;
+            }
+        }
+    }
+
     public final void setBalance(final double balance)
     {
         // Balance cannot be less than 0.
@@ -130,6 +203,7 @@ public class Account
         try(final Statement statement = connection.createStatement();
             final ResultSet resultSet = statement.executeQuery(String.format("""
                     SELECT
+                        permissions,
                         balance
                     FROM
                         accounts
@@ -139,6 +213,7 @@ public class Account
         {
             if (resultSet.next())
             {
+                loadPermissions(resultSet.getString("permissions"));
                 balance = resultSet.getDouble("balance");
             }
 
@@ -168,16 +243,17 @@ public class Account
             // Insert into database as a new column.
             if (!existsInDatabase(connection))
             {
-                statement.executeUpdate(String.format("INSERT INTO accounts (%s) VALUES(%g)", discordId, balance));
+                statement.executeUpdate(String.format("INSERT INTO accounts (id,permissions,balance) VALUES(%s,%s,%g)", discordId, getPermissionData(), balance));
             }
             // Update the existing column with new data.
             else
             {
                 statement.executeUpdate(String.format("""
                         UPDATE table
-                        SET balance = %g
+                        SET permissions = %s,
+                            balance = %g
                         WHERE id = %d
-                        """, balance, discordId));
+                        """, getPermissionData(), balance, discordId));
             }
 
             // Data no longer needs to be updated.
