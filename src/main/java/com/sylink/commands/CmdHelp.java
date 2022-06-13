@@ -20,7 +20,7 @@ public final class CmdHelp
     public void onCommand(@NonNull final SlashCommandEvent event, @NonNull final Account account,
                           @NonNull final String label, @NonNull final String[] args)
     {
-        event.reply("List of commands:").queue();
+        event.reply("List of commands:").setEphemeral(true).queue();
     }
 
     @Override
