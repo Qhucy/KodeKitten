@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.SelfUser;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,7 +23,6 @@ public final class KodeKitten
      * TODO
      * -----
      *
-     * Unit tests for AccountsManager.
      * Implement Command Handler.
      * Make it so it bumps account activity when they speak in chat.
      * Implement EventHandler.
@@ -40,6 +40,8 @@ public final class KodeKitten
      */
     public static void main(@NonNull final String[] args)
     {
+        setupLogger();
+
         // Whether or not a connection was successfully opened.
         if (!AccountManager.openDatabaseConnection())
         {
@@ -77,6 +79,14 @@ public final class KodeKitten
         System.exit(0);
     }
 
+    /**
+     * Sets up the format of the logger.
+     */
+    private static void setupLogger()
+    {
+        System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tF %1$tT] [%4$-7s] %5$s %n");
+    }
+
     public static JDA getBot()
     {
         return bot.getBot();
@@ -104,14 +114,22 @@ public final class KodeKitten
 
         String input;
 
-        do
+        while (true)
         {
             input = scanner.nextLine();
 
-            String[] args = input.split(" ");
+            if (input.equalsIgnoreCase("stop") || input.equalsIgnoreCase("exit"))
+                break;
 
+            final String[] inputSplit = input.split(" ");
 
-        } while (!input.equalsIgnoreCase("stop") && input.equalsIgnoreCase("exit"));
+            final String label = inputSplit[0];
+            final String[] args = Arrays.copyOfRange(inputSplit, 1, inputSplit.length);
+
+            // process commands
+
+            System.out.println("Unknown command. Enter 'help' for help or 'exit' to exit.");
+        }
 
         scanner.close();
     }
