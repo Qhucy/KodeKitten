@@ -31,7 +31,12 @@ public final class AccountManager
     public static Account getAccount(final long discordId)
     {
         if (accounts.containsKey(discordId))
-            return accounts.get(discordId);
+        {
+            final Account account = accounts.get(discordId);
+
+            account.bumpLastActivityTime();
+            return account;
+        }
 
         final Connection connection = getConnection();
 
@@ -85,6 +90,7 @@ public final class AccountManager
                         CREATE TABLE IF NOT EXISTS accounts
                         (
                             id BIGINT NOT NULL UNIQUE,
+                            permissions TEXT NOT NULL DEFAULT '',
                             balance DOUBLE NOT NULL DEFAULT 0.0
                         );
                         """);
