@@ -1,6 +1,7 @@
 package com.sylink.account;
 
 import com.sylink.KodeKitten;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -15,12 +16,12 @@ import java.sql.Statement;
 public class Account
 {
 
-    @Getter
+    @Getter(AccessLevel.PUBLIC)
     private final long discordId;
     // Last activity time to track how long an account has been inactive in memory.
     private long lastActivity = 0;
 
-    @Getter
+    @Getter(AccessLevel.PUBLIC)
     private double balance = 0.0;
 
     // Whether account information has been changed and needs to be synced to the database.

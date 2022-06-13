@@ -22,7 +22,6 @@ public final class KodeKitten
      * TODO
      * -----
      *
-     * Unit tests for new Bot methods.
      * Unit tests for Account.
      * Unit tests for AccountsManager.
      * Implement Command Handler.

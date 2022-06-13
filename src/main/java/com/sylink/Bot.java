@@ -112,7 +112,15 @@ public class Bot
 
     public SelfUser getSelfUser()
     {
-        return (bot == null) ? null : bot.getSelfUser();
+        if (!isConnected())
+        {
+            sendConnectionError();
+            return null;
+        }
+        else
+        {
+            return bot.getSelfUser();
+        }
     }
 
     /**
@@ -126,7 +134,6 @@ public class Bot
         } catch (@NonNull final LoginException loginException)
         {
             KodeKitten.logSevere("Unable to login to Discord servers, shutting down!");
-
             loginException.printStackTrace();
         }
     }
@@ -161,12 +168,32 @@ public class Bot
     }
 
     /**
+     * Sends a connection error message to console if trying to use the bot when it is disconnected.
+     */
+    private void sendConnectionError()
+    {
+        KodeKitten.logWarning("You have to connect the bot to Discord to use it!");
+
+        // Print the stack trace.
+        for (final StackTraceElement element : Thread.currentThread().getStackTrace())
+        {
+            System.out.println(element.toString());
+        }
+    }
+
+    /**
      * Sets the status message of the bot.
      * If the status message is null it clears the status message.
      * If the activity type is null the default is a default status.
      */
     public void setStatus(@Nullable Activity.ActivityType activityType, @Nullable final String statusMessage)
     {
+        if (!isConnected())
+        {
+            sendConnectionError();
+            return;
+        }
+
         if (statusMessage == null)
         {
             bot.getPresence().setActivity(null);
