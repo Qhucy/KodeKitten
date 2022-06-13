@@ -6,6 +6,7 @@ import lombok.NonNull;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.SelfUser;
 
 import javax.annotation.Nullable;
@@ -23,6 +24,9 @@ import java.util.Scanner;
  */
 public class Bot
 {
+
+    // Discord Snowflake of the main guild.
+    public static final long MAIN_GUILD = 976665240114696292L;
 
     // The path to the file that contains the Discord bot token.
     private static final Path TOKEN_PATH = Paths.get("token.txt");
@@ -124,6 +128,14 @@ public class Bot
     }
 
     /**
+     * @return The instance to the main Discord guild.
+     */
+    public Guild getMainGuild()
+    {
+        return (isConnected()) ? bot.getGuildById(MAIN_GUILD) : null;
+    }
+
+    /**
      * Connects the Discord bot to the server.
      */
     public void connect()
@@ -131,10 +143,12 @@ public class Bot
         try
         {
             bot = JDABuilder.createDefault(token).build();
-        } catch (@NonNull final LoginException loginException)
+            // Wait for the JDA object to be fully connected and ready.
+            bot.awaitReady();
+        } catch (@NonNull final LoginException | InterruptedException exception)
         {
             KodeKitten.logSevere("Unable to login to Discord servers, shutting down!");
-            loginException.printStackTrace();
+            exception.printStackTrace();
         }
     }
 
@@ -212,6 +226,33 @@ public class Bot
     public void setStatus(@Nullable final String statusMessage)
     {
         setStatus(null, statusMessage);
+    }
+
+    /**
+     * Registers a new command with the bot through Discord's slash commands.
+     * Can take upwards of an hour to fully register.
+     */
+    public void addCommand(@NonNull final String name, @NonNull final String description)
+    {
+       bot.upsertCommand(name, description).queue();
+    }
+
+    /**
+     * Registers a new command with the bot through the main guild's slash commands.
+     * Takes effect almost instantly.
+     */
+    public void addGuildCommand(@NonNull final String name, @NonNull final String description)
+    {
+        final Guild guild = getMainGuild();
+
+        if (guild != null)
+        {
+            guild.upsertCommand(name, description).queue();
+        }
+        else
+        {
+            KodeKitten.logSevere(String.format("Unable to register command '%s' to the main guild", name));
+        }
     }
 
 }
