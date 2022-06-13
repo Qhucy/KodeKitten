@@ -31,13 +31,14 @@ public final class AccountManager
     public static Account getAccount(final long discordId)
     {
         if (accounts.containsKey(discordId))
-        {
             return accounts.get(discordId);
-        }
+
+        if (connection == null)
+            return null;
 
         final Account account = new Account(discordId);
 
-        if (!account.loadFromDatabase())
+        if (account.existsInDatabase(connection) && !account.loadFromDatabase(connection))
         {
             KodeKitten.logWarning(String.format("Unable to load account data for discord id %d in the accounts " +
                     "database.", discordId));
@@ -56,9 +57,7 @@ public final class AccountManager
     public static Connection getConnection()
     {
         if (connection == null && !openDatabaseConnection())
-        {
             return null;
-        }
 
         // Connection has been accessed so we reset connection activity time.
         connectionLastActivity = System.currentTimeMillis();
@@ -155,10 +154,22 @@ public final class AccountManager
 
             if (account.isInactive())
             {
-                // Remove account from memory after saving it from the database successfully or if the account is dead.
-                if (account.saveToDatabase() || account.isDead())
+                // If there is no active connection we only remove the account from memory if it is dead.
+                if (connection == null)
                 {
-                    accounts.remove(entry.getKey());
+                    if (account.isDead())
+                    {
+                        accounts.remove(entry.getKey());
+                    }
+                }
+                // If there is an active connection we attempt to save the account to the database before removing it
+                // from memory.
+                else
+                {
+                    if (account.saveToDatabase(connection) || account.isDead())
+                    {
+                        accounts.remove(entry.getKey());
+                    }
                 }
             }
         }
