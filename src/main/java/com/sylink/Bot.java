@@ -232,7 +232,7 @@ public class Bot
      * Registers a new command with the bot through Discord's slash commands.
      * Can take upwards of an hour to fully register.
      */
-    public void addCommand(@NonNull final String name, @NonNull final String description)
+    public void registerCommand(@NonNull final String name, @NonNull final String description)
     {
        bot.upsertCommand(name, description).queue();
     }
@@ -241,7 +241,7 @@ public class Bot
      * Registers a new command with the bot through the main guild's slash commands.
      * Takes effect almost instantly.
      */
-    public void addGuildCommand(@NonNull final String name, @NonNull final String description)
+    public void registerGuildCommand(@NonNull final String name, @NonNull final String description)
     {
         final Guild guild = getMainGuild();
 
