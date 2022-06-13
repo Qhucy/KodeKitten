@@ -33,6 +33,8 @@ public final class AccountManager
         if (accounts.containsKey(discordId))
             return accounts.get(discordId);
 
+        final Connection connection = getConnection();
+
         if (connection == null)
             return null;
 
@@ -59,7 +61,7 @@ public final class AccountManager
         if (connection == null && !openDatabaseConnection())
             return null;
 
-        // Connection has been accessed so we reset connection activity time.
+        // Connection has been accessed, so we reset connection activity time.
         connectionLastActivity = System.currentTimeMillis();
 
         return connection;
@@ -129,9 +131,7 @@ public final class AccountManager
     public static void checkConnection()
     {
         if (connection == null)
-        {
             return;
-        }
 
         int seconds = (int) ((System.currentTimeMillis() - connectionLastActivity) / 1000);
 
@@ -148,6 +148,8 @@ public final class AccountManager
      */
     public static void checkAccounts()
     {
+        final Connection connection = getConnection();
+
         for (var entry : accounts.entrySet())
         {
             final Account account = entry.getValue();
