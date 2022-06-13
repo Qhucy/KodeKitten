@@ -7,7 +7,6 @@ import com.sylink.commands.CommandHandler;
 import com.sylink.util.SchedulerManager;
 import lombok.NonNull;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.SelfUser;
 
 import javax.annotation.Nullable;
@@ -26,7 +25,8 @@ public final class KodeKitten
      * TODO
      * -----
      *
-     *
+     * test account saving / loading to database
+     * unit testing for command
      * timer for status messages so the status message changes every once in a while
      */
 
