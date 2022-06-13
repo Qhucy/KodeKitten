@@ -1,10 +1,10 @@
 package com.sylink.commands;
 
-import com.sylink.account.Account;
-import com.sylink.account.AccountManager;
 import lombok.NonNull;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+
+import java.util.Arrays;
 
 /**
  * Class that handles slash command events and runs the respective command.
@@ -18,18 +18,12 @@ public final class CommandHandler extends ListenerAdapter
         if (event.getUser().isBot())
             return;
 
-        System.out.println(1);
+        final String[] splitCommand = event.getCommandString().substring(1).split(" ");
 
-        Account account = AccountManager.getAccount(event.getUser().getIdLong());
+        final String label = splitCommand[0];
+        final String[] args = Arrays.copyOfRange(splitCommand, 1, splitCommand.length);
 
-        if (account == null)
-        {
-            System.out.println("account is null");
-        }
-        else
-        {
-            System.out.printf("%d | %f\n", account.getDiscordId(), account.getBalance());
-        }
+        Command.runCommands(event, label, args);
     }
 
 }
