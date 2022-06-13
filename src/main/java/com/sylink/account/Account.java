@@ -3,9 +3,7 @@ package com.sylink.account;
 import com.sylink.KodeKitten;
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NonNull;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -89,18 +87,14 @@ public class Account
     }
 
     /**
-     * Loads all account data from the database connection and returns whether the operation was successful.
+     * Loads all account data from the database connection and returns whether the data was loaded.
      */
     public boolean loadFromDatabase()
     {
-        final Connection connection = AccountManager.getConnection();
-
-        if (connection == null)
-        {
+        if (AccountManager.getConnection() == null)
             return false;
-        }
 
-        try(final Statement statement = connection.createStatement();
+        try(final Statement statement = AccountManager.getConnection().createStatement();
             final ResultSet resultSet = statement.executeQuery(String.format("""
                     SELECT
                         balance
@@ -127,19 +121,20 @@ public class Account
     /**
      * Saves all data from this object to the account's column in the database.
      *
-     * @return False if there was an error saving the data.
+     * @return True if data was saved to the database if needed.
      */
     public boolean saveToDatabase()
     {
         if (!needsToSync)
             return true;
 
-        final Connection connection = AccountManager.getConnection();
+        if (AccountManager.getConnection() == null)
+            return false;
 
-        try (final Statement statement = connection.createStatement())
+        try (final Statement statement = AccountManager.getConnection().createStatement())
         {
             // Insert into database as a new column.
-            if (!existsInDatabase(connection))
+            if (!existsInDatabase())
             {
                 statement.executeUpdate(String.format("INSERT INTO accounts (%s) VALUES(%g)", discordId, balance));
             }
@@ -165,9 +160,12 @@ public class Account
     /**
      * Returns true if the account exists as a column in the database.
      */
-    public boolean existsInDatabase(@NonNull final Connection connection)
+    public boolean existsInDatabase()
     {
-        try (final Statement statement = connection.createStatement();
+        if (AccountManager.getConnection() == null)
+            return false;
+
+        try (final Statement statement = AccountManager.getConnection().createStatement();
              final ResultSet resultSet = statement.executeQuery("SELECT id FROM accounts WHERE id=" + discordId))
         {
             return resultSet.next();
