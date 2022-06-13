@@ -16,8 +16,12 @@ public class Account
 
     @Getter(AccessLevel.PUBLIC)
     private final long discordId;
+    // Whether the Account has been loaded from the database.
+    @Getter(AccessLevel.PUBLIC)
+    private boolean loaded = false;
     // Last activity time to track how long an account has been inactive in memory.
-    private long lastActivity = 0;
+    @Getter(AccessLevel.PUBLIC)
+    private long lastActivityTime = 0;
 
     @Getter(AccessLevel.PUBLIC)
     private double balance = 0.0;
@@ -35,7 +39,7 @@ public class Account
      */
     public final void bumpLastActivityTime()
     {
-        lastActivity = System.currentTimeMillis();
+        lastActivityTime = System.currentTimeMillis();
     }
 
     /**
@@ -43,7 +47,7 @@ public class Account
      */
     public final boolean isInactive()
     {
-        int seconds = (int) ((System.currentTimeMillis() - lastActivity) / 1000);
+        int seconds = (int) ((System.currentTimeMillis() - lastActivityTime) / 1000);
 
         return seconds > 600;
     }
@@ -53,20 +57,31 @@ public class Account
      */
     public final boolean isDead()
     {
-        int seconds = (int) ((System.currentTimeMillis() - lastActivity) / 1000);
+        int seconds = (int) ((System.currentTimeMillis() - lastActivityTime) / 1000);
 
         return seconds > 3600;
     }
 
+    /**
+     * @return True if Account data has been changed and needs to be saved to the database.
+     */
+    public boolean needsToSync()
+    {
+        return needsToSync;
+    }
+
     public final void setBalance(final double balance)
     {
-        this.balance = balance;
+        // Balance cannot be less than 0.
+        this.balance = Math.max(0, balance);
         this.needsToSync = true;
     }
 
     public final void addBalance(final double balance)
     {
-        this.balance += balance;
+        // Balance cannot be less than 0.
+        this.balance = Math.max(0, this.balance + balance);
+
         this.needsToSync = true;
     }
 
@@ -109,7 +124,9 @@ public class Account
                 balance = resultSet.getDouble("balance");
             }
 
-            lastActivity = System.currentTimeMillis();
+            lastActivityTime = System.currentTimeMillis();
+
+            this.loaded = true;
             return true;
         } catch (final SQLException sqlException)
         {
@@ -148,6 +165,8 @@ public class Account
                         """, balance, discordId));
             }
 
+            // Data no longer needs to be updated.
+            this.needsToSync = false;
             return true;
         } catch (final SQLException sqlException)
         {
@@ -173,15 +192,6 @@ public class Account
         {
             return false;
         }
-    }
-
-    /**
-     * Returns true if the account data was loaded from the database.
-     */
-    public boolean isLoaded()
-    {
-        // Last activity time is 0 when first loaded and non-zero when loaded.
-        return lastActivity != 0;
     }
 
 }
