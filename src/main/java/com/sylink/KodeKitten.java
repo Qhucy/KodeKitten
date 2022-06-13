@@ -110,6 +110,10 @@ public final class KodeKitten
         return bot.getToken();
     }
 
+    /**
+     * Registers all commands to Discord and our internal command system.
+     * NOTE: Register them as normal commands instead of guild commands for deployment.
+     */
     private static void registerCommands()
     {
         Command.registerGuildCommand(new CmdHelp());
