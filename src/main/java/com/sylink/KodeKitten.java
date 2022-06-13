@@ -1,10 +1,13 @@
 package com.sylink;
 
 import com.sylink.account.AccountManager;
+import com.sylink.commands.CmdHelp;
+import com.sylink.commands.Command;
 import com.sylink.commands.CommandHandler;
 import com.sylink.util.SchedulerManager;
 import lombok.NonNull;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.SelfUser;
 
 import javax.annotation.Nullable;
@@ -23,12 +26,8 @@ public final class KodeKitten
      * TODO
      * -----
      *
-     * Implement Command Handler.
-     * Make it so it bumps account activity when they speak in chat.
-     * Implement EventHandler.
+     *
      * timer for status messages so the status message changes every once in a while
-     * test accounts when loading, the command handler loading of accounts doesn't work find out how to do
-     * slash commands correctly
      */
 
     private static final Logger logger = Logger.getLogger(KodeKitten.class.getName());
@@ -63,7 +62,8 @@ public final class KodeKitten
         logInfo(getBotUser().getName() + "#" + getBotUser().getDiscriminator() + " connected to Discord!");
 
         SchedulerManager.startTimers();
-        getBot().addEventListener(new CommandHandler());
+        getJdaBot().addEventListener(new CommandHandler());
+        registerCommands();
 
         bot.setStatus("hiya :3");
 
@@ -87,7 +87,12 @@ public final class KodeKitten
         System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tF %1$tT] [%4$-7s] %5$s %n");
     }
 
-    public static JDA getBot()
+    public static Bot getBot()
+    {
+        return bot;
+    }
+
+    public static JDA getJdaBot()
     {
         return bot.getBot();
     }
@@ -103,6 +108,11 @@ public final class KodeKitten
     public static String getBotToken()
     {
         return bot.getToken();
+    }
+
+    private static void registerCommands()
+    {
+        Command.registerGuildCommand(new CmdHelp());
     }
 
     /**
@@ -126,9 +136,10 @@ public final class KodeKitten
             final String label = inputSplit[0];
             final String[] args = Arrays.copyOfRange(inputSplit, 1, inputSplit.length);
 
-            // process commands
-
-            System.out.println("Unknown command. Enter 'help' for help or 'exit' to exit.");
+            if (!Command.runCommands(label, args))
+            {
+                System.out.println("Unknown command. Enter 'help' for help or 'exit' to exit.");
+            }
         }
 
         scanner.close();
