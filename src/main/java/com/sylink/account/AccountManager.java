@@ -55,9 +55,9 @@ public final class AccountManager
      */
     public static Connection getConnection()
     {
-        if (connection == null)
+        if (connection == null && !openDatabaseConnection())
         {
-            openDatabaseConnection();
+            return null;
         }
 
         // Connection has been accessed so we reset connection activity time.
