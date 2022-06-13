@@ -17,14 +17,14 @@ public final class CmdHelp
     }
 
     @Override
-    public void onCommand(@NonNull final SlashCommandEvent event, @NonNull final Account account,
+    public void onUserCommand(@NonNull final SlashCommandEvent event, @NonNull final Account account,
                           @NonNull final String label, @NonNull final String[] args)
     {
         event.reply("List of commands:").setEphemeral(true).queue();
     }
 
     @Override
-    public void onCommand(@NonNull final String label, @NonNull final String[] args)
+    public void onConsoleCommand(@NonNull final String label, @NonNull final String[] args)
     {
         System.out.println("List of commands:");
     }

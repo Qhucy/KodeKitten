@@ -37,10 +37,10 @@ public abstract class Command
 
         for (final Command command : commands)
         {
-            if (!command.containsLabel(label)
-                    || !command.containsCommandType(CommandType.USER)
-                    || (command.getPermission() != null && !account.hasPermission(command.getPermission())))
+            if (!command.containsLabel(label) || !command.containsCommandType(CommandType.USER) || (command.getPermission() != null && !account.hasPermission(command.getPermission())))
+            {
                 continue;
+            }
 
             if (event.isFromGuild() && !command.containsCommandType(CommandType.GUILD))
             {
@@ -54,7 +54,7 @@ public abstract class Command
                 continue;
             }
 
-            command.onCommand(event, account, label, args);
+            command.onUserCommand(event, account, label, args);
             return;
         }
     }
@@ -67,7 +67,9 @@ public abstract class Command
         for (final Command command : commands)
         {
             if (!command.containsLabel(label))
+            {
                 continue;
+            }
 
             if (!command.containsCommandType(CommandType.CONSOLE))
             {
@@ -75,7 +77,7 @@ public abstract class Command
                 continue;
             }
 
-            command.onCommand(label, args);
+            command.onConsoleCommand(label, args);
             return true;
         }
 
@@ -155,8 +157,7 @@ public abstract class Command
      */
     public final void sendUsage(@NonNull final SlashCommandEvent event, @NonNull final String label)
     {
-        if (usage == null
-                || usage.length == 0)
+        if (usage == null || usage.length == 0)
         {
             event.reply("There is no defined usage for this command.").queue();
             return;
@@ -191,8 +192,7 @@ public abstract class Command
      */
     public final void sendUsage(@NonNull final String label)
     {
-        if (usage == null
-                || usage.length == 0)
+        if (usage == null || usage.length == 0)
         {
             System.out.println("There is no defined usage for this command.");
             return;
@@ -225,13 +225,13 @@ public abstract class Command
     /**
      * Execution method of the command after passing all initial checks for user commands.
      */
-    public abstract void onCommand(@NonNull final SlashCommandEvent event, @NonNull final Account account,
-                                   @NonNull final String label, @NonNull final String[] args);
+    public abstract void onUserCommand(@NonNull final SlashCommandEvent event, @NonNull final Account account,
+                                       @NonNull final String label, @NonNull final String[] args);
 
     /**
      * Execution method of the command after passing all initial checks for console commands.
      */
-    public void onCommand(@NonNull final String label, @NonNull final String[] args)
+    public void onConsoleCommand(@NonNull final String label, @NonNull final String[] args)
     {
         // The default implementation if there is no implementation.
         System.out.printf("'/%s' does not have a console implementation.\n", label);
