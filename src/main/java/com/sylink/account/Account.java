@@ -4,6 +4,9 @@ import com.sylink.KodeKitten;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -37,6 +40,22 @@ public class Account
     }
 
     /**
+     * @return The Discord user object of the Account.
+     */
+    public final User getUser()
+    {
+        return KodeKitten.getJdaBot().retrieveUserById(discordId).complete();
+    }
+
+    /**
+     * @return The Discord member object of the Account.
+     */
+    public final Member getMember(@NonNull final Guild guild)
+    {
+        return guild.retrieveMemberById(discordId).complete();
+    }
+
+    /**
      * Sets the last activity time to the current time.
      */
     public final void bumpLastActivityTime()
@@ -67,7 +86,7 @@ public class Account
     /**
      * @return True if Account data has been changed and needs to be saved to the database.
      */
-    public boolean needsToSync()
+    public final boolean needsToSync()
     {
         return needsToSync;
     }
