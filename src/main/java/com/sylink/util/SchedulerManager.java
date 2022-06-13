@@ -13,14 +13,15 @@ public final class SchedulerManager
 {
 
     // ScheduledExecutorService that manages all timers.
-    private final static ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
+    private final static ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
 
     /**
      * Starts all program timers.
      */
     public static void startTimers()
     {
-        executorService.scheduleAtFixedRate(minuteTimer, 0, 1, TimeUnit.MINUTES);
+        executorService.scheduleAtFixedRate(minuteTimer, 1, 1, TimeUnit.MINUTES);
+        executorService.scheduleAtFixedRate(hourTimer, 1, 1, TimeUnit.HOURS);
     }
 
     /**
@@ -34,14 +35,17 @@ public final class SchedulerManager
     /**
      * Runnable method that runs every minute.
      */
-    private static Runnable minuteTimer = new Runnable()
+    private static final Runnable minuteTimer = () ->
     {
-        @Override
-        public void run()
-        {
-            AccountManager.checkConnection();
-            AccountManager.checkAccounts();
-        }
+        AccountManager.checkConnection();
+    };
+
+    /**
+     * Runnable method that runs every hour.
+     */
+    private static final Runnable hourTimer = () ->
+    {
+        AccountManager.checkAccounts();
     };
 
 }
