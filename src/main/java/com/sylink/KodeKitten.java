@@ -22,7 +22,6 @@ public final class KodeKitten
      * TODO
      * -----
      *
-     * Unit tests for Account.
      * Unit tests for AccountsManager.
      * Implement Command Handler.
      * Make it so it bumps account activity when they speak in chat.
