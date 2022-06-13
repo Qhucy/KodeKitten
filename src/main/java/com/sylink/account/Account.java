@@ -1,12 +1,13 @@
 package com.sylink.account;
 
 import com.sylink.KodeKitten;
+import lombok.Getter;
+import lombok.NonNull;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Class that contains all data about a user account.
@@ -14,23 +15,20 @@ import java.util.List;
 public class Account
 {
 
+    @Getter
     private final long discordId;
     // Last activity time to track how long an account has been inactive in memory.
     private long lastActivity = 0;
 
+    @Getter
     private double balance = 0.0;
 
-    // The list of statements to run to update user data in the SQL database.
-    private final List<String> updateStatements = new ArrayList<>();
+    // Whether account information has been changed and needs to be synced to the database.
+    private boolean needsToSync = false;
 
     protected Account(final long discordId)
     {
         this.discordId = discordId;
-    }
-
-    public final long getDiscordId()
-    {
-        return discordId;
     }
 
     /**
@@ -61,25 +59,23 @@ public class Account
         return seconds > 3600;
     }
 
-    public final double getBalance()
-    {
-        return balance;
-    }
-
     public final void setBalance(final double balance)
     {
         this.balance = balance;
+        this.needsToSync = true;
     }
 
     public final void addBalance(final double balance)
     {
         this.balance += balance;
+        this.needsToSync = true;
     }
 
     public final void removeBalance(final double balance)
     {
         // Balance cannot be less than 0.
         this.balance = Math.max(0, this.balance - balance);
+        this.needsToSync = true;
     }
 
     /**
@@ -88,6 +84,7 @@ public class Account
     public final void resetBalance()
     {
         this.balance = 0.0;
+        this.needsToSync = true;
     }
 
     /**
@@ -95,12 +92,14 @@ public class Account
      */
     public boolean loadFromDatabase()
     {
-        if (AccountManager.getConnection() == null)
+        final Connection connection = AccountManager.getConnection();
+
+        if (connection == null)
         {
             return false;
         }
 
-        try(final Statement statement = AccountManager.getConnection().createStatement();
+        try(final Statement statement = connection.createStatement();
             final ResultSet resultSet = statement.executeQuery(String.format("""
                     SELECT
                         balance
@@ -126,25 +125,33 @@ public class Account
 
     /**
      * Saves all data from this object to the account's column in the database.
+     *
+     * @return False if there was an error saving the data.
      */
     public boolean saveToDatabase()
     {
+        if (!needsToSync)
+            return true;
 
-        try (final Statement statement = AccountManager.getConnection().createStatement())
+        final Connection connection = AccountManager.getConnection();
+
+        try (final Statement statement = connection.createStatement())
         {
             // Insert into database as a new column.
-            if (!existsInDatabase())
+            if (!existsInDatabase(connection))
             {
-                statement.executeUpdate(String.format("INSERT INTO accounts (id) VALUES(%d)", discordId));
+                statement.executeUpdate(String.format("INSERT INTO accounts (%s) VALUES(%g)", discordId, balance));
             }
-
             // Update the existing column with new data.
-            for (final String sql : updateStatements)
+            else
             {
-                statement.executeUpdate(sql);
+                statement.executeUpdate(String.format("""
+                        UPDATE table
+                        SET balance = %g
+                        WHERE id = %d
+                        """, balance, discordId));
             }
 
-            updateStatements.clear();
             return true;
         } catch (final SQLException sqlException)
         {
@@ -157,16 +164,14 @@ public class Account
     /**
      * Returns true if the account exists as a column in the database.
      */
-    public boolean existsInDatabase()
+    public boolean existsInDatabase(@NonNull final Connection connection)
     {
-        try (final Statement statement = AccountManager.getConnection().createStatement();
+        try (final Statement statement = connection.createStatement();
              final ResultSet resultSet = statement.executeQuery("SELECT id FROM accounts WHERE id=" + discordId))
         {
             return resultSet.next();
         } catch (final SQLException sqlException)
         {
-            KodeKitten.logSevere("Unable to find discord id " + discordId + " in the database.");
-            sqlException.printStackTrace();
             return false;
         }
     }
