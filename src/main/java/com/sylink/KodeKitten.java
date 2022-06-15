@@ -25,6 +25,7 @@ public final class KodeKitten
      * TODO
      * -----
      *
+     * save role info to accounts too
      * test account saving / loading to database
      * unit testing for command
      * timer for status messages so the status message changes every once in a while
