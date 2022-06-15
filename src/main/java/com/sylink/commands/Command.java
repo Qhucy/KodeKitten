@@ -90,7 +90,12 @@ public abstract class Command
      */
     public static void registerCommand(@NonNull final Command command)
     {
-        KodeKitten.getBot().registerCommand(command.getName(), command.getDescription());
+        // Only register the command to discord if it has a user implementation.
+        if (command.containsCommandType(CommandType.USER))
+        {
+            KodeKitten.getBot().registerCommand(command.getName(), command.getDescription());
+        }
+
         commands.add(command);
     }
 
@@ -100,7 +105,12 @@ public abstract class Command
      */
     public static void registerGuildCommand(@NonNull final Command command)
     {
-        KodeKitten.getBot().registerCommand(command.getName(), command.getDescription());
+        // Only register the command to discord if it has a user implementation.
+        if (command.containsCommandType(CommandType.USER))
+        {
+            KodeKitten.getBot().registerCommand(command.getName(), command.getDescription());
+        }
+
         commands.add(command);
     }
 
@@ -224,9 +234,13 @@ public abstract class Command
 
     /**
      * Execution method of the command after passing all initial checks for user commands.
+     * If there is no override, the command doesn't exist.
      */
-    public abstract void onUserCommand(@NonNull final SlashCommandEvent event, @NonNull final Account account,
-                                       @NonNull final String label, @NonNull final String[] args);
+    public void onUserCommand(@NonNull final SlashCommandEvent event, @NonNull final Account account,
+                              @NonNull final String label, @NonNull final String[] args)
+    {
+
+    }
 
     /**
      * Execution method of the command after passing all initial checks for console commands.
