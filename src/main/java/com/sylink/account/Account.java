@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 
 import java.sql.Connection;
@@ -14,6 +15,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -32,7 +34,9 @@ public class Account
     private long lastActivityTime = 0;
 
     // List of permission strings for this account.
-    private List<String> permissions;
+    private List<String> permissions = new ArrayList<>();
+    // List of role ids for this account.
+    private List<AccountRole> roles = new ArrayList<>();
     @Getter(AccessLevel.PUBLIC)
     private double balance = 0.0;
 
@@ -96,38 +100,12 @@ public class Account
         return needsToSync;
     }
 
-    private void loadPermissions(@NonNull final String permissionData)
+    /**
+     * @return True if the account has at least 1 permission.
+     */
+    public final boolean hasPermissions()
     {
-        if (permissionData.isBlank())
-        {
-            permissions = new ArrayList<>();
-        }
-        else
-        {
-            permissions = new ArrayList<>(Arrays.asList(permissionData.split(",")));
-        }
-    }
-
-    private String getPermissionData()
-    {
-        if (permissions.isEmpty())
-            return "";
-
-        final StringBuilder stringBuilder = new StringBuilder();
-
-        for (final String permission : permissions)
-        {
-            if (stringBuilder.isEmpty())
-            {
-                stringBuilder.append(permission);
-            }
-            else
-            {
-                stringBuilder.append(permission).append(",");
-            }
-        }
-
-        return stringBuilder.toString();
+        return !permissions.isEmpty();
     }
 
     public final boolean hasPermission(@NonNull final String permission)
@@ -148,20 +126,116 @@ public class Account
         if (hasPermission(permission))
             return;
 
-        permissions.add(permission);
-        needsToSync = true;
+        this.permissions.add(permission);
+        this.needsToSync = true;
     }
 
     public final void removePermission(@NonNull final String permission)
     {
         for (final String perm : permissions)
         {
-            if (perm.equalsIgnoreCase(permission))
-            {
-                permissions.remove(perm);
-                return;
-            }
+            if (!perm.equalsIgnoreCase(permission))
+                continue;
+
+            this.permissions.remove(perm);
+            this.needsToSync = true;
+            return;
         }
+    }
+
+    /**
+     * @return True if the account has at least 1 role.
+     */
+    public final boolean hasRoles()
+    {
+        return !roles.isEmpty();
+    }
+
+    /**
+     * @return True if the account has a given role.
+     */
+    public final boolean hasRole(@NonNull final AccountRole accountRole)
+    {
+        for (final AccountRole role : roles)
+        {
+            if (role.equals(accountRole))
+                return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @return True if the account has a given role.
+     */
+    public final boolean hasRole(final long roleId)
+    {
+        final AccountRole accountRole = AccountRole.fromId(roleId);
+
+        if (accountRole == null)
+        {
+            return false;
+        }
+        else
+        {
+            return hasRole(accountRole);
+        }
+    }
+
+    /**
+     * @return True if the account has a given role.
+     */
+    public final boolean hasRole(@NonNull final Role role)
+    {
+        return hasRole(role.getIdLong());
+    }
+
+    public final void addRole(@NonNull final AccountRole accountRole)
+    {
+        if (hasRole(accountRole))
+            return;
+
+        this.roles.add(accountRole);
+        this.needsToSync = true;
+    }
+
+    public final void addRole(final long roleId)
+    {
+        final AccountRole accountRole = AccountRole.fromId(roleId);
+
+        if (accountRole == null)
+            return;
+
+        addRole((accountRole));
+    }
+
+    public final void addRole(@NonNull final Role role)
+    {
+        addRole(role.getIdLong());
+    }
+
+    public final void removeRole(@NonNull final AccountRole accountRole)
+    {
+        if (!hasRole(accountRole))
+            return;
+
+        this.roles.remove(accountRole);
+        this.needsToSync = true;
+    }
+
+    public final void removeRole(final long roleId)
+    {
+        final AccountRole accountRole = AccountRole.fromId(roleId);
+
+        if (accountRole == null)
+            return;
+
+        removeRole(accountRole);
+    }
+
+    public final void removeRole(@NonNull final Role role)
+    {
+        removeRole(role.getIdLong());
     }
 
     public final void setBalance(final double balance)
@@ -175,7 +249,6 @@ public class Account
     {
         // Balance cannot be less than 0.
         this.balance = Math.max(0, this.balance + balance);
-
         this.needsToSync = true;
     }
 
@@ -214,6 +287,7 @@ public class Account
             if (resultSet.next())
             {
                 loadPermissions(resultSet.getString("permissions"));
+                loadRoles(resultSet.getString("roles"));
                 balance = resultSet.getDouble("balance");
             }
 
@@ -225,6 +299,38 @@ public class Account
         {
             sqlException.printStackTrace();
             return false;
+        }
+    }
+
+    /**
+     * Loads permission data from the SQL column string to a list of permissions.
+     */
+    private void loadPermissions(@NonNull final String permissionData)
+    {
+        permissions.clear();
+
+        if (!permissionData.isBlank())
+        {
+            permissions.addAll(Arrays.asList(permissionData.split(",")));
+        }
+    }
+
+    /**
+     * Loads role data from the SQL column string to a list of roles.
+     */
+    private void loadRoles(@NonNull final String roleData)
+    {
+        roles.clear();
+
+        if (!roleData.isBlank())
+        {
+            for (final String role : roleData.split(","))
+            {
+                final long roleId = Long.parseLong(role);
+                final AccountRole accountRole = AccountRole.fromId(roleId);
+
+                roles.add(accountRole);
+            }
         }
     }
 
@@ -251,9 +357,10 @@ public class Account
                 statement.executeUpdate(String.format("""
                         UPDATE table
                         SET permissions = %s,
+                            roles = %s,
                             balance = %g
                         WHERE id = %d
-                        """, getPermissionData(), balance, discordId));
+                        """, getPermissionData(), getRoleData(), balance, discordId));
             }
 
             // Data no longer needs to be updated.
@@ -280,6 +387,56 @@ public class Account
         {
             return false;
         }
+    }
+
+    /**
+     * @return The list of account permissions as a string of data.
+     */
+    private String getPermissionData()
+    {
+        if (permissions.isEmpty())
+            return "";
+
+        final StringBuilder stringBuilder = new StringBuilder();
+
+        for (final String permission : permissions)
+        {
+            if (stringBuilder.isEmpty())
+            {
+                stringBuilder.append(permission);
+            }
+            else
+            {
+                stringBuilder.append(permission).append(",");
+            }
+        }
+
+        return stringBuilder.toString();
+    }
+
+    /**
+     * @return The list of account roles as a string of data.
+     */
+    private String getRoleData()
+    {
+        if (roles.isEmpty())
+            return "";
+
+        final StringBuilder stringBuilder = new StringBuilder();
+
+        for (final AccountRole role : roles)
+        {
+            if (stringBuilder.isEmpty())
+            {
+                stringBuilder.append(role.getRoleId());
+            }
+            else
+            {
+                stringBuilder.append(role.getRoleId()).append(",");
+            }
+        }
+
+        return stringBuilder.toString();
     }
 
 }

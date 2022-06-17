@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class AccountTest
 {
 
+    // tests for saving / loading into database (not in unit tests)
+
     private Account account;
 
     @BeforeEach
@@ -143,17 +145,71 @@ class AccountTest
     @Test
     void accountIsntLoadedIfNotConnected()
     {
-        Account account = new Account(0);
-
         assertFalse(account.isLoaded());
     }
 
     @Test
     void accountDoesntNeedsToSyncIfNotUpdated()
     {
-        Account account = new Account(0);
-
         assertFalse(account.needsToSync());
+    }
+
+    @Test
+    void accountDoesntHaveRolesOnCreation()
+    {
+        assertFalse(account.hasRoles());
+    }
+
+    @Test
+    void accountCanAddRoles()
+    {
+        account.addRole(1L);
+
+        assertTrue(account.hasRoles());
+        assertTrue(account.hasRole(1L));
+    }
+
+    @Test
+    void accountCanRemoveRoles()
+    {
+        account.addRole(1L);
+
+        assertTrue(account.hasRoles());
+        assertTrue(account.hasRole(1L));
+
+        account.removeRole(1L);
+
+        assertFalse(account.hasRoles());
+        assertFalse(account.hasRole(1L));
+    }
+
+    @Test
+    void doesntHavePermissionsOnCreation()
+    {
+        assertFalse(account.hasPermissions());
+    }
+
+    @Test
+    void canAddPermissions()
+    {
+        account.addPermission("admin");
+
+        assertTrue(account.hasPermissions());
+        assertTrue(account.hasPermission("admin"));
+    }
+
+    @Test
+    void canRemovePermissions()
+    {
+        account.addPermission("admin");
+
+        assertTrue(account.hasPermissions());
+        assertTrue(account.hasPermission("admin"));
+
+        account.removePermission("admin");
+
+        assertFalse(account.hasPermissions());
+        assertFalse(account.hasPermission("admin"));
     }
 
 }
