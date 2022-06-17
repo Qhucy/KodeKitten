@@ -7,18 +7,33 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Class that manages repeating function timers.
+ * Singleton class that manages repeating function timers.
  */
 public final class SchedulerManager
 {
 
+    // More methods to this class to make it more of a singleton.
+    // Also unit testing
+
+    private static SchedulerManager schedulerManager = null;
+
+    public static SchedulerManager getInstance()
+    {
+        if (schedulerManager == null)
+        {
+            schedulerManager = new SchedulerManager();
+        }
+
+        return schedulerManager;
+    }
+
     // ScheduledExecutorService that manages all timers.
-    private final static ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
+    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
 
     /**
      * Starts all program timers.
      */
-    public static void startTimers()
+    public void startTimers()
     {
         executorService.scheduleAtFixedRate(minuteTimer, 1, 1, TimeUnit.MINUTES);
         executorService.scheduleAtFixedRate(hourTimer, 1, 1, TimeUnit.HOURS);
@@ -27,7 +42,7 @@ public final class SchedulerManager
     /**
      * Closes all timers safely.
      */
-    public static void stopTimers()
+    public void stopTimers()
     {
         executorService.shutdown();
     }
@@ -35,7 +50,7 @@ public final class SchedulerManager
     /**
      * Runnable method that runs every minute.
      */
-    private static final Runnable minuteTimer = () ->
+    private final Runnable minuteTimer = () ->
     {
         AccountManager.checkConnection();
     };
@@ -43,7 +58,7 @@ public final class SchedulerManager
     /**
      * Runnable method that runs every hour.
      */
-    private static final Runnable hourTimer = () ->
+    private final Runnable hourTimer = () ->
     {
         AccountManager.checkAccounts();
     };
