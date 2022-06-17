@@ -62,7 +62,7 @@ public final class KodeKitten
         // The bot is now connected to Discord.
         logInfo(getBotUser().getName() + "#" + getBotUser().getDiscriminator() + " connected to Discord!");
 
-        SchedulerManager.startTimers();
+        SchedulerManager.getInstance().startTimers();
         getJdaBot().addEventListener(new CommandHandler());
         registerCommands();
 
@@ -74,7 +74,7 @@ public final class KodeKitten
         // The program is now exiting.
         logInfo("Exiting the program");
 
-        SchedulerManager.stopTimers();
+        SchedulerManager.getInstance().stopTimers();
         bot.disconnect();
         AccountManager.closeDatabaseConnection();
         System.exit(0);
