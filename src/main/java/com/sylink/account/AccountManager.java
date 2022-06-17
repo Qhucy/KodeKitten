@@ -91,6 +91,7 @@ public final class AccountManager
                         (
                             id BIGINT NOT NULL UNIQUE,
                             permissions TEXT NOT NULL DEFAULT '',
+                            roles TEXT NOT NULL DEFAULT '',
                             balance DOUBLE NOT NULL DEFAULT 0.0
                         );
                         """);
