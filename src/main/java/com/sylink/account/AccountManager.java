@@ -15,6 +15,9 @@ import java.util.Map;
 public final class AccountManager
 {
 
+    // change into a singleton class.
+    // with unit testing
+
     // JDBC URL to the accounts database.
     private final static String DATABASE_URL = "jdbc:sqlite:database.db";
     // Connection to the accounts database.

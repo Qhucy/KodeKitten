@@ -10,6 +10,10 @@ import net.dv8tion.jda.api.entities.Role;
 public enum AccountRole
 {
 
+    // change to a singleton class that stores all roles from
+    // loaded data roles.toml
+    // with unit testing
+
     MEMBER(1L, "Member");
 
     /**
