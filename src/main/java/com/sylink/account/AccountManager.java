@@ -1,6 +1,7 @@
 package com.sylink.account;
 
 import com.sylink.KodeKitten;
+import lombok.NonNull;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -81,6 +82,81 @@ public final class AccountManager
     }
 
     /**
+     * Saves an account to the database and removes it from memory.
+     *
+     * @param keepIfUnableToSave If true, doesn't remove the account from memory if it was unable to be saved to the
+     *                           database.
+     */
+    public void flushFromMemory(@NonNull final Account account, final boolean keepIfUnableToSave)
+    {
+        if (saveToDatabase(account) || !keepIfUnableToSave)
+        {
+            accounts.remove(account.getDiscordId());
+        }
+    }
+
+    /**
+     * Saves a given account to the SQL database.
+     *
+     * @return True if the account was successfully saved to the database.
+     */
+    public boolean saveToDatabase(@NonNull final Account account)
+    {
+        if (connection == null)
+        {
+            KodeKitten.logWarning(String.format("Unable to save account %d to the database as there is no connection "
+                    + "to the database", account.getDiscordId()));
+            return false;
+        }
+
+        return account.saveToDatabase(connection);
+    }
+
+    public boolean saveToDatabase(final long discordId)
+    {
+        final Account account = getAccount(discordId);
+
+        return account != null && saveToDatabase(account);
+    }
+
+    /**
+     * @return True if the given account exists as a column in the SQL database.
+     */
+    public boolean existsInDatabase(@NonNull final Account account)
+    {
+        if (connection == null)
+        {
+            KodeKitten.logWarning(String.format("Unable to check if account %d exists in database with an inactive " + "connection", account.getDiscordId()));
+            return false;
+        }
+
+        return account.existsInDatabase(connection);
+    }
+
+    public boolean existsInDatabase(final long discordId)
+    {
+        final Account account = getAccount(discordId);
+
+        return account != null && existsInDatabase(account);
+    }
+
+    /**
+     * @return True if the given discord id exists in local memory.
+     */
+    public boolean existsInMemory(final long discordId)
+    {
+        for (var entry : accounts.entrySet())
+        {
+            if (entry.getKey() == discordId)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Returns the opened connection to the database.
      * If the connection is not open then it opens a connection.
      */
@@ -134,6 +210,11 @@ public final class AccountManager
      */
     public void closeDatabaseConnection()
     {
+        if (connection == null)
+        {
+            return;
+        }
+
         try
         {
             connection.close();
