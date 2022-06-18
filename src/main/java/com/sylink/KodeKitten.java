@@ -43,7 +43,7 @@ public final class KodeKitten
         setupLogger();
 
         // Whether or not a connection was successfully opened.
-        if (!AccountManager.openDatabaseConnection())
+        if (!AccountManager.getInstance().openDatabaseConnection())
         {
             System.exit(0);
             return;
@@ -76,7 +76,7 @@ public final class KodeKitten
 
         SchedulerManager.getInstance().stopTimers();
         bot.disconnect();
-        AccountManager.closeDatabaseConnection();
+        AccountManager.getInstance().closeDatabaseConnection();
         System.exit(0);
     }
 

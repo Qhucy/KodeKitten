@@ -27,7 +27,7 @@ public abstract class Command
     public static void runCommands(@NonNull final SlashCommandEvent event, @NonNull final String label,
                                    @NonNull final String[] args)
     {
-        final Account account = AccountManager.getAccount(event.getUser().getIdLong());
+        final Account account = AccountManager.getInstance().getAccount(event.getUser().getIdLong());
 
         if (account == null)
         {

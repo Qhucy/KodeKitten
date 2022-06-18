@@ -10,28 +10,46 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Class that handles the management of Accounts stored and processed in memory.
+ * Singleton class that handles the management of Accounts stored and processed in memory.
  */
 public final class AccountManager
 {
 
-    // change into a singleton class.
-    // with unit testing
-
+    private static AccountManager accountManager = null;
     // JDBC URL to the accounts database.
     private final static String DATABASE_URL = "jdbc:sqlite:database.db";
+    private final static String SQL_TABLE = """
+            CREATE TABLE IF NOT EXISTS accounts
+            (
+                id BIGINT NOT NULL UNIQUE,
+                permissions TEXT NOT NULL DEFAULT '',
+                roles TEXT NOT NULL DEFAULT '',
+                balance DOUBLE NOT NULL DEFAULT 0.0
+            );
+            """;
+
+    public static AccountManager getInstance()
+    {
+        if (accountManager == null)
+        {
+            accountManager = new AccountManager();
+        }
+
+        return accountManager;
+    }
+
     // Connection to the accounts database.
-    private static Connection connection = null;
+    private Connection connection = null;
     // Connection activity time to track how long a connection has been inactive.
-    private static long connectionLastActivity = System.currentTimeMillis();
+    private long connectionLastActivity = System.currentTimeMillis();
     // Map the stores the Discord Id associated with its account.
-    private final static Map<Long, Account> accounts = new HashMap<>();
+    private final Map<Long, Account> accounts = new HashMap<>();
 
     /**
      * Returns the account from its discord id.
      * If it does not exist in the internal database, it loads it from the database file.
      */
-    public static Account getAccount(final long discordId)
+    public Account getAccount(final long discordId)
     {
         if (accounts.containsKey(discordId))
         {
@@ -44,7 +62,9 @@ public final class AccountManager
         final Connection connection = getConnection();
 
         if (connection == null)
+        {
             return null;
+        }
 
         final Account account = new Account(discordId);
 
@@ -64,10 +84,12 @@ public final class AccountManager
      * Returns the opened connection to the database.
      * If the connection is not open then it opens a connection.
      */
-    public static Connection getConnection()
+    public Connection getConnection()
     {
         if (connection == null && !openDatabaseConnection())
+        {
             return null;
+        }
 
         // Connection has been accessed, so we reset connection activity time.
         connectionLastActivity = System.currentTimeMillis();
@@ -78,7 +100,7 @@ public final class AccountManager
     /**
      * Returns whether a successful connection with the accounts database was created.
      */
-    public static boolean openDatabaseConnection()
+    public boolean openDatabaseConnection()
     {
         try
         {
@@ -89,15 +111,7 @@ public final class AccountManager
 
             try (final Statement statement = connection.createStatement())
             {
-                statement.executeUpdate("""
-                        CREATE TABLE IF NOT EXISTS accounts
-                        (
-                            id BIGINT NOT NULL UNIQUE,
-                            permissions TEXT NOT NULL DEFAULT '',
-                            roles TEXT NOT NULL DEFAULT '',
-                            balance DOUBLE NOT NULL DEFAULT 0.0
-                        );
-                        """);
+                statement.executeUpdate(SQL_TABLE);
             }
             return true;
         }
@@ -107,18 +121,18 @@ public final class AccountManager
             sqlException.printStackTrace();
             return false;
         }
-         catch (final ClassNotFoundException classNotFoundException)
-         {
-             KodeKitten.logSevere("Unable to access JDBC SQLite drivers");
-             classNotFoundException.printStackTrace();
-             return false;
-         }
+        catch (final ClassNotFoundException classNotFoundException)
+        {
+            KodeKitten.logSevere("Unable to access JDBC SQLite drivers");
+            classNotFoundException.printStackTrace();
+            return false;
+        }
     }
 
     /**
      * Closes the database connection.
      */
-    public static void closeDatabaseConnection()
+    public void closeDatabaseConnection()
     {
         try
         {
@@ -138,10 +152,12 @@ public final class AccountManager
     /**
      * Closes the account database connection if it has been inactive for over 5 minutes.
      */
-    public static void checkConnection()
+    public void cleanupConnectionInactivity()
     {
         if (connection == null)
+        {
             return;
+        }
 
         int seconds = (int) ((System.currentTimeMillis() - connectionLastActivity) / 1000);
 
@@ -156,7 +172,7 @@ public final class AccountManager
      * Removes accounts flagged as inactive from internal memory.
      * Saves all account data before removing them.
      */
-    public static void checkAccounts()
+    public void cleanupAccountInactivity()
     {
         final Connection connection = getConnection();
 

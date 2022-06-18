@@ -67,7 +67,7 @@ public final class SchedulerManager
      */
     private final Runnable minuteTimer = () ->
     {
-        AccountManager.checkConnection();
+        AccountManager.getInstance().cleanupConnectionInactivity();
     };
 
     /**
@@ -75,7 +75,7 @@ public final class SchedulerManager
      */
     private final Runnable hourTimer = () ->
     {
-        AccountManager.checkAccounts();
+        AccountManager.getInstance().cleanupAccountInactivity();
     };
 
 }
