@@ -123,7 +123,9 @@ public class Account
     public final void addPermission(@NonNull final String permission)
     {
         if (hasPermission(permission))
+        {
             return;
+        }
 
         this.permissions.add(permission);
         this.needsToSync = true;
@@ -134,7 +136,9 @@ public class Account
         for (final String perm : permissions)
         {
             if (!perm.equalsIgnoreCase(permission))
+            {
                 continue;
+            }
 
             this.permissions.remove(perm);
             this.needsToSync = true;
@@ -158,7 +162,9 @@ public class Account
         for (final AccountRole role : roles)
         {
             if (role.equals(accountRole))
+            {
                 return true;
+            }
         }
 
         return false;
@@ -192,7 +198,9 @@ public class Account
     public final void addRole(@NonNull final AccountRole accountRole)
     {
         if (hasRole(accountRole))
+        {
             return;
+        }
 
         this.roles.add(accountRole);
         this.needsToSync = true;
@@ -203,7 +211,9 @@ public class Account
         final AccountRole accountRole = AccountRole.fromId(roleId);
 
         if (accountRole == null)
+        {
             return;
+        }
 
         addRole((accountRole));
     }
@@ -216,7 +226,9 @@ public class Account
     public final void removeRole(@NonNull final AccountRole accountRole)
     {
         if (!hasRole(accountRole))
+        {
             return;
+        }
 
         this.roles.remove(accountRole);
         this.needsToSync = true;
@@ -227,7 +239,9 @@ public class Account
         final AccountRole accountRole = AccountRole.fromId(roleId);
 
         if (accountRole == null)
+        {
             return;
+        }
 
         removeRole(accountRole);
     }
@@ -269,19 +283,21 @@ public class Account
 
     /**
      * Loads all account data from the database connection and returns whether the data was loaded.
+     * The proper way to call this method is to buffer it through the AccountManager method.
      */
-    public boolean loadFromDatabase(@NonNull final Connection connection)
+    protected boolean loadFromDatabase(@NonNull final Connection connection)
     {
-        try(final Statement statement = connection.createStatement();
-            final ResultSet resultSet = statement.executeQuery(String.format("""
-                    SELECT
-                        permissions,
-                        balance
-                    FROM
-                        accounts
-                    WHERE
-                        id=%d;
-                    """, discordId)))
+        try (final Statement statement = connection.createStatement(); final ResultSet resultSet =
+                statement.executeQuery(String.format("""
+                SELECT
+                    permissions,
+                    roles,
+                    balance
+                FROM
+                    accounts
+                WHERE
+                    id=%d;
+                """, discordId)))
         {
             if (resultSet.next())
             {
@@ -294,7 +310,8 @@ public class Account
 
             this.loaded = true;
             return true;
-        } catch (final SQLException sqlException)
+        }
+        catch (final SQLException sqlException)
         {
             sqlException.printStackTrace();
             return false;
@@ -335,26 +352,30 @@ public class Account
 
     /**
      * Saves all data from this object to the account's column in the database.
+     * The proper way to call this method is to buffer it through the AccountManager method.
      *
      * @return True if data was saved to the database if needed.
      */
-    public boolean saveToDatabase(@NonNull final Connection connection)
+    protected boolean saveToDatabase(@NonNull final Connection connection)
     {
         if (!needsToSync)
+        {
             return true;
+        }
 
         try (final Statement statement = connection.createStatement())
         {
             // Insert into database as a new column.
             if (!existsInDatabase(connection))
             {
-                statement.executeUpdate(String.format("INSERT INTO accounts (id,permissions,balance) VALUES(%s,%s,%g)", discordId, getPermissionData(), balance));
+                statement.executeUpdate(String.format("INSERT INTO accounts (id,permissions,roles,balance) VALUES(%s,"
+                        + "%s,%s,%g)", discordId, getPermissionData(), getRoleData(), balance));
             }
             // Update the existing column with new data.
             else
             {
                 statement.executeUpdate(String.format("""
-                        UPDATE table
+                        UPDATE accounts
                         SET permissions = %s,
                             roles = %s,
                             balance = %g
@@ -365,7 +386,8 @@ public class Account
             // Data no longer needs to be updated.
             this.needsToSync = false;
             return true;
-        } catch (final SQLException sqlException)
+        }
+        catch (final SQLException sqlException)
         {
             KodeKitten.logSevere("Unable to save account data for discord id " + discordId);
             sqlException.printStackTrace();
@@ -374,15 +396,18 @@ public class Account
     }
 
     /**
-     * Returns true if the account exists as a column in the database.
+     * The proper way to call this method is to buffer it through the AccountManager method.
+     *
+     * @return true if the account exists as a column in the database.
      */
-    public boolean existsInDatabase(@NonNull final Connection connection)
+    protected boolean existsInDatabase(@NonNull final Connection connection)
     {
-        try (final Statement statement = connection.createStatement();
-             final ResultSet resultSet = statement.executeQuery("SELECT id FROM accounts WHERE id=" + discordId))
+        try (final Statement statement = connection.createStatement(); final ResultSet resultSet =
+                statement.executeQuery("SELECT id FROM accounts WHERE id=" + discordId))
         {
             return resultSet.next();
-        } catch (final SQLException sqlException)
+        }
+        catch (final SQLException sqlException)
         {
             return false;
         }
@@ -394,9 +419,11 @@ public class Account
     private String getPermissionData()
     {
         if (permissions.isEmpty())
-            return "";
+        {
+            return "''";
+        }
 
-        final StringBuilder stringBuilder = new StringBuilder();
+        final StringBuilder stringBuilder = new StringBuilder("'");
 
         for (final String permission : permissions)
         {
@@ -410,7 +437,7 @@ public class Account
             }
         }
 
-        return stringBuilder.toString();
+        return stringBuilder.append("'").toString();
     }
 
     /**
@@ -419,9 +446,11 @@ public class Account
     private String getRoleData()
     {
         if (roles.isEmpty())
-            return "";
+        {
+            return "''";
+        }
 
-        final StringBuilder stringBuilder = new StringBuilder();
+        final StringBuilder stringBuilder = new StringBuilder("'");
 
         for (final AccountRole role : roles)
         {
@@ -435,7 +464,7 @@ public class Account
             }
         }
 
-        return stringBuilder.toString();
+        return stringBuilder.append("'").toString();
     }
 
 }
