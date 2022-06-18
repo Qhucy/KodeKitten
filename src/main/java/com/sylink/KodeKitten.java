@@ -24,11 +24,26 @@ public final class KodeKitten
     /**
      * TODO
      * -----
-     *
-     * save role info to accounts too
-     * test account saving / loading to database
+     * <p>
+     * test account saving / loading to database (NOT IN UNIT TESTS)
+     * continue account testing with the help command
+     * think about making all database saving/loading in AccountManager instead of accounts
+     * push all to github
      * unit testing for command
      * timer for status messages so the status message changes every once in a while
+     *
+     * figure out unit tests for JDBC databases
+     * https://stackoverflow.com/questions/266370/how-do-i-unit-test-jdbc-code-in-java
+     *
+     * go through code and make sure there's enough comments / clarity on things
+     *
+     * ACCOUNT ROLES
+     * --------------
+     * change to a singleton class that stores all roles from
+     * loaded data roles.toml
+     * with unit testing
+     *
+     * syncRoles method in Account.java to sync account roles with the guild.
      */
 
     private static final Logger logger = Logger.getLogger(KodeKitten.class.getName());
@@ -134,7 +149,9 @@ public final class KodeKitten
             input = scanner.nextLine();
 
             if (input.equalsIgnoreCase("stop") || input.equalsIgnoreCase("exit"))
+            {
                 break;
+            }
 
             final String[] inputSplit = input.split(" ");
 
@@ -153,7 +170,9 @@ public final class KodeKitten
     public static void log(@NonNull final Level logLevel, @Nullable final String... messages)
     {
         if (messages == null || messages.length == 0)
+        {
             return;
+        }
 
         for (final String message : messages)
         {
@@ -164,7 +183,9 @@ public final class KodeKitten
     public static void logInfo(@Nullable final String... messages)
     {
         if (messages == null || messages.length == 0)
+        {
             return;
+        }
 
         for (final String message : messages)
         {
@@ -175,7 +196,9 @@ public final class KodeKitten
     public static void logWarning(@Nullable final String... messages)
     {
         if (messages == null || messages.length == 0)
+        {
             return;
+        }
 
         for (final String message : messages)
         {
@@ -186,7 +209,9 @@ public final class KodeKitten
     public static void logSevere(@Nullable final String... messages)
     {
         if (messages == null || messages.length == 0)
+        {
             return;
+        }
 
         for (final String message : messages)
         {
