@@ -61,7 +61,8 @@ class BotTest
         try
         {
             bot.connect("1234");
-        } catch (Throwable ignored)
+        }
+        catch (Throwable ignored)
         {
 
         }

@@ -9,14 +9,17 @@ import java.util.Arrays;
 /**
  * Class that handles slash command events and runs the respective command.
  */
-public final class CommandHandler extends ListenerAdapter
+public final class CommandHandler
+        extends ListenerAdapter
 {
 
     @Override
     public void onSlashCommand(@NonNull final SlashCommandEvent event)
     {
         if (event.getUser().isBot())
+        {
             return;
+        }
 
         final String[] splitCommand = event.getCommandString().substring(1).split(" ");
 

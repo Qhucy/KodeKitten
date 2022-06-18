@@ -55,8 +55,8 @@ public class Bot
      */
     public static String getTokenFromFile(@NonNull final File file)
     {
-        try (final FileReader fileReader = new FileReader(file);
-             final BufferedReader bufferedReader = new BufferedReader(fileReader))
+        try (final FileReader fileReader = new FileReader(file); final BufferedReader bufferedReader =
+                new BufferedReader(fileReader))
         {
             final String token = bufferedReader.readLine();
 
@@ -145,7 +145,8 @@ public class Bot
             bot = JDABuilder.createDefault(token).build();
             // Wait for the JDA object to be fully connected and ready.
             bot.awaitReady();
-        } catch (@NonNull final LoginException | InterruptedException exception)
+        }
+        catch (@NonNull final LoginException | InterruptedException exception)
         {
             KodeKitten.logSevere("Unable to login to Discord servers, shutting down!");
             exception.printStackTrace();
@@ -234,7 +235,7 @@ public class Bot
      */
     public void registerCommand(@NonNull final String name, @NonNull final String description)
     {
-       bot.upsertCommand(name, description).queue();
+        bot.upsertCommand(name, description).queue();
     }
 
     /**

@@ -10,10 +10,6 @@ import net.dv8tion.jda.api.entities.Role;
 public enum AccountRole
 {
 
-    // change to a singleton class that stores all roles from
-    // loaded data roles.toml
-    // with unit testing
-
     MEMBER(1L, "Member");
 
     /**
@@ -24,7 +20,9 @@ public enum AccountRole
         for (final AccountRole accountRole : values())
         {
             if (accountRole.getRoleId() == roleId)
+            {
                 return accountRole;
+            }
         }
 
         KodeKitten.logWarning(String.format("Invalid role retrieval from AccountRole data with role id %d", roleId));
