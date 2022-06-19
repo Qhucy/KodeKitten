@@ -79,12 +79,6 @@ public final class KodeKitten
         getJdaBot().addEventListener(new CommandHandler());
         registerCommands();
 
-        // Changes the status message of the bot every 5 minutes.
-        SchedulerManager.getInstance().addTimer(() ->
-        {
-            bot.setStatus(ConfigManager.getInstance().getRandomStatusMessage());
-        }, 0, 10, TimeUnit.MINUTES);
-
         // Read console commands while the bot is running.
         readConsoleCommands();
 

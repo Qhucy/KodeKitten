@@ -1,5 +1,6 @@
 package com.sylink.util;
 
+import com.sylink.KodeKitten;
 import com.sylink.account.AccountManager;
 import lombok.NonNull;
 
@@ -26,7 +27,7 @@ public final class SchedulerManager
     }
 
     // ScheduledExecutorService that manages all timers.
-    private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(3);
+    private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(4);
 
     /**
      * Starts all continuous background program timers.
@@ -35,6 +36,7 @@ public final class SchedulerManager
     {
         addTimer(minuteTimer, 1, 1, TimeUnit.MINUTES);
         addTimer(hourTimer, 1, 1, TimeUnit.HOURS);
+        addTimer(changeStatus, 0, 10, TimeUnit.MINUTES);
     }
 
     /**
@@ -76,6 +78,14 @@ public final class SchedulerManager
     private final Runnable hourTimer = () ->
     {
         AccountManager.getInstance().cleanupAccountInactivity();
+    };
+
+    /**
+     * Runnable method that randomly changes the status message of the bot.
+     */
+    private final Runnable changeStatus = () ->
+    {
+        KodeKitten.getBot().setStatus(ConfigManager.getInstance().getRandomStatusMessage());
     };
 
 }
