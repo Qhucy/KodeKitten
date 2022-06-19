@@ -1,6 +1,7 @@
 package com.sylink.account;
 
 import com.sylink.KodeKitten;
+import com.sylink.util.Snowflake;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -194,6 +195,29 @@ public class Account
     public final void removeRole(@NonNull final Role role)
     {
         removeRole(role.getIdLong());
+    }
+
+    /**
+     * Syncs internal account role data to the roles the user has on the main guild.
+     */
+    public final void syncRoles()
+    {
+        final Guild guild = Snowflake.getInstance().getMainGuild();
+
+        if (guild != null)
+        {
+            final Member member = guild.retrieveMemberById(discordId).complete();
+
+            if (member != null)
+            {
+                roles.clear();
+
+                for (final Role role : member.getRoles())
+                {
+                    roles.add(role.getIdLong());
+                }
+            }
+        }
     }
 
     public final void setBalance(final double balance)
