@@ -24,6 +24,33 @@ import java.util.List;
 public class Account
 {
 
+    // The SQL query used to insert new account data in to the database.
+    private static final String SQL_INSERT_QUERY = """
+            INSERT INTO accounts (id,permissions,roles,balance)
+            VALUES(%s,%s,%s,%g)
+            """;
+    // The SQL query used to update existing column data for an account.
+    private static final String SQL_UPDATE_QUERY = """
+            UPDATE accounts
+            SET permissions = %s,
+                roles = %s,
+                balance = %g
+            WHERE id = %d
+            """;
+    // The SQL query used to load account data from the database.
+    private static final String SQL_LOAD_QUERY = """
+            SELECT
+                permissions,
+                roles,
+                balance
+            FROM
+                accounts
+            WHERE
+                id=%d;
+            """;
+    // The SQL query used to test whether an account exists in the database.
+    private static final String SQL_EXISTS_QUERY = "SELECT id FROM accounts WHERE id=%d";
+
     @Getter(AccessLevel.PUBLIC)
     private final long discordId;
     // Whether the Account has been loaded from the database.
@@ -257,16 +284,7 @@ public class Account
     protected boolean loadFromDatabase(@NonNull final Connection connection)
     {
         try (final Statement statement = connection.createStatement(); final ResultSet resultSet =
-                statement.executeQuery(String.format("""
-                SELECT
-                    permissions,
-                    roles,
-                    balance
-                FROM
-                    accounts
-                WHERE
-                    id=%d;
-                """, discordId)))
+                statement.executeQuery(String.format(SQL_LOAD_QUERY, discordId)))
         {
             if (resultSet.next())
             {
@@ -334,19 +352,14 @@ public class Account
             // Insert into database as a new column.
             if (!existsInDatabase(connection))
             {
-                statement.executeUpdate(String.format("INSERT INTO accounts (id,permissions,roles,balance) VALUES(%s,"
-                        + "%s,%s,%g)", discordId, getPermissionData(), getRoleData(), balance));
+                statement.executeUpdate(String.format(SQL_INSERT_QUERY, discordId, getPermissionData(), getRoleData()
+                        , balance));
             }
             // Update the existing column with new data.
             else
             {
-                statement.executeUpdate(String.format("""
-                        UPDATE accounts
-                        SET permissions = %s,
-                            roles = %s,
-                            balance = %g
-                        WHERE id = %d
-                        """, getPermissionData(), getRoleData(), balance, discordId));
+                statement.executeUpdate(String.format(SQL_UPDATE_QUERY, getPermissionData(), getRoleData(), balance,
+                        discordId));
             }
 
             // Data no longer needs to be updated.
@@ -369,7 +382,7 @@ public class Account
     protected boolean existsInDatabase(@NonNull final Connection connection)
     {
         try (final Statement statement = connection.createStatement(); final ResultSet resultSet =
-                statement.executeQuery("SELECT id FROM accounts WHERE id=" + discordId))
+                statement.executeQuery(String.format(SQL_EXISTS_QUERY, discordId)))
         {
             return resultSet.next();
         }
