@@ -1,6 +1,7 @@
 package com.sylink;
 
 import com.sylink.account.AccountManager;
+import com.sylink.commands.CmdBalance;
 import com.sylink.commands.CmdHelp;
 import com.sylink.commands.Command;
 import com.sylink.commands.CommandHandler;
@@ -72,6 +73,7 @@ public final class KodeKitten
         // The bot is now connected to Discord.
         logInfo(getBotUser().getName() + "#" + getBotUser().getDiscriminator() + " connected to Discord!");
 
+        // Load all needed data.
         Snowflake.getInstance().loadFromConfig();
         ConfigManager.getInstance().load();
         SchedulerManager.getInstance().startTimers();
@@ -83,7 +85,6 @@ public final class KodeKitten
 
         // The program is now exiting.
         logInfo("Exiting the program");
-
         SchedulerManager.getInstance().stopTimers();
         bot.disconnect();
         AccountManager.getInstance().closeDatabaseConnection();
@@ -128,6 +129,7 @@ public final class KodeKitten
     private static void registerCommands()
     {
         Command.registerGuildCommand(new CmdHelp());
+        Command.registerGuildCommand(new CmdBalance());
     }
 
     /**
