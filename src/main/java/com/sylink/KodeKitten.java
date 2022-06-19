@@ -5,12 +5,21 @@ import com.sylink.commands.CmdHelp;
 import com.sylink.commands.Command;
 import com.sylink.commands.CommandHandler;
 import com.sylink.util.SchedulerManager;
+import com.sylink.util.Snowflake;
 import lombok.NonNull;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.SelfUser;
 
 import javax.annotation.Nullable;
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.file.*;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,18 +40,18 @@ public final class KodeKitten
      * push all to github
      * unit testing for command
      * timer for status messages so the status message changes every once in a while
-     *
+     * make it so the SQL statements in Account are final static fields at the top of
+     * the class so it's easier to edit in the future.
+     * <p>
      * figure out unit tests for JDBC databases
      * https://stackoverflow.com/questions/266370/how-do-i-unit-test-jdbc-code-in-java
-     *
+     * <p>
      * go through code and make sure there's enough comments / clarity on things
-     *
+     * <p>
      * ACCOUNT ROLES
      * --------------
-     * change to a singleton class that stores all roles from
-     * loaded data roles.toml
      * with unit testing
-     *
+     * <p>
      * syncRoles method in Account.java to sync account roles with the guild.
      */
 
@@ -77,6 +86,7 @@ public final class KodeKitten
         // The bot is now connected to Discord.
         logInfo(getBotUser().getName() + "#" + getBotUser().getDiscriminator() + " connected to Discord!");
 
+        Snowflake.getInstance().loadFromConfig();
         SchedulerManager.getInstance().startTimers();
         getJdaBot().addEventListener(new CommandHandler());
         registerCommands();
@@ -165,6 +175,71 @@ public final class KodeKitten
         }
 
         scanner.close();
+    }
+
+    /**
+     * Saves a given resource ot a destination path.
+     */
+    public static void saveResource(@NonNull final String resourcePath, @NonNull final String destinationPath)
+    {
+        try (final InputStream inputStream = getResource(resourcePath))
+        {
+            if (inputStream == null)
+            {
+                throw new IllegalArgumentException(String.format("Unable to find resource %s", resourcePath));
+            }
+
+            final File destFile = new File(resourcePath);
+            final File destDir = new File(resourcePath.substring(0, Math.max(resourcePath.lastIndexOf('/'), 0)));
+
+            if (!destDir.exists())
+            {
+                destDir.mkdirs();
+            }
+
+            try (final OutputStream outputStream = new FileOutputStream(destFile))
+            {
+                byte[] buffer = new byte[1024];
+                int length;
+
+                while ((length = inputStream.read(buffer)) > 0)
+                {
+                    outputStream.write(buffer, 0, length);
+                }
+            }
+        }
+        catch (final IOException exception)
+        {
+            exception.printStackTrace();
+        }
+    }
+
+    /**
+     * @return The input stream of the given file resource path.
+     */
+    private static InputStream getResource(@NonNull final String resourcePath)
+    {
+        try
+        {
+            final URL resource = KodeKitten.class.getClassLoader().getResource(resourcePath);
+
+            if (resource == null)
+            {
+                return null;
+            }
+
+            final URLConnection connection = resource.openConnection();
+
+            connection.setUseCaches(false);
+
+            return connection.getInputStream();
+        }
+        catch (final IOException exception)
+        {
+            exception.printStackTrace();
+        }
+
+        return null;
     }
 
     public static void log(@NonNull final Level logLevel, @Nullable final String... messages)
