@@ -1,9 +1,13 @@
 package com.sylink.commands;
 
+import com.sylink.KodeKitten;
 import com.sylink.account.Account;
 import com.sylink.account.AccountManager;
+import com.sylink.util.Snowflake;
 import lombok.NonNull;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 /**
  * Balance command that displays the balance of an account.
@@ -59,6 +63,30 @@ public final class CmdBalance
                 System.out.println("You must input a proper account id.");
             }
         }
+    }
+
+    @Override
+    public void registerGuildCommand()
+    {
+        final Guild guild = Snowflake.getInstance().getMainGuild();
+        final String name = super.getName();
+
+        if (guild != null)
+        {
+            guild.upsertCommand(name, super.getDescription()).queue();
+        }
+        else
+        {
+            KodeKitten.logSevere(String.format("Unable to register command '%s' to the main guild", name));
+        }
+    }
+
+    @Override
+    public void registerCommand()
+    {
+        final String name = super.getName();
+
+        KodeKitten.getJdaBot().upsertCommand(name, super.getDescription()).queue();
     }
 
 }
