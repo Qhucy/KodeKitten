@@ -29,7 +29,7 @@ public final class CmdHelp
     {
         if (event.getChannel() instanceof PrivateChannel)
         {
-            event.getChannel().sendMessage(helpMessage).queue();
+            event.reply(helpMessage).queue();
         }
         else
         {
