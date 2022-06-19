@@ -219,31 +219,4 @@ public class Bot
         setStatus(null, statusMessage);
     }
 
-    /**
-     * Registers a new command with the bot through Discord's slash commands.
-     * Can take upwards of an hour to fully register.
-     */
-    public void registerCommand(@NonNull final String name, @NonNull final String description)
-    {
-        bot.upsertCommand(name, description).queue();
-    }
-
-    /**
-     * Registers a new command with the bot through the main guild's slash commands.
-     * Takes effect almost instantly.
-     */
-    public void registerGuildCommand(@NonNull final String name, @NonNull final String description)
-    {
-        final Guild guild = Snowflake.getInstance().getMainGuild();
-
-        if (guild != null)
-        {
-            guild.upsertCommand(name, description).queue();
-        }
-        else
-        {
-            KodeKitten.logSevere(String.format("Unable to register command '%s' to the main guild", name));
-        }
-    }
-
 }

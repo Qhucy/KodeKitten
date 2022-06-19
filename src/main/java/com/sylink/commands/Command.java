@@ -3,9 +3,11 @@ package com.sylink.commands;
 import com.sylink.KodeKitten;
 import com.sylink.account.Account;
 import com.sylink.account.AccountManager;
+import com.sylink.util.Snowflake;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 
 import java.util.ArrayList;
@@ -93,7 +95,7 @@ public abstract class Command
         // Only register the command to discord if it has a user implementation.
         if (command.containsCommandType(CommandType.USER))
         {
-            KodeKitten.getBot().registerCommand(command.getName(), command.getDescription());
+            command.registerCommand();
         }
 
         commands.add(command);
@@ -108,7 +110,7 @@ public abstract class Command
         // Only register the command to discord if it has a user implementation.
         if (command.containsCommandType(CommandType.USER))
         {
-            KodeKitten.getBot().registerCommand(command.getName(), command.getDescription());
+            command.registerGuildCommand();
         }
 
         commands.add(command);
@@ -239,7 +241,7 @@ public abstract class Command
     public void onUserCommand(@NonNull final SlashCommandEvent event, @NonNull final Account account,
                               @NonNull final String label, @NonNull final String[] args)
     {
-
+        // Default implementation is an empty command.
     }
 
     /**
@@ -249,6 +251,37 @@ public abstract class Command
     {
         // The default implementation if there is no implementation.
         System.out.printf("'/%s' does not have a console implementation.\n", label);
+    }
+
+    /**
+     * Registers a new command with the bot through the main guild's slash commands.
+     * Takes effect almost instantly.
+     */
+    public void registerGuildCommand()
+    {
+        // Default implementation is a basic command with a name and description.
+        final Guild guild = Snowflake.getInstance().getMainGuild();
+        final String name = getName();
+
+        if (guild != null)
+        {
+            guild.upsertCommand(name, description).queue();
+        }
+        else
+        {
+            KodeKitten.logSevere(String.format("Unable to register command '%s' to the main guild", name));
+        }
+    }
+
+    /**
+     * Registers a new command with the bot through Discord's slash commands.
+     * Can take upwards of an hour to fully register.
+     */
+    public void registerCommand()
+    {
+        final String name = getName();
+
+        KodeKitten.getJdaBot().upsertCommand(name, description).queue();
     }
 
 }
