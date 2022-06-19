@@ -1,0 +1,12 @@
+#########################
+# Discord Snowflake Ids #
+#########################
+# You can read about the TOML format at https://toml.io/en/.
+
+status_messages = [
+    "hiya :3",
+    "leetcode 🔥",
+    "sleeping 😪",
+    "learning 🪢",
+    "coding ⌨️"
+]
