@@ -4,6 +4,7 @@ import com.sylink.account.AccountManager;
 import com.sylink.commands.CmdHelp;
 import com.sylink.commands.Command;
 import com.sylink.commands.CommandHandler;
+import com.sylink.util.ConfigManager;
 import com.sylink.util.SchedulerManager;
 import com.sylink.util.Snowflake;
 import lombok.NonNull;
@@ -16,6 +17,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,28 +28,18 @@ public final class KodeKitten
 {
 
     /**
+     * -----
      * TODO
      * -----
      * <p>
-     * test account saving / loading to database (NOT IN UNIT TESTS)
-     * continue account testing with the help command
-     * think about making all database saving/loading in AccountManager instead of accounts
-     * push all to github
-     * unit testing for command
-     * timer for status messages so the status message changes every once in a while
-     * make it so the SQL statements in Account are final static fields at the top of
-     * the class so it's easier to edit in the future.
-     * <p>
-     * figure out unit tests for JDBC databases
+     * ------------
+     * UNIT TESTING
+     * ------------
+     * Command.java
+     * AccountManager.java + Account.java unit testing with JDBC databases
      * https://stackoverflow.com/questions/266370/how-do-i-unit-test-jdbc-code-in-java
-     * <p>
-     * go through code and make sure there's enough comments / clarity on things
-     * <p>
-     * ACCOUNT ROLES
-     * --------------
-     * with unit testing
-     * <p>
-     * syncRoles method in Account.java to sync account roles with the guild.
+     * Snowflake.java unit testing
+     * ConfigManager.java
      */
 
     private static final Logger logger = Logger.getLogger(KodeKitten.class.getName());
@@ -82,11 +74,16 @@ public final class KodeKitten
         logInfo(getBotUser().getName() + "#" + getBotUser().getDiscriminator() + " connected to Discord!");
 
         Snowflake.getInstance().loadFromConfig();
+        ConfigManager.getInstance().load();
         SchedulerManager.getInstance().startTimers();
         getJdaBot().addEventListener(new CommandHandler());
         registerCommands();
 
-        bot.setStatus("hiya :3");
+        // Changes the status message of the bot every 5 minutes.
+        SchedulerManager.getInstance().addTimer(() ->
+        {
+            bot.setStatus(ConfigManager.getInstance().getRandomStatusMessage());
+        }, 0, 10, TimeUnit.MINUTES);
 
         // Read console commands while the bot is running.
         readConsoleCommands();
