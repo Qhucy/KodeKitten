@@ -3,6 +3,7 @@ package com.sylink.commands;
 import com.sylink.account.Account;
 import com.sylink.account.AccountManager;
 import lombok.NonNull;
+import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 
 /**
@@ -26,9 +27,15 @@ public final class CmdHelp
     public void onUserCommand(@NonNull final SlashCommandEvent event, @NonNull final Account account,
                               @NonNull final String label, @NonNull final String[] args)
     {
-        event.reply("Check your DMs for command help!").setEphemeral(true).queue();
-
-        event.getUser().openPrivateChannel().complete().sendMessage(helpMessage).queue();
+        if (event.getChannel() instanceof PrivateChannel)
+        {
+            event.getChannel().sendMessage(helpMessage).queue();
+        }
+        else
+        {
+            event.reply("Check your DMs for command help!").setEphemeral(true).queue();
+            event.getUser().openPrivateChannel().complete().sendMessage(helpMessage).queue();
+        }
     }
 
     @Override
