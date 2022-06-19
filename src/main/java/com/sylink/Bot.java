@@ -1,5 +1,6 @@
 package com.sylink;
 
+import com.sylink.util.Snowflake;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -24,9 +25,6 @@ import java.util.Scanner;
  */
 public class Bot
 {
-
-    // Discord Snowflake of the main guild.
-    public static final long MAIN_GUILD = 976665240114696292L;
 
     // The path to the file that contains the Discord bot token.
     private static final Path TOKEN_PATH = Paths.get("token.txt");
@@ -125,14 +123,6 @@ public class Bot
         {
             return bot.getSelfUser();
         }
-    }
-
-    /**
-     * @return The instance to the main Discord guild.
-     */
-    public Guild getMainGuild()
-    {
-        return (isConnected()) ? bot.getGuildById(MAIN_GUILD) : null;
     }
 
     /**
@@ -244,7 +234,7 @@ public class Bot
      */
     public void registerGuildCommand(@NonNull final String name, @NonNull final String description)
     {
-        final Guild guild = getMainGuild();
+        final Guild guild = Snowflake.getInstance().getMainGuild();
 
         if (guild != null)
         {
