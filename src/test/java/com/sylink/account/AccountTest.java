@@ -8,8 +8,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class AccountTest
 {
 
-    // tests for saving / loading into database (not in unit tests)
-
     private Account account;
 
     @BeforeEach
