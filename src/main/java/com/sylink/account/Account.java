@@ -35,7 +35,7 @@ public class Account
     // List of permission strings for this account.
     private List<String> permissions = new ArrayList<>();
     // List of role ids for this account.
-    private List<AccountRole> roles = new ArrayList<>();
+    private List<Long> roles = new ArrayList<>();
     @Getter(AccessLevel.PUBLIC)
     private double balance = 0.0;
 
@@ -154,68 +154,25 @@ public class Account
         return !roles.isEmpty();
     }
 
-    /**
-     * @return True if the account has a given role.
-     */
-    public final boolean hasRole(@NonNull final AccountRole accountRole)
-    {
-        for (final AccountRole role : roles)
-        {
-            if (role.equals(accountRole))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @return True if the account has a given role.
-     */
     public final boolean hasRole(final long roleId)
     {
-        final AccountRole accountRole = AccountRole.fromId(roleId);
-
-        if (accountRole == null)
-        {
-            return false;
-        }
-        else
-        {
-            return hasRole(accountRole);
-        }
+        return roles.contains(roleId);
     }
 
-    /**
-     * @return True if the account has a given role.
-     */
     public final boolean hasRole(@NonNull final Role role)
     {
         return hasRole(role.getIdLong());
     }
 
-    public final void addRole(@NonNull final AccountRole accountRole)
-    {
-        if (hasRole(accountRole))
-        {
-            return;
-        }
-
-        this.roles.add(accountRole);
-        this.needsToSync = true;
-    }
-
     public final void addRole(final long roleId)
     {
-        final AccountRole accountRole = AccountRole.fromId(roleId);
-
-        if (accountRole == null)
+        if (hasRole(roleId))
         {
             return;
         }
 
-        addRole((accountRole));
+        this.roles.add(roleId);
+        this.needsToSync = true;
     }
 
     public final void addRole(@NonNull final Role role)
@@ -223,27 +180,15 @@ public class Account
         addRole(role.getIdLong());
     }
 
-    public final void removeRole(@NonNull final AccountRole accountRole)
-    {
-        if (!hasRole(accountRole))
-        {
-            return;
-        }
-
-        this.roles.remove(accountRole);
-        this.needsToSync = true;
-    }
-
     public final void removeRole(final long roleId)
     {
-        final AccountRole accountRole = AccountRole.fromId(roleId);
-
-        if (accountRole == null)
+        if (!hasRole(roleId))
         {
             return;
         }
 
-        removeRole(accountRole);
+        this.roles.remove(roleId);
+        this.needsToSync = true;
     }
 
     public final void removeRole(@NonNull final Role role)
@@ -342,10 +287,7 @@ public class Account
         {
             for (final String role : roleData.split(","))
             {
-                final long roleId = Long.parseLong(role);
-                final AccountRole accountRole = AccountRole.fromId(roleId);
-
-                roles.add(accountRole);
+                roles.add(Long.parseLong(role));
             }
         }
     }
@@ -452,17 +394,17 @@ public class Account
 
         final StringBuilder stringBuilder = new StringBuilder("'");
 
-        for (final AccountRole role : roles)
+        roles.forEach((roleId) ->
         {
             if (stringBuilder.isEmpty())
             {
-                stringBuilder.append(role.getRoleId());
+                stringBuilder.append(roleId);
             }
             else
             {
-                stringBuilder.append(role.getRoleId()).append(",");
+                stringBuilder.append(roleId).append(",");
             }
-        }
+        });
 
         return stringBuilder.append("'").toString();
     }
