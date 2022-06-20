@@ -153,7 +153,7 @@ public final class CmdDatabase
 
                                         account.setBalance(balance);
 
-                                        System.out.printf("Set account %d's balance to $%g", account.getDiscordId(), account.getBalance());
+                                        System.out.printf("Set account %d's balance to $%g\n", account.getDiscordId(), account.getBalance());
                                         break;
                                     default:
                                         System.out.println("""
