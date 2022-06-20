@@ -37,6 +37,7 @@ public final class KodeKitten
      * UNIT TESTING
      * ------------
      * testing of saving data to database
+     * show how far it gets to saving when adding new account with db cmd
      */
 
     private static final Logger logger = Logger.getLogger(KodeKitten.class.getName());
