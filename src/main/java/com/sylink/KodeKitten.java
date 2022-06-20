@@ -53,7 +53,7 @@ public final class KodeKitten
     {
         setupLogger();
 
-        // Whether or not a connection was successfully opened.
+        // Exits the program if the connection couldn't be opened.
         if (!AccountManager.getInstance().openDatabaseConnection())
         {
             System.exit(0);
