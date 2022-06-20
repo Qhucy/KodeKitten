@@ -1,10 +1,7 @@
 package com.sylink;
 
 import com.sylink.account.AccountManager;
-import com.sylink.commands.CmdBalance;
-import com.sylink.commands.CmdHelp;
-import com.sylink.commands.Command;
-import com.sylink.commands.CommandHandler;
+import com.sylink.commands.*;
 import com.sylink.util.ConfigManager;
 import com.sylink.util.SchedulerManager;
 import com.sylink.util.Snowflake;
@@ -31,13 +28,15 @@ public final class KodeKitten
      * -----
      * TODO
      * -----
-     * fix help command back to normal
+     * add ability to set and add to account data more easily
+     * add ability to check account data
      * finish balance command
      * add coinflip command
      * add role check command in console only
      * ------------
      * UNIT TESTING
      * ------------
+     * testing of saving data to database
      */
 
     private static final Logger logger = Logger.getLogger(KodeKitten.class.getName());
@@ -129,6 +128,7 @@ public final class KodeKitten
     {
         Command.registerGuildCommand(new CmdHelp());
         Command.registerGuildCommand(new CmdBalance());
+        Command.registerGuildCommand(new CmdDatabase());
     }
 
     /**
