@@ -2,6 +2,7 @@ package com.sylink.util;
 
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.sylink.KodeKitten;
+import lombok.NonNull;
 
 import java.io.File;
 import java.util.List;
@@ -35,11 +36,11 @@ public final class ConfigManager
     /**
      * Loads all configuration data from the config file.
      */
-    public void load()
+    public void load(@NonNull final String resourcePath, @NonNull final String configPath)
     {
-        createConfigIfNotExist();
+        createConfigIfNotExist(resourcePath, configPath);
 
-        try (final FileConfig fileConfig = FileConfig.of(CONFIG_PATH))
+        try (final FileConfig fileConfig = FileConfig.of(configPath))
         {
             fileConfig.load();
 
@@ -47,15 +48,30 @@ public final class ConfigManager
         }
     }
 
+    public void load()
+    {
+        load(RESOURCE_PATH, CONFIG_PATH);
+    }
+
     /**
      * Generates a default toml config if it doesn't exist in the program's directory.
      */
+    private void createConfigIfNotExist(@NonNull final String resourcePath, @NonNull final String configPath)
+    {
+        if (!(new File(configPath)).exists())
+        {
+            KodeKitten.saveResource(resourcePath, configPath);
+        }
+    }
+
     private void createConfigIfNotExist()
     {
-        if (!(new File(CONFIG_PATH)).exists())
-        {
-            KodeKitten.saveResource(RESOURCE_PATH, CONFIG_PATH);
-        }
+        createConfigIfNotExist(RESOURCE_PATH, CONFIG_PATH);
+    }
+
+    public List<String> getStatusMessages()
+    {
+        return statusMessages;
     }
 
     /**
