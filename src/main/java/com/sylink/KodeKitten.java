@@ -38,8 +38,7 @@ public final class KodeKitten
      * ------------
      * UNIT TESTING
      * ------------
-     * AccountManager.java + Account.java unit testing with JDBC databases
-     * https://stackoverflow.com/questions/266370/how-do-i-unit-test-jdbc-code-in-java
+     * AccountManager saving unit testing
      */
 
     private static final Logger logger = Logger.getLogger(KodeKitten.class.getName());
