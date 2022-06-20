@@ -38,7 +38,6 @@ public final class KodeKitten
      * ------------
      * UNIT TESTING
      * ------------
-     * AccountManager saving unit testing
      */
 
     private static final Logger logger = Logger.getLogger(KodeKitten.class.getName());
