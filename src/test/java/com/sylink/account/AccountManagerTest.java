@@ -74,6 +74,20 @@ class AccountManagerTest
         assertTrue(accountManager.existsInDatabase(10L));
     }
 
+    @Test
+    void accountExistsIfInMemory()
+    {
+        accountManager.getAccount(20L, true);
+
+        assertTrue(accountManager.exists(20L));
+    }
+
+    @Test
+    void accountExistsIfInDatabase()
+    {
+        assertTrue(accountManager.existsInDatabase(10L));
+    }
+
     @AfterAll
     static void afterAll()
     {

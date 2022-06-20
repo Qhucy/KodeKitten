@@ -148,6 +148,9 @@ public final class AccountManager
         return account.existsInDatabase(connection);
     }
 
+    /**
+     * @return True if the given discord id exists in the SQL Database.
+     */
     public boolean existsInDatabase(final long discordId)
     {
         final Account account = getAccount(discordId);
@@ -169,6 +172,14 @@ public final class AccountManager
         }
 
         return false;
+    }
+
+    /**
+     * @return True if the account exists in memory OR in the SQL Database.
+     */
+    public boolean exists(final long discordId)
+    {
+        return existsInMemory(discordId) || existsInDatabase(discordId);
     }
 
     /**
@@ -255,6 +266,26 @@ public final class AccountManager
         finally
         {
             connection = null;
+        }
+    }
+
+    /**
+     * Executes a given query to the SQL Database.
+     */
+    public void executeQuery(@NonNull final String sqlQuery)
+    {
+        if (connection == null)
+        {
+            return;
+        }
+
+        try (final Statement statement = connection.createStatement())
+        {
+            statement.executeQuery(sqlQuery);
+        }
+        catch (final SQLException exception)
+        {
+            exception.printStackTrace();
         }
     }
 
