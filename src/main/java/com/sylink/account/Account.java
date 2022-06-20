@@ -406,7 +406,7 @@ public class Account
 
         final StringBuilder stringBuilder = new StringBuilder("'");
 
-        for (final String permission : permissions)
+        permissions.forEach((permission) ->
         {
             if (stringBuilder.isEmpty())
             {
@@ -416,7 +416,7 @@ public class Account
             {
                 stringBuilder.append(permission).append(",");
             }
-        }
+        });
 
         return stringBuilder.append("'").toString();
     }
