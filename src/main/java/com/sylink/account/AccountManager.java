@@ -3,6 +3,7 @@ package com.sylink.account;
 import com.sylink.KodeKitten;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -19,6 +20,7 @@ public final class AccountManager
     private static AccountManager accountManager = null;
     // JDBC URL to the accounts database.
     private final static String DATABASE_URL = "jdbc:sqlite:database.db";
+    // The statement used to create a new table if one does not exist.
     private final static String SQL_TABLE = """
             CREATE TABLE IF NOT EXISTS accounts
             (
@@ -49,10 +51,12 @@ public final class AccountManager
     /**
      * Returns the account from its discord id.
      * If it does not exist in the internal database, it loads it from the database file.
+     *
+     * @param createNewIfNotFound Creates a new account if it doesn't exist in the database.
      */
-    public Account getAccount(final long discordId)
+    public Account getAccount(final long discordId, boolean createNewIfNotFound)
     {
-        if (accounts.containsKey(discordId))
+        if (existsInMemory(discordId))
         {
             final Account account = accounts.get(discordId);
 
@@ -68,8 +72,14 @@ public final class AccountManager
         }
 
         final Account account = new Account(discordId);
+        final boolean existsInDatabase = account.existsInDatabase(connection);
 
-        if (account.existsInDatabase(connection) && !account.loadFromDatabase(connection))
+        if (!existsInDatabase && !createNewIfNotFound)
+        {
+            return null;
+        }
+
+        if (existsInDatabase && !account.loadFromDatabase(connection))
         {
             KodeKitten.logWarning(String.format("Unable to load account data for discord id %d in the accounts " +
                     "database.", discordId));
@@ -79,6 +89,11 @@ public final class AccountManager
         accounts.put(discordId, account);
 
         return account;
+    }
+
+    public Account getAccount(final long discordId)
+    {
+        return getAccount(discordId, true);
     }
 
     /**
@@ -176,24 +191,27 @@ public final class AccountManager
     /**
      * Returns whether a successful connection with the accounts database was created.
      */
-    public boolean openDatabaseConnection()
+    public boolean openDatabaseConnection(@NonNull final String databaseUrl, @Nullable final String sqlTableStatement)
     {
         try
         {
             Class.forName("org.sqlite.JDBC");
 
-            connection = DriverManager.getConnection(DATABASE_URL);
+            connection = DriverManager.getConnection(databaseUrl);
             connectionLastActivity = System.currentTimeMillis();
 
-            try (final Statement statement = connection.createStatement())
+            if (sqlTableStatement != null)
             {
-                statement.executeUpdate(SQL_TABLE);
+                try (final Statement statement = connection.createStatement())
+                {
+                    statement.executeUpdate(sqlTableStatement);
+                }
             }
             return true;
         }
         catch (final SQLException sqlException)
         {
-            KodeKitten.logSevere("Unable to access 'database.db' database");
+            KodeKitten.logSevere("Unable to access database");
             sqlException.printStackTrace();
             return false;
         }
@@ -203,6 +221,16 @@ public final class AccountManager
             classNotFoundException.printStackTrace();
             return false;
         }
+    }
+
+    public boolean openDatabaseConnection(@NonNull final String databaseUrl)
+    {
+        return openDatabaseConnection(databaseUrl, SQL_TABLE);
+    }
+
+    public boolean openDatabaseConnection()
+    {
+        return openDatabaseConnection(DATABASE_URL, SQL_TABLE);
     }
 
     /**
