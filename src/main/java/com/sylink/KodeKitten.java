@@ -30,9 +30,10 @@ public final class KodeKitten
      * -----
      * add ability to set and add to account data more easily
      * add ability to check account data
+     * add command to talk in channels thru console
+     * add role check command in console only
      * finish balance command
      * add coinflip command
-     * add role check command in console only
      * ------------
      * UNIT TESTING
      * ------------
