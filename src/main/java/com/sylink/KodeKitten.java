@@ -37,7 +37,8 @@ public final class KodeKitten
      * UNIT TESTING
      * ------------
      * testing of saving data to database
-     * show how far it gets to saving when adding new account with db cmd
+     * make sure to remove column at the end of testing
+     * test for saving / loading EACH piece of data in an account
      */
 
     private static final Logger logger = Logger.getLogger(KodeKitten.class.getName());
@@ -58,7 +59,8 @@ public final class KodeKitten
             return;
         }
 
-        bot = new Bot(Bot.findToken());
+        // Retrieves the token from startup arguments otherwise finds it elsewhere.
+        bot = new Bot((args.length > 0) ? args[0] : Bot.findToken());
 
         bot.connect();
 
