@@ -130,7 +130,7 @@ public abstract class Command
     private final String permission;
 
     public Command(@NonNull final List<CommandType> commandTypes, @NonNull final String description,
-                   @Nullable final String usage, final String permission, @NonNull final String... labels)
+                   @Nullable final String usage, @Nullable final String permission, @NonNull final String... labels)
     {
         this.commandTypes = commandTypes;
         this.description = description;
@@ -140,7 +140,7 @@ public abstract class Command
     }
 
     public Command(@NonNull final CommandType commandType, @NonNull final String description,
-                   @Nullable final String usage, final String permission, @NonNull final String... labels)
+                   @Nullable final String usage, @Nullable final String permission, @NonNull final String... labels)
     {
         this.commandTypes = new ArrayList<>();
         this.commandTypes.add(commandType);
@@ -182,7 +182,7 @@ public abstract class Command
      */
     public final String getUsage(@NonNull final String label)
     {
-        return String.format("Invalid syntax: </%s %s>", label, usage);
+        return String.format("/%s %s", label, usage);
     }
 
     /**
