@@ -211,7 +211,6 @@ public class Bot
         }
 
         bot.getPresence().setActivity(Activity.of(activityType, statusMessage));
-        KodeKitten.logInfo("Changed status message to '" + statusMessage + "'");
     }
 
     public void setStatus(@Nullable final String statusMessage)
