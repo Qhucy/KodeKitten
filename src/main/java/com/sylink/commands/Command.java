@@ -10,6 +10,7 @@ import lombok.NonNull;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -121,7 +122,7 @@ public abstract class Command
     @Getter(AccessLevel.PUBLIC)
     private final String description;
     // Usage information for the command.
-    private final String[] usage;
+    private final String usage;
     // The properties of the command.
     private final List<CommandType> commandTypes;
     // The permission required to access the command.
@@ -129,11 +130,23 @@ public abstract class Command
     private final String permission;
 
     public Command(@NonNull final List<CommandType> commandTypes, @NonNull final String description,
-                   @NonNull final String[] usage, final String permission, @NonNull final String... labels)
+                   @Nullable final String usage, final String permission, @NonNull final String... labels)
     {
         this.commandTypes = commandTypes;
         this.description = description;
-        this.usage = usage;
+        this.usage = (usage == null) ? "" : usage;
+        this.permission = permission;
+        this.labels = Arrays.asList(labels);
+    }
+
+    public Command(@NonNull final CommandType commandType, @NonNull final String description,
+                   @Nullable final String usage, final String permission, @NonNull final String... labels)
+    {
+        this.commandTypes = new ArrayList<>();
+        this.commandTypes.add(commandType);
+
+        this.description = description;
+        this.usage = (usage == null) ? "" : usage;
         this.permission = permission;
         this.labels = Arrays.asList(labels);
     }
@@ -169,34 +182,13 @@ public abstract class Command
      */
     public final void sendUsage(@NonNull final SlashCommandEvent event, @NonNull final String label)
     {
-        if (usage == null || usage.length == 0)
+        if (usage == null)
         {
             event.reply("There is no defined usage for this command.").queue();
             return;
         }
 
-        if (usage.length == 1)
-        {
-            event.reply(String.format("Invalid syntax: </%s>", usage[0].replace("{label}", label))).queue();
-        }
-        else
-        {
-            final StringBuilder stringBuilder = new StringBuilder();
-
-            for (String usageArgument : usage)
-            {
-                usageArgument = usageArgument.replace("{label}", label);
-
-                if (!stringBuilder.isEmpty())
-                {
-                    stringBuilder.append("\n  ");
-                }
-
-                stringBuilder.append(usageArgument);
-            }
-
-            event.reply(String.format("**Showing help for /%s**:\n  %s", label, stringBuilder)).queue();
-        }
+        event.reply(String.format("Invalid syntax: </%s %s>", label, usage)).queue();
     }
 
     /**
@@ -204,34 +196,13 @@ public abstract class Command
      */
     public final void sendUsage(@NonNull final String label)
     {
-        if (usage == null || usage.length == 0)
+        if (usage == null)
         {
             System.out.println("There is no defined usage for this command.");
             return;
         }
 
-        if (usage.length == 1)
-        {
-            System.out.printf("Invalid syntax: </%s>\n", usage[0].replace("{label}", label));
-        }
-        else
-        {
-            final StringBuilder stringBuilder = new StringBuilder();
-
-            for (String usageArgument : usage)
-            {
-                usageArgument = usageArgument.replace("{label}", label);
-
-                if (!stringBuilder.isEmpty())
-                {
-                    stringBuilder.append("\n  ");
-                }
-
-                stringBuilder.append(usageArgument);
-            }
-
-            System.out.printf("**Showing help for /%s**:\n  %s", label, stringBuilder);
-        }
+        System.out.printf("Invalid syntax: </%s %s>\n", label, usage);
     }
 
     /**
