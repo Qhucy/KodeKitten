@@ -31,7 +31,10 @@ public final class KodeKitten
      * -----
      * TODO
      * -----
-     * <p>
+     * fix help command back to normal
+     * finish balance command
+     * add coinflip command
+     * add role check command in console only
      * ------------
      * UNIT TESTING
      * ------------
