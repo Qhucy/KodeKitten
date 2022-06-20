@@ -342,9 +342,9 @@ public class Account
      */
     protected boolean saveToDatabase(@NonNull final Connection connection)
     {
-        if (!needsToSync)
+        if (existsInDatabase(connection) && !needsToSync)
         {
-            return true;
+            return false;
         }
 
         try (final Statement statement = connection.createStatement())
