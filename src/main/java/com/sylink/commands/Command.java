@@ -178,6 +178,14 @@ public abstract class Command
     }
 
     /**
+     * @return The usage string for the command given the command label used.
+     */
+    public final String getUsage(@NonNull final String label)
+    {
+        return String.format("Invalid syntax: </%s %s>", label, usage);
+    }
+
+    /**
      * Sends the usage syntax message to the slash command event for the command.
      */
     public final void sendUsage(@NonNull final SlashCommandEvent event, @NonNull final String label)
@@ -188,7 +196,7 @@ public abstract class Command
             return;
         }
 
-        event.reply(String.format("Invalid syntax: </%s %s>", label, usage)).queue();
+        event.reply(getUsage(label)).queue();
     }
 
     /**
@@ -202,7 +210,7 @@ public abstract class Command
             return;
         }
 
-        System.out.printf("Invalid syntax: </%s %s>\n", label, usage);
+        System.out.println(getUsage(label));
     }
 
     /**
