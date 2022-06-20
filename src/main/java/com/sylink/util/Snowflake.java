@@ -43,32 +43,39 @@ public final class Snowflake
     /**
      * Loads all data from the snowflake toml file into the snowflakes map.
      */
-    public void loadFromConfig()
+    public void loadFromConfig(@NonNull final String resourcePath, @NonNull final String configPath)
     {
         snowflakes.clear();
 
-        createConfigIfNotExist();
+        createConfigIfNotExist(resourcePath, configPath);
 
-        try (final FileConfig fileConfig = FileConfig.of(CONFIG_PATH))
+        try (final FileConfig fileConfig = FileConfig.of(configPath))
         {
             fileConfig.load();
 
             loadConfigSection(fileConfig, null);
         }
+    }
 
-        // Load the main guild into internal data.
-        mainGuild = KodeKitten.getJdaBot().getGuildById(getGuild("id"));
+    public void loadFromConfig()
+    {
+        loadFromConfig(RESOURCE_PATH, CONFIG_PATH);
     }
 
     /**
      * Generates a default snowflake toml config if it doesn't exist in the program's directory.
      */
+    private void createConfigIfNotExist(@NonNull final String resourcePath, @NonNull final String configPath)
+    {
+        if (!(new File(configPath)).exists())
+        {
+            KodeKitten.saveResource(resourcePath, configPath);
+        }
+    }
+
     private void createConfigIfNotExist()
     {
-        if (!(new File(CONFIG_PATH)).exists())
-        {
-            KodeKitten.saveResource(RESOURCE_PATH, CONFIG_PATH);
-        }
+        createConfigIfNotExist(RESOURCE_PATH, CONFIG_PATH);
     }
 
     /**
@@ -90,9 +97,17 @@ public final class Snowflake
             }
             else
             {
-                snowflakes.put(parentKey + entry.getKey(), entry.getValue());
+                snowflakes.put(parentKey + entry.getKey(), (long) ((int) entry.getValue()));
             }
         }
+    }
+
+    /**
+     * Loads the main guild object into memory.
+     */
+    public void loadMainGuild()
+    {
+        mainGuild = KodeKitten.getJdaBot().getGuildById(getGuild("id"));
     }
 
     /**
