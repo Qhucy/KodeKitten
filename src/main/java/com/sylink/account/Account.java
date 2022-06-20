@@ -342,7 +342,9 @@ public class Account
      */
     protected boolean saveToDatabase(@NonNull final Connection connection)
     {
-        if (existsInDatabase(connection) && !needsToSync)
+        final boolean existsInDatabase = existsInDatabase(connection);
+
+        if (existsInDatabase && !needsToSync)
         {
             return false;
         }
@@ -350,7 +352,7 @@ public class Account
         try (final Statement statement = connection.createStatement())
         {
             // Insert into database as a new column.
-            if (!existsInDatabase(connection))
+            if (!existsInDatabase)
             {
                 statement.executeUpdate(String.format(SQL_INSERT_QUERY, discordId, getPermissionData(), getRoleData()
                         , balance));
