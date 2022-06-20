@@ -20,7 +20,7 @@ public final class CmdHelp
 
     public CmdHelp()
     {
-        super(CommandType.universal(), "Displays all commands", new String[]{"{label}"}, null, "help", "?");
+        super(CommandType.universal(), "Displays all commands", null, null, "help", "?");
     }
 
     @Override

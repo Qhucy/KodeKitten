@@ -7,7 +7,6 @@ import com.sylink.util.Snowflake;
 import lombok.NonNull;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 /**
  * Balance command that displays the balance of an account.
@@ -18,8 +17,8 @@ public final class CmdBalance
 
     public CmdBalance()
     {
-        super(CommandType.universal(), "Displays the balance of an account", new String[]{"{label} [user]"}, null,
-                "bal", "money", "dollars");
+        super(CommandType.universal(), "Displays the balance of an account", "[user]", null, "bal", "money",
+                "dollars");
     }
 
     @Override
@@ -58,7 +57,8 @@ public final class CmdBalance
                 {
                     System.out.printf("%d's balance is $%g\n", account.getDiscordId(), account.getBalance());
                 }
-            } catch (final NumberFormatException exception)
+            }
+            catch (final NumberFormatException exception)
             {
                 System.out.println("You must input a proper account id.");
             }
