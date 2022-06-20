@@ -1,0 +1,16 @@
+[guild]
+id = 1
+
+[roles]
+member = 2
+admin = 3
+
+[channels]
+
+[channels.text]
+general = 4
+bot_commands = 5
+
+[channels.voice]
+lounge = 6
+music = 7
