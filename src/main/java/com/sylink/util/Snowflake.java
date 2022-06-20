@@ -97,7 +97,7 @@ public final class Snowflake
             }
             else
             {
-                snowflakes.put(parentKey + entry.getKey(), (long) ((int) entry.getValue()));
+                snowflakes.put(parentKey + entry.getKey(), entry.getLong());
             }
         }
     }
