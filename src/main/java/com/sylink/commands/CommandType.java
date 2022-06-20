@@ -35,4 +35,12 @@ public enum CommandType
         return Arrays.asList(values());
     }
 
+    /**
+     * @return Every CommandType for user functionality only in a list.
+     */
+    public static List<CommandType> userUniversal()
+    {
+        return Arrays.asList(USER, GUILD, DM);
+    }
+
 }
