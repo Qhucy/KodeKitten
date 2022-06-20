@@ -35,7 +35,6 @@ public final class KodeKitten
      * ------------
      * UNIT TESTING
      * ------------
-     * Command.java
      * AccountManager.java + Account.java unit testing with JDBC databases
      * https://stackoverflow.com/questions/266370/how-do-i-unit-test-jdbc-code-in-java
      * Snowflake.java unit testing
@@ -75,6 +74,7 @@ public final class KodeKitten
 
         // Load all needed data.
         Snowflake.getInstance().loadFromConfig();
+        Snowflake.getInstance().loadMainGuild();
         ConfigManager.getInstance().load();
         SchedulerManager.getInstance().startTimers();
         getJdaBot().addEventListener(new CommandHandler());
