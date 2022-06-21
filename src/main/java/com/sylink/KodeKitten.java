@@ -25,21 +25,18 @@ public final class KodeKitten
 {
 
     /**
-     * -----
-     * TODO
-     * -----
+     * ========
+     * | TODO |
+     * ========
      * add ability to set and add to account data more easily
      * add ability to check account data
      * add command to talk in channels thru console
      * add role check command in console only
      * finish balance command
      * add coinflip command
-     * ------------
-     * UNIT TESTING
-     * ------------
-     * testing of saving data to database
-     * make sure to remove column at the end of testing
-     * test for saving / loading EACH piece of data in an account
+     * ================
+     * | UNIT TESTING |
+     * ================
      */
 
     private static final Logger logger = Logger.getLogger(KodeKitten.class.getName());
