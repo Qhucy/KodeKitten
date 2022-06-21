@@ -24,6 +24,7 @@ public final class CmdDatabase
                   exists [id]: Prints whether the account id exists in the database and memory.
                   query [sqlQuery]: Executes the query to the SQL database.
                   update [id] [data] [value]: Updates account data in memory.
+                  check [id] [data]: Checks the value of a certain piece of account data.
                 """, null, "database", "db", "sql");
     }
 
@@ -122,6 +123,35 @@ public final class CmdDatabase
                             System.out.println("This account does not exist in the SQL Database");
                         }
                         break;
+                    case "check":
+                        if (!AccountManager.getInstance().exists(discordId))
+                        {
+                            System.out.println("This account does not exist in data");
+                        }
+                        else
+                        {
+                            account = AccountManager.getInstance().getAccount(discordId, false);
+
+                            if (account == null)
+                            {
+                                System.out.println("Unable to load the account from the database");
+                            }
+                            else
+                            {
+                                switch (args[2].toLowerCase(Locale.ROOT))
+                                {
+                                    case "balance":
+                                    case "bal":
+                                        System.out.printf("This account's balance is $%g\n", account.getBalance());
+                                        break;
+                                    default:
+                                        System.out.println("""
+                                                Available keys to check:
+                                                  balance
+                                                """);
+                                }
+                            }
+                        }
                     case "update":
                         if (!AccountManager.getInstance().exists(discordId))
                         {
@@ -140,6 +170,7 @@ public final class CmdDatabase
                                 switch(args[2].toLowerCase(Locale.ROOT))
                                 {
                                     case "balance":
+                                    case "bal":
                                         double balance;
 
                                         try
@@ -160,7 +191,6 @@ public final class CmdDatabase
                                                 Available keys to update:
                                                   balance [double]
                                                 """);
-                                        break;
                                 }
                             }
                         }
