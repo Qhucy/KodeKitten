@@ -56,7 +56,7 @@ class AccountManagerTest
         assertNotNull(account);
         assertTrue(accountManager.existsInMemory(11L));
 
-        accountManager.removeFromMemory(account);
+        accountManager.deleteFromMemory(account);
 
         assertFalse(accountManager.existsInMemory(11L));
     }
