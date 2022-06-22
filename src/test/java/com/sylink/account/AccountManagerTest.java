@@ -49,6 +49,19 @@ class AccountManagerTest
     }
 
     @Test
+    void removingAccountFromMemory()
+    {
+        Account account = accountManager.getAccount(11L);
+
+        assertNotNull(account);
+        assertTrue(accountManager.existsInMemory(11L));
+
+        accountManager.removeFromMemory(account);
+
+        assertFalse(accountManager.existsInMemory(11L));
+    }
+
+    @Test
     void flushingRemovesAccountFromMemory()
     {
         Account account = accountManager.getAccount(4L);

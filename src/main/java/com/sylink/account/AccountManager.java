@@ -116,6 +116,19 @@ public final class AccountManager
     }
 
     /**
+     * Removes a given account from memory.
+     */
+    public void removeFromMemory(final long discordId)
+    {
+        accounts.remove(discordId);
+    }
+
+    public void removeFromMemory(@NonNull final Account account)
+    {
+        removeFromMemory(account.getDiscordId());
+    }
+
+    /**
      * Saves a given account to the SQL database.
      *
      * @return True if the account was successfully saved to the database.
