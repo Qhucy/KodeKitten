@@ -98,6 +98,35 @@ public final class AccountManager
     }
 
     /**
+     * Loads an account's data from the database.
+     *
+     * @return True if the account was loaded.
+     */
+    public boolean loadFromDatabase(final long discordId)
+    {
+        final Account account;
+
+        if (existsInMemory(discordId))
+        {
+            account = getAccount(discordId);
+            account.loadFromDatabase(connection);
+
+            return true;
+        }
+        else
+        {
+            account = getAccount(discordId, false);
+
+            return account != null;
+        }
+    }
+
+    public boolean loadFromDatabase(@NonNull final Account account)
+    {
+        return loadFromDatabase(account.getDiscordId());
+    }
+
+    /**
      * Saves an account to the database and removes it from memory.
      *
      * @param keepIfUnableToSave If true, doesn't remove the account from memory if it was unable to be saved to the

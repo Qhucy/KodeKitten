@@ -15,7 +15,7 @@ class AccountManagerTest
     @BeforeAll
     static void setUpAll()
     {
-        accountManager = new AccountManager();
+        accountManager = AccountManager.getInstance();
 
         accountManager.openDatabaseConnection(DATABASE_URL);
     }
@@ -45,6 +45,41 @@ class AccountManagerTest
         assertEquals(10L, account.getDiscordId());
         assertTrue(account.hasPermission("admin"));
         assertTrue(account.hasRole(10L));
+        assertEquals(10.0, account.getBalance());
+    }
+
+    @Test
+    void loadingExistingAccountFromDatabase()
+    {
+        Account account = accountManager.getAccount(10L);
+
+        account.setBalance(20.0);
+
+        assertEquals(20.0, account.getBalance());
+        assertTrue(accountManager.existsInMemory(10L));
+
+        assertTrue(accountManager.loadFromDatabase(10L));
+
+        assertEquals(10.0, account.getBalance());
+    }
+
+    @Test
+    void loadingNewAccountFromDatabase()
+    {
+        if (accountManager.existsInMemory(10L))
+        {
+            accountManager.deleteFromMemory(10L);
+        }
+
+        assertFalse(accountManager.existsInMemory(10L));
+
+        accountManager.loadFromDatabase(10L);
+
+        assertTrue(accountManager.existsInMemory(10L));
+
+        Account account = accountManager.getAccount(10L);
+
+        assertNotNull(account);
         assertEquals(10.0, account.getBalance());
     }
 
@@ -265,9 +300,9 @@ class AccountManagerTest
     @AfterAll
     static void afterAll()
     {
-        // Id 100 is used for saving / loading tests so we need to remove it so it
-        // does not impact the result of tests when re-run.
-        accountManager.executeQuery("DELETE FROM accounts WHERE id = 100");
+        // Id 100 & 4 are used for saving during tests and need to be deleted at the end.
+        accountManager.deleteFromDatabase(100L);
+        accountManager.deleteFromDatabase(4L);
 
         accountManager.closeDatabaseConnection();
     }
