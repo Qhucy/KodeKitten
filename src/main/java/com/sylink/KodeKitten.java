@@ -28,6 +28,7 @@ public final class KodeKitten
      * ========
      * | TODO |
      * ========
+     * move all database material from account to account manager
      * add command to talk in channels thru console
      * add role check command in console only
      * finish balance command
