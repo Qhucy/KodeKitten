@@ -110,6 +110,11 @@ public final class AccountManager
         }
     }
 
+    public void flushFromMemory(@NonNull final Account account)
+    {
+        flushFromMemory(account, true);
+    }
+
     /**
      * Saves a given account to the SQL database.
      *
