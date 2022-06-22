@@ -49,7 +49,7 @@ class AccountManagerTest
     }
 
     @Test
-    void removingAccountFromMemory()
+    void deletingAccountFromMemory()
     {
         Account account = accountManager.getAccount(11L);
 
@@ -73,6 +73,41 @@ class AccountManagerTest
         accountManager.flushFromMemory(account, false);
 
         assertFalse(accountManager.existsInMemory(4L));
+    }
+
+    @Test
+    void deletingAccountFromDatabase()
+    {
+        Account account = accountManager.getAccount(200L);
+
+        assertNotNull(account);
+        assertTrue(accountManager.existsInMemory(200L));
+
+        accountManager.saveToDatabase(account);
+
+        assertTrue(accountManager.existsInDatabase(200L));
+
+        accountManager.deleteFromDatabase(200L);
+
+        assertFalse(accountManager.existsInDatabase(200L));
+    }
+
+    @Test
+    void deletingAccountEntirely()
+    {
+        Account account = accountManager.getAccount(300L);
+
+        assertNotNull(account);
+        assertTrue(accountManager.existsInMemory(300L));
+
+        accountManager.saveToDatabase(account);
+
+        assertTrue(accountManager.existsInDatabase(300L));
+
+        accountManager.delete(300L);
+
+        assertFalse(accountManager.existsInMemory(300L));
+        assertFalse(accountManager.existsInDatabase(300L));
     }
 
     @Test
