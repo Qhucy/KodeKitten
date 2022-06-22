@@ -35,7 +35,6 @@ public final class KodeKitten
      * ================
      * | UNIT TESTING |
      * ================
-     * AccountManager.java delete from memory, database methods
      * CmdDatabase
      */
 
