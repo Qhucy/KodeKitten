@@ -30,6 +30,7 @@ public final class KodeKitten
      * ========
      * move all database material from account to account manager
      * review all code for the entire program so far
+     * figure out way to unit test user commands
      * add command to talk in channels thru console
      * add role check command in console only
      * finish balance command
@@ -37,7 +38,7 @@ public final class KodeKitten
      * ================
      * | UNIT TESTING |
      * ================
-     * CmdDatabase - finish unit testing errors and rest of commands
+     * CmdDatabase - finish rest of commands
      */
 
     private static final Logger logger = Logger.getLogger(KodeKitten.class.getName());
