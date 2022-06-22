@@ -473,4 +473,10 @@ public class Account
         return stringBuilder.append("'").toString();
     }
 
+    @Override
+    public final String toString()
+    {
+        return "Account(" + discordId + ")";
+    }
+
 }
