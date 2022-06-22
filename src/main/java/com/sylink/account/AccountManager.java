@@ -30,6 +30,7 @@ public final class AccountManager
                 balance DOUBLE NOT NULL DEFAULT 0.0
             );
             """;
+    private final static String SQL_DELETE = "DELETE FROM accounts WHERE id = %d";
 
     public static AccountManager getInstance()
     {
@@ -118,14 +119,44 @@ public final class AccountManager
     /**
      * Removes a given account from memory.
      */
-    public void removeFromMemory(final long discordId)
+    public void deleteFromMemory(final long discordId)
     {
         accounts.remove(discordId);
     }
 
-    public void removeFromMemory(@NonNull final Account account)
+    public void deleteFromMemory(@NonNull final Account account)
     {
-        removeFromMemory(account.getDiscordId());
+        deleteFromMemory(account.getDiscordId());
+    }
+
+    /**
+     * Deletes the given account id from the database.
+     */
+    public void deleteFromDatabase(final long discordId)
+    {
+        if (existsInDatabase(discordId))
+        {
+            executeQuery(String.format(SQL_DELETE, discordId));
+        }
+    }
+
+    public void deleteFromDatabase(@NonNull final Account account)
+    {
+        deleteFromDatabase(account.getDiscordId());
+    }
+
+    /**
+     * Deletes the given account id from the database AND from memory.
+     */
+    public void delete(final long discordId)
+    {
+        deleteFromDatabase(discordId);
+        deleteFromMemory(discordId);
+    }
+
+    public void delete(@NonNull final Account account)
+    {
+        delete(account.getDiscordId());
     }
 
     /**
