@@ -63,7 +63,10 @@ class CmdDatabaseTest
     @Test
     void saveAccount()
     {
-        accountManager.deleteFromDatabase(44L);
+        if (accountManager.existsInDatabase(44L))
+        {
+            accountManager.deleteFromDatabase(44L);
+        }
 
         Account account = accountManager.getAccount(44L);
 
@@ -88,7 +91,58 @@ class CmdDatabaseTest
     @Test
     void flushAccount()
     {
+        if (accountManager.existsInDatabase(44L))
+        {
+            accountManager.deleteFromDatabase(44L);
+        }
 
+        Account account = accountManager.getAccount(44L);
+
+        account.setBalance(7.0);
+
+        assertFalse(accountManager.existsInDatabase(44L));
+        assertTrue(accountManager.existsInMemory(44L));
+
+        Command.runCommands("db", new String[] {"flush", "44"});
+
+        assertTrue(accountManager.existsInDatabase(44L));
+        assertFalse(accountManager.existsInMemory(44L));
+
+        accountManager.loadFromDatabase(44L);
+
+        assertTrue(accountManager.existsInMemory(44L));
+
+        account = accountManager.getAccount(44L);
+
+        assertNotNull(account);
+        assertEquals(7.0, account.getBalance());
+    }
+
+    @Test
+    void deleteAccount()
+    {
+        Account account = accountManager.getAccount(44L);
+
+        assertNotNull(account);
+
+        accountManager.saveToDatabase(account);
+
+        assertTrue(accountManager.existsInDatabase(44L));
+        assertTrue(accountManager.existsInMemory(44L));
+
+        Command.runCommands("db", new String[] {"delete", "44"});
+
+        assertFalse(accountManager.existsInDatabase(44L));
+        assertFalse(accountManager.existsInMemory(44L));
+    }
+
+    @Test
+    void deleteAccountWhenNotExist()
+    {
+        Command.runCommands("db", new String[] {"delete", "111"});
+
+        assertFalse(accountManager.existsInDatabase(111L));
+        assertFalse(accountManager.existsInMemory(111L));
     }
 
     @AfterAll
