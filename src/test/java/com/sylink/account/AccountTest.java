@@ -210,4 +210,34 @@ class AccountTest
         assertFalse(account.hasPermission("admin"));
     }
 
+    @Test
+    void clearingPermissions()
+    {
+        account.addPermission("admin");
+
+        assertTrue(account.hasPermissions());
+        assertTrue(account.hasPermission("admin"));
+
+        account.clearPermissions();
+
+        assertFalse(account.hasPermissions());
+        assertFalse(account.hasPermission("admin"));
+        assertEquals(0, account.getPermissions().size());
+    }
+
+    @Test
+    void clearingRoles()
+    {
+        account.addRole(1L);
+
+        assertTrue(account.hasRoles());
+        assertTrue(account.hasRole(1L));
+
+        account.clearRoles();
+
+        assertFalse(account.hasRoles());
+        assertFalse(account.hasRole(1L));
+        assertEquals(0, account.getRoles().size());
+    }
+
 }

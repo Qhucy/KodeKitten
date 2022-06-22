@@ -177,6 +177,14 @@ public class Account
     }
 
     /**
+     * Removes all permissions from the account.
+     */
+    public final void clearPermissions()
+    {
+        permissions.clear();
+    }
+
+    /**
      * @return True if the account has at least 1 role.
      */
     public final boolean hasRoles()
@@ -224,6 +232,14 @@ public class Account
     public final void removeRole(@NonNull final Role role)
     {
         removeRole(role.getIdLong());
+    }
+
+    /**
+     * Clears all roles from the account.
+     */
+    public final void clearRoles()
+    {
+        roles.clear();
     }
 
     /**
