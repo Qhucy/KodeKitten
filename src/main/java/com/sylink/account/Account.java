@@ -93,6 +93,13 @@ public class Account
         return guild.retrieveMemberById(discordId).complete();
     }
 
+    public final Member getMember()
+    {
+        final Guild guild = Snowflake.getInstance().getMainGuild();
+
+        return (guild == null) ? null : getMember(guild);
+    }
+
     /**
      * Sets the last activity time to the current time.
      */
