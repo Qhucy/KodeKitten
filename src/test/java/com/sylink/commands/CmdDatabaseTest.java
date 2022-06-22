@@ -63,6 +63,8 @@ class CmdDatabaseTest
     @Test
     void saveAccount()
     {
+        accountManager.deleteFromDatabase(44L);
+
         Account account = accountManager.getAccount(44L);
 
         account.setBalance(5.0);
