@@ -207,7 +207,7 @@ public final class AccountManager
 
     public boolean saveToDatabase(final long discordId)
     {
-        final Account account = getAccount(discordId);
+        final Account account = getAccount(discordId, false);
 
         return account != null && saveToDatabase(account);
     }
@@ -231,7 +231,7 @@ public final class AccountManager
      */
     public boolean existsInDatabase(final long discordId)
     {
-        final Account account = getAccount(discordId);
+        final Account account = getAccount(discordId, false);
 
         return account != null && existsInDatabase(account);
     }
