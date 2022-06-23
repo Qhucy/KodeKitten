@@ -19,7 +19,7 @@ public final class CmdDatabase
 
     public CmdDatabase()
     {
-        super(CommandType.CONSOLE, "", """
+        super(CommandType.CONSOLE, "Console command used for managing database account data", """
                 usages:
                   create [id]: Creates a new account with the given id.
                   load [id]: Load the account id from the database.
