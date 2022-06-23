@@ -64,6 +64,21 @@ class AccountManagerTest
     }
 
     @Test
+    void loadingExistingAccountFromDatabaseAgain()
+    {
+        Account account = accountManager.getAccount(10L);
+
+        account.setBalance(20.0);
+
+        assertEquals(20.0, account.getBalance());
+        assertTrue(accountManager.existsInMemory(10L));
+
+        assertTrue(accountManager.loadFromDatabase(account));
+
+        assertEquals(10.0, account.getBalance());
+    }
+
+    @Test
     void loadingNewAccountFromDatabase()
     {
         if (accountManager.existsInMemory(10L))
@@ -111,6 +126,20 @@ class AccountManagerTest
     }
 
     @Test
+    void flushingRemovesAccountFromMemoryAgain()
+    {
+        Account account = accountManager.getAccount(4L);
+
+        assertNotNull(account);
+        assertEquals(4L, account.getDiscordId());
+        assertTrue(accountManager.existsInMemory(4L));
+
+        accountManager.flushFromMemory(account);
+
+        assertFalse(accountManager.existsInMemory(4L));
+    }
+
+    @Test
     void deletingAccountFromDatabase()
     {
         Account account = accountManager.getAccount(200L);
@@ -123,6 +152,23 @@ class AccountManagerTest
         assertTrue(accountManager.existsInDatabase(200L));
 
         accountManager.deleteFromDatabase(200L);
+
+        assertFalse(accountManager.existsInDatabase(200L));
+    }
+
+    @Test
+    void deletingAccountFromDatabaseAgain()
+    {
+        Account account = accountManager.getAccount(200L);
+
+        assertNotNull(account);
+        assertTrue(accountManager.existsInMemory(200L));
+
+        accountManager.saveToDatabase(200L);
+
+        assertTrue(accountManager.existsInDatabase(200L));
+
+        accountManager.deleteFromDatabase(account);
 
         assertFalse(accountManager.existsInDatabase(200L));
     }
