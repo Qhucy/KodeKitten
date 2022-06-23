@@ -28,8 +28,8 @@ public final class KodeKitten
      * ========
      * | TODO |
      * ========
-     * move all database material from account to account manager
-     * review all code for the entire program so far
+     * (1) move all database material from account to account manager
+     * (2) review all code for the entire program so far
      * add command to talk in channels thru console
      * add role check command in console only
      * finish balance command
@@ -37,12 +37,9 @@ public final class KodeKitten
      * ================
      * | UNIT TESTING |
      * ================
-     * CmdDatabase - finish rest of commands
-     * unit tests on overloading methods to get code coverage everywhere
-     * (mostly in AccountManager.java but maybe elsewhere)
-     * figure out a way to test the output of commands
+     * (3) figure out a way to test the output of commands (console, internal logic, etc)
      * (maybe will need a messages.toml file or similar to have same messages to test)
-     * figure out way to unit test user commands
+     * (4) Then redo tests for all commands
      */
 
     private static final Logger logger = Logger.getLogger(KodeKitten.class.getName());
