@@ -40,6 +40,8 @@ public final class KodeKitten
      * Develop TEST discord bot to help run unit tests with JDA
      * Have the test discord server mirror actual one and methods to use
      * snowflakes for test instead of real thing
+     * Maybe make Snowflake.java an ENUM so it has EXACTLY TWO classes,
+     * one for main use and one for test use
      * ================
      * | UNIT TESTING |
      * ================
