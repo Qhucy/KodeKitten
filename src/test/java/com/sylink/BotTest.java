@@ -1,13 +1,102 @@
 package com.sylink;
 
+import net.dv8tion.jda.api.entities.Activity;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
+import java.io.ByteArrayInputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class BotTest
 {
+
+    // The test token.txt file used for unit testing.
+    private static final Path TOKEN_PATH = Paths.get("src/test/java/com/sylink/token_test.txt");
+    // The path to a blank text file used for unit testing.
+    private static final Path BLANK_TOKEN_PATH = Paths.get("src/test/java/com/sylink/blank_token_test.txt");
+    // An example invalid path used for unit testing.
+    private static final Path INVALID_PATH = Paths.get("src/test/java/com/sylink/token_test_invalid.txt");
+
+    @Test
+    void retrieveTokenFromFile()
+    {
+        String token = Bot.getTokenFromFile(TOKEN_PATH.toFile());
+
+        assertNotNull(token);
+        assertEquals("abcd", token);
+    }
+
+    @Test
+    void retrieveTokenFromBlankFile()
+    {
+        String token = Bot.getTokenFromFile(BLANK_TOKEN_PATH.toFile());
+
+        assertNull(token);
+    }
+
+    @Test
+    void retrieveTokenFromInvalidFile()
+    {
+        String token = Bot.getTokenFromFile(INVALID_PATH.toFile());
+
+        assertNull(token);
+    }
+
+    @Test
+    void retrieveTokenFromInput()
+    {
+        System.setIn(new ByteArrayInputStream("abcd".getBytes()));
+
+        String token = Bot.getTokenFromInput();
+
+        assertNotNull(token);
+        assertEquals("abcd", token);
+    }
+
+    @Test
+    void retrieveTokenFromInvalidInput()
+    {
+        System.setIn(new ByteArrayInputStream("   ".getBytes()));
+
+        String token = Bot.getTokenFromInput();
+
+        assertNull(token);
+    }
+
+    @Test
+    void findTokenWithValidFile()
+    {
+        String token = Bot.findToken(TOKEN_PATH.toFile());
+
+        assertNotNull(token);
+        assertEquals("abcd", token);
+    }
+
+    @Test
+    void findTokenWithInvalidFileFromInput()
+    {
+        System.setIn(new ByteArrayInputStream("abcd".getBytes()));
+
+        String token = Bot.findToken(INVALID_PATH.toFile());
+
+        assertNotNull(token);
+        assertEquals("abcd", token);
+    }
+
+    @Test
+    void findTokenWithInvalidFileFromInvalidInput()
+    {
+        System.setIn(new ByteArrayInputStream("    ".getBytes()));
+
+        String token = Bot.findToken(INVALID_PATH.toFile());
+
+        assertNull(token);
+    }
 
     @Test
     void constructorTest()
@@ -16,17 +105,12 @@ class BotTest
 
         assertEquals("abcd", bot.getToken());
         assertNull(bot.getBot());
-
-        Bot secondBot = new Bot();
-
-        assertNull(secondBot.getToken());
-        assertNull(secondBot.getBot());
     }
 
     @Test
     void getSelfUserNullWhenNotConnected()
     {
-        Bot bot = new Bot();
+        Bot bot = new Bot("abcd");
 
         assertNull(bot.getSelfUser());
     }
@@ -34,7 +118,7 @@ class BotTest
     @Test
     void isConnectedFalseWhenDisconnected()
     {
-        Bot bot = new Bot();
+        Bot bot = new Bot("abcd");
 
         assertFalse(bot.isConnected());
     }
@@ -71,9 +155,98 @@ class BotTest
     }
 
     @Test
-    void getTokenFromFileNullWhenInvalidFile()
+    void connectingToDiscordFromNewToken()
     {
-        assertNull(Bot.getTokenFromFile(new File("invalid.txt")));
+        String token = Bot.getTokenFromFile(KodeKitten.TEST_TOKEN_PATH.toFile());
+
+        assertNotNull(token);
+
+        Bot bot = new Bot("1234");
+
+        assertDoesNotThrow(() -> bot.connect(token));
+        assertNotNull(bot.getBot());
+        assertNotNull(bot.getBot().getSelfUser());
+    }
+
+    @Nested
+    class ConnectionTesting
+    {
+
+        private Bot bot;
+
+        @BeforeEach
+        void setUp()
+        {
+            bot = KodeKitten.getTestBot();
+
+            assertNotNull(bot);
+            bot.connect();
+
+            assertTrue(bot.isConnected());
+        }
+
+        @Test
+        void connectingToDiscord()
+        {
+            assertNotNull(bot.getBot());
+        }
+
+        @Test
+        void canGetSelfUserWhenConnected()
+        {
+            assertNotNull(bot.getSelfUser());
+        }
+
+        @Test
+        void disconnectingBot()
+        {
+            bot.disconnect();
+
+            assertNull(bot.getBot());
+            assertNull(bot.getSelfUser());
+            assertFalse(bot.isConnected());
+        }
+
+        @Test
+        void setStatus()
+        {
+            bot.setStatus(Activity.ActivityType.LISTENING, "Test");
+
+            Activity activity = bot.getBot().getPresence().getActivity();
+
+            assertNotNull(activity);
+
+            assertEquals("Test", activity.getName());
+            assertEquals(Activity.ActivityType.LISTENING, activity.getType());
+        }
+
+        @Test
+        void setStatusWithDefaultActivityType()
+        {
+            bot.setStatus("Test");
+
+            Activity activity = bot.getBot().getPresence().getActivity();
+
+            assertNotNull(activity);
+
+            assertEquals("Test", activity.getName());
+            assertEquals(Activity.ActivityType.DEFAULT, activity.getType());
+        }
+
+        @Test
+        void clearStatus()
+        {
+            bot.setStatus(null);
+
+            assertNull(bot.getBot().getPresence().getActivity());
+        }
+
+        @AfterEach
+        void afterEach()
+        {
+            bot.disconnect();
+        }
+
     }
 
 }
