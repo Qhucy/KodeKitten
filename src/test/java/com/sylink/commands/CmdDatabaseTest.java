@@ -78,7 +78,7 @@ class CmdDatabaseTest
 
         assertTrue(accountManager.existsInDatabase(44L));
 
-        accountManager.loadFromDatabase(44L);
+        accountManager.loadFromDatabase(account);
 
         assertTrue(accountManager.existsInMemory(44L));
 
@@ -108,7 +108,7 @@ class CmdDatabaseTest
         assertTrue(accountManager.existsInDatabase(44L));
         assertFalse(accountManager.existsInMemory(44L));
 
-        accountManager.loadFromDatabase(44L);
+        account = accountManager.getAccount(44L);
 
         assertTrue(accountManager.existsInMemory(44L));
 

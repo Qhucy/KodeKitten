@@ -58,13 +58,13 @@ class AccountManagerTest
         assertEquals(20.0, account.getBalance());
         assertTrue(accountManager.existsInMemory(10L));
 
-        assertTrue(accountManager.loadFromDatabase(10L));
+        assertTrue(accountManager.loadFromDatabase(account));
 
         assertEquals(10.0, account.getBalance());
     }
 
     @Test
-    void loadingExistingAccountFromDatabaseAgain()
+    void loadingAccountFromDatabaseAgain()
     {
         Account account = accountManager.getAccount(10L);
 
@@ -75,26 +75,6 @@ class AccountManagerTest
 
         assertTrue(accountManager.loadFromDatabase(account));
 
-        assertEquals(10.0, account.getBalance());
-    }
-
-    @Test
-    void loadingNewAccountFromDatabase()
-    {
-        if (accountManager.existsInMemory(10L))
-        {
-            accountManager.deleteFromMemory(10L);
-        }
-
-        assertFalse(accountManager.existsInMemory(10L));
-
-        accountManager.loadFromDatabase(10L);
-
-        assertTrue(accountManager.existsInMemory(10L));
-
-        Account account = accountManager.getAccount(10L);
-
-        assertNotNull(account);
         assertEquals(10.0, account.getBalance());
     }
 
@@ -215,6 +195,14 @@ class AccountManagerTest
     void accountExistsIfInDatabase()
     {
         assertTrue(accountManager.existsInDatabase(10L));
+    }
+
+    @Test
+    void accountExistsIfInDatabaseAgain()
+    {
+        Account account = new Account(10L);
+
+        assertTrue(accountManager.existsInDatabase(account));
     }
 
     @Test
