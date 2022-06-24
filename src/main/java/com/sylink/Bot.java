@@ -1,14 +1,14 @@
 package com.sylink;
 
-import com.sylink.util.Snowflake;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.SelfUser;
+import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 import javax.annotation.Nullable;
 import javax.security.auth.login.LoginException;
@@ -30,11 +30,11 @@ public class Bot
     private static final Path TOKEN_PATH = Paths.get("token.txt");
 
     /**
-     * Tries to find and return a token from first the token path file and then from user input.
+     * @return The discord bot token found from first the token path file and then from user input.
      */
-    public static String findToken()
+    public static String findToken(@NonNull final File file)
     {
-        String token = getTokenFromFile(TOKEN_PATH.toFile());
+        final String token = getTokenFromFile(file);
 
         if (token == null)
         {
@@ -49,7 +49,15 @@ public class Bot
     }
 
     /**
-     * Returns the token from the given file.
+     * Finds the discord bot token using the default token path file.
+     */
+    public static String findToken()
+    {
+        return findToken(TOKEN_PATH.toFile());
+    }
+
+    /**
+     * @return The discord bot token from the given file.
      */
     public static String getTokenFromFile(@NonNull final File file)
     {
@@ -60,14 +68,14 @@ public class Bot
 
             return (token == null || token.isBlank()) ? null : token;
         }
-        catch (@NonNull final IOException ignored)
+        catch (final IOException ignored)
         {
             return null;
         }
     }
 
     /**
-     * Returns the token from user input.
+     * @return The discord bot token from user input.
      */
     public static String getTokenFromInput()
     {
@@ -79,22 +87,17 @@ public class Bot
 
         scanner.close();
 
-        return (token.isEmpty()) ? null : token;
+        return (token.isBlank()) ? null : token;
     }
 
     @Getter(AccessLevel.PUBLIC)
     private JDA bot = null;
     @Getter(AccessLevel.PUBLIC)
-    private String token = null;
+    private String token;
 
     public Bot(@NonNull final String token)
     {
         this.token = token;
-    }
-
-    public Bot()
-    {
-
     }
 
     /**
@@ -103,15 +106,14 @@ public class Bot
     public void setToken(@NonNull final String token)
     {
         // Disconnect an existing connection when changing bot.
-        if (bot != null)
-        {
-            bot.shutdown();
-            bot = null;
-        }
+        disconnect();
 
         this.token = token;
     }
 
+    /**
+     * @return The SelfUser object of the JDA bot or null if not connected.
+     */
     public SelfUser getSelfUser()
     {
         if (!isConnected())
@@ -132,7 +134,15 @@ public class Bot
     {
         try
         {
-            bot = JDABuilder.createDefault(token).build();
+            final JDABuilder builder = JDABuilder.createDefault(token);
+
+            // Configure the settings of the bot.
+            builder.setAutoReconnect(true);
+            builder.disableCache(CacheFlag.ACTIVITY);
+            builder.disableIntents(GatewayIntent.DIRECT_MESSAGE_TYPING, GatewayIntent.GUILD_MESSAGE_TYPING,
+                    GatewayIntent.GUILD_WEBHOOKS);
+
+            bot = builder.build();
             // Wait for the JDA object to be fully connected and ready.
             bot.awaitReady();
         }
@@ -213,6 +223,9 @@ public class Bot
         bot.getPresence().setActivity(Activity.of(activityType, statusMessage));
     }
 
+    /**
+     * Sets the status with the default activity type being null.
+     */
     public void setStatus(@Nullable final String statusMessage)
     {
         setStatus(null, statusMessage);
