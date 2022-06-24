@@ -284,41 +284,17 @@ public final class KodeKitten
 
     public static void logInfo(@NonNull final String... messages)
     {
-        if (messages.length == 0)
-        {
-            return;
-        }
-
-        for (final String message : messages)
-        {
-            logger.info(message);
-        }
+        log(Level.INFO, messages);
     }
 
     public static void logWarning(@NonNull final String... messages)
     {
-        if (messages.length == 0)
-        {
-            return;
-        }
-
-        for (final String message : messages)
-        {
-            logger.warning(message);
-        }
+        log(Level.WARNING, messages);
     }
 
     public static void logSevere(@NonNull final String... messages)
     {
-        if (messages.length == 0)
-        {
-            return;
-        }
-
-        for (final String message : messages)
-        {
-            logger.severe(message);
-        }
+        log(Level.SEVERE, messages);
     }
 
 }
