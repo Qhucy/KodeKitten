@@ -1,10 +1,7 @@
 package com.sylink;
 
 import net.dv8tion.jda.api.entities.Activity;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.io.ByteArrayInputStream;
 import java.nio.file.Path;
@@ -172,39 +169,28 @@ class BotTest
     class ConnectionTesting
     {
 
-        private Bot bot;
+        private static Bot bot;
 
-        @BeforeEach
-        void setUp()
+        @BeforeAll
+        static void setUpAll()
         {
             bot = KodeKitten.getTestBot();
 
             assertNotNull(bot);
             bot.connect();
-
-            assertTrue(bot.isConnected());
         }
 
         @Test
-        void connectingToDiscord()
+        void isConnectedTrueWhenConnected()
         {
             assertNotNull(bot.getBot());
+            assertTrue(bot.isConnected());
         }
 
         @Test
         void canGetSelfUserWhenConnected()
         {
             assertNotNull(bot.getSelfUser());
-        }
-
-        @Test
-        void disconnectingBot()
-        {
-            bot.disconnect();
-
-            assertNull(bot.getBot());
-            assertNull(bot.getSelfUser());
-            assertFalse(bot.isConnected());
         }
 
         @Test
@@ -241,12 +227,30 @@ class BotTest
             assertNull(bot.getBot().getPresence().getActivity());
         }
 
-        @AfterEach
-        void afterEach()
+        @AfterAll
+        static void afterAll()
         {
             bot.disconnect();
         }
 
+    }
+
+    @Test
+    void disconnectingBot()
+    {
+        Bot bot = KodeKitten.getTestBot();
+
+        assertNotNull(bot);
+        bot.connect();
+
+        assertTrue(bot.isConnected());
+        assertNotNull(bot.getBot());
+
+        bot.disconnect();
+
+        assertNull(bot.getBot());
+        assertNull(bot.getSelfUser());
+        assertFalse(bot.isConnected());
     }
 
 }
