@@ -78,8 +78,8 @@ public final class KodeKitten
         Snowflake.getInstance().loadMainGuild();
         ConfigManager.getInstance().load();
         SchedulerManager.getInstance().startTimers();
-        getJdaBot().addEventListener(new CommandHandler());
         registerCommands();
+        getJdaBot().addEventListener(new CommandHandler());
 
         // Read console commands while the bot is running.
         readConsoleCommands();
