@@ -4,10 +4,7 @@ import com.sylink.KodeKitten;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,6 +27,33 @@ public final class AccountManager
                 balance DOUBLE NOT NULL DEFAULT 0.0
             );
             """;
+    // The SQL query used to test whether an account exists in the database.
+    private static final String SQL_EXISTS_QUERY = "SELECT id FROM accounts WHERE id=%d";
+    // The SQL query used to insert new account data in to the database.
+    private static final String SQL_INSERT_QUERY = """
+            INSERT INTO accounts (id,permissions,roles,balance)
+            VALUES(%s,%s,%s,%g)
+            """;
+    // The SQL query used to update existing column data for an account.
+    private static final String SQL_UPDATE_QUERY = """
+            UPDATE accounts
+            SET permissions = %s,
+                roles = %s,
+                balance = %g
+            WHERE id = %d
+            """;
+    // The SQL query used to load account data from the database.
+    private static final String SQL_LOAD_QUERY = """
+            SELECT
+                permissions,
+                roles,
+                balance
+            FROM
+                accounts
+            WHERE
+                id=%d;
+            """;
+    // The SQL query used to delete an account from the database.
     private final static String SQL_DELETE = "DELETE FROM accounts WHERE id = %d";
 
     public static AccountManager getInstance()
@@ -73,14 +97,14 @@ public final class AccountManager
         }
 
         final Account account = new Account(discordId);
-        final boolean existsInDatabase = account.existsInDatabase(connection);
+        final boolean existsInDatabase = existsInDatabase(account.getDiscordId());
 
         if (!existsInDatabase && !createNewIfNotFound)
         {
             return null;
         }
 
-        if (existsInDatabase && !account.loadFromDatabase(connection))
+        if (existsInDatabase && !loadFromDatabase(account))
         {
             KodeKitten.logWarning(String.format("Unable to load account data for discord id %d in the accounts " +
                     "database.", discordId));
@@ -95,169 +119,6 @@ public final class AccountManager
     public Account getAccount(final long discordId)
     {
         return getAccount(discordId, true);
-    }
-
-    /**
-     * Loads an account's data from the database.
-     *
-     * @return True if the account was loaded.
-     */
-    public boolean loadFromDatabase(final long discordId)
-    {
-        final Account account;
-
-        if (existsInMemory(discordId))
-        {
-            account = getAccount(discordId);
-            account.loadFromDatabase(connection);
-
-            return true;
-        }
-        else
-        {
-            account = getAccount(discordId, false);
-
-            return account != null;
-        }
-    }
-
-    public boolean loadFromDatabase(@NonNull final Account account)
-    {
-        return loadFromDatabase(account.getDiscordId());
-    }
-
-    /**
-     * Saves an account to the database and removes it from memory.
-     *
-     * @param keepIfUnableToSave If true, doesn't remove the account from memory if it was unable to be saved to the
-     *                           database.
-     */
-    public void flushFromMemory(@NonNull final Account account, final boolean keepIfUnableToSave)
-    {
-        if (saveToDatabase(account) || !keepIfUnableToSave)
-        {
-            accounts.remove(account.getDiscordId());
-        }
-    }
-
-    public void flushFromMemory(@NonNull final Account account)
-    {
-        flushFromMemory(account, true);
-    }
-
-    /**
-     * Removes a given account from memory.
-     */
-    public void deleteFromMemory(final long discordId)
-    {
-        accounts.remove(discordId);
-    }
-
-    public void deleteFromMemory(@NonNull final Account account)
-    {
-        deleteFromMemory(account.getDiscordId());
-    }
-
-    /**
-     * Deletes the given account id from the database.
-     */
-    public void deleteFromDatabase(final long discordId)
-    {
-        if (existsInDatabase(discordId))
-        {
-            executeQuery(String.format(SQL_DELETE, discordId));
-        }
-    }
-
-    public void deleteFromDatabase(@NonNull final Account account)
-    {
-        deleteFromDatabase(account.getDiscordId());
-    }
-
-    /**
-     * Deletes the given account id from the database AND from memory.
-     */
-    public void delete(final long discordId)
-    {
-        deleteFromDatabase(discordId);
-        deleteFromMemory(discordId);
-    }
-
-    public void delete(@NonNull final Account account)
-    {
-        delete(account.getDiscordId());
-    }
-
-    /**
-     * Saves a given account to the SQL database.
-     *
-     * @return True if the account was successfully saved to the database.
-     */
-    public boolean saveToDatabase(@NonNull final Account account)
-    {
-        if (connection == null)
-        {
-            KodeKitten.logWarning(String.format("Unable to save account %d to the database as there is no connection "
-                    + "to the database", account.getDiscordId()));
-            return false;
-        }
-
-        return account.saveToDatabase(connection);
-    }
-
-    public boolean saveToDatabase(final long discordId)
-    {
-        final Account account = getAccount(discordId, false);
-
-        return account != null && saveToDatabase(account);
-    }
-
-    /**
-     * @return True if the given account exists as a column in the SQL database.
-     */
-    public boolean existsInDatabase(@NonNull final Account account)
-    {
-        if (connection == null)
-        {
-            KodeKitten.logWarning(String.format("Unable to check if account %d exists in database with an inactive " + "connection", account.getDiscordId()));
-            return false;
-        }
-
-        return account.existsInDatabase(connection);
-    }
-
-    /**
-     * @return True if the given discord id exists in the SQL Database.
-     */
-    public boolean existsInDatabase(final long discordId)
-    {
-        final Account account = getAccount(discordId, false);
-
-        return account != null && existsInDatabase(account);
-    }
-
-    /**
-     * @return True if the given discord id exists in local memory.
-     */
-    public boolean existsInMemory(final long discordId)
-    {
-        for (var entry : accounts.entrySet())
-        {
-            if (entry.getKey() == discordId)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @return True if the account exists in memory OR in the SQL Database.
-     */
-    public boolean exists(final long discordId)
-    {
-        return existsInMemory(discordId) || existsInDatabase(discordId);
     }
 
     /**
@@ -323,6 +184,223 @@ public final class AccountManager
     }
 
     /**
+     * Executes a given query to the SQL Database.
+     */
+    public void executeQuery(@NonNull final String sqlQuery)
+    {
+        if (connection == null)
+        {
+            return;
+        }
+
+        try (final Statement statement = connection.createStatement())
+        {
+            statement.executeQuery(sqlQuery);
+        }
+        catch (final SQLException exception)
+        {
+            exception.printStackTrace();
+        }
+    }
+
+    /**
+     * @return True if the given discord id exists in the SQL Database.
+     */
+    public boolean existsInDatabase(final long discordId)
+    {
+        if (connection == null)
+        {
+            KodeKitten.logWarning(String.format("Unable to check if account %d exists in database with an inactive " + "connection", discordId));
+            return false;
+        }
+
+        try (final Statement statement = connection.createStatement(); final ResultSet resultSet =
+                statement.executeQuery(String.format(SQL_EXISTS_QUERY, discordId)))
+        {
+            return resultSet.next();
+        }
+        catch (final SQLException sqlException)
+        {
+            return false;
+        }
+    }
+
+    public boolean existsInDatabase(@NonNull final Account account)
+    {
+        return existsInDatabase(account.getDiscordId());
+    }
+
+    /**
+     * @return True if the given discord id exists in local memory.
+     */
+    public boolean existsInMemory(final long discordId)
+    {
+        for (var entry : accounts.entrySet())
+        {
+            if (entry.getKey() == discordId)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return True if the account exists in memory OR in the SQL Database.
+     */
+    public boolean exists(final long discordId)
+    {
+        return existsInMemory(discordId) || existsInDatabase(discordId);
+    }
+
+    /**
+     * Saves a given account to the SQL database.
+     *
+     * @return True if the account was successfully saved to the database.
+     */
+    public boolean saveToDatabase(@NonNull final Account account)
+    {
+        if (connection == null)
+        {
+            KodeKitten.logWarning(String.format("Unable to save account %d to the database as there is no connection "
+                    + "to the database", account.getDiscordId()));
+            return false;
+        }
+
+        final boolean existsInDatabase = existsInDatabase(account.getDiscordId());
+
+        if (existsInDatabase && !account.needsToSync())
+        {
+            return false;
+        }
+
+        try (final Statement statement = connection.createStatement())
+        {
+            // Insert into database as a new column.
+            if (!existsInDatabase)
+            {
+                statement.executeUpdate(String.format(SQL_INSERT_QUERY, account.getDiscordId(),
+                        account.getPermissionData(), account.getRoleData(), account.getBalance()));
+            }
+            // Update the existing column with new data.
+            else
+            {
+                statement.executeUpdate(String.format(SQL_UPDATE_QUERY, account.getPermissionData(),
+                        account.getRoleData(), account.getBalance(), account.getDiscordId()));
+            }
+
+            // Data no longer needs to be updated.
+            account.setNeedsToSync();
+            return true;
+        }
+        catch (final SQLException sqlException)
+        {
+            KodeKitten.logSevere("Unable to save account data for discord id " + account.getDiscordId());
+            sqlException.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean saveToDatabase(final long discordId)
+    {
+        final Account account = getAccount(discordId, false);
+
+        return account != null && saveToDatabase(account);
+    }
+
+    /**
+     * Saves an account to the database and removes it from memory.
+     *
+     * @param keepIfUnableToSave If true, doesn't remove the account from memory if it was unable to be saved to the
+     *                           database.
+     */
+    public void flushFromMemory(@NonNull final Account account, final boolean keepIfUnableToSave)
+    {
+        if (saveToDatabase(account) || !keepIfUnableToSave)
+        {
+            accounts.remove(account.getDiscordId());
+        }
+    }
+
+    public void flushFromMemory(@NonNull final Account account)
+    {
+        flushFromMemory(account, true);
+    }
+
+    /**
+     * Loads an account's data from the database.
+     *
+     * @return True if the account was loaded.
+     */
+    public boolean loadFromDatabase(@NonNull final Account account)
+    {
+        try (final Statement statement = connection.createStatement(); final ResultSet resultSet =
+                statement.executeQuery(String.format(SQL_LOAD_QUERY, account.getDiscordId())))
+        {
+            if (resultSet.next())
+            {
+                account.loadPermissions(resultSet.getString("permissions"));
+                account.loadRoles(resultSet.getString("roles"));
+                account.setBalance(resultSet.getDouble("balance"));
+            }
+
+            account.bumpLastActivityTime();
+
+            account.setLoaded();
+            return true;
+        }
+        catch (final SQLException sqlException)
+        {
+            sqlException.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Removes a given account from memory.
+     */
+    public void deleteFromMemory(final long discordId)
+    {
+        accounts.remove(discordId);
+    }
+
+    public void deleteFromMemory(@NonNull final Account account)
+    {
+        deleteFromMemory(account.getDiscordId());
+    }
+
+    /**
+     * Deletes the given account id from the database.
+     */
+    public void deleteFromDatabase(final long discordId)
+    {
+        if (existsInDatabase(discordId))
+        {
+            executeQuery(String.format(SQL_DELETE, discordId));
+        }
+    }
+
+    public void deleteFromDatabase(@NonNull final Account account)
+    {
+        deleteFromDatabase(account.getDiscordId());
+    }
+
+    /**
+     * Deletes the given account id from the database AND from memory.
+     */
+    public void delete(final long discordId)
+    {
+        deleteFromDatabase(discordId);
+        deleteFromMemory(discordId);
+    }
+
+    public void delete(@NonNull final Account account)
+    {
+        delete(account.getDiscordId());
+    }
+
+    /**
      * Closes the database connection.
      */
     public void closeDatabaseConnection()
@@ -344,26 +422,6 @@ public final class AccountManager
         finally
         {
             connection = null;
-        }
-    }
-
-    /**
-     * Executes a given query to the SQL Database.
-     */
-    public void executeQuery(@NonNull final String sqlQuery)
-    {
-        if (connection == null)
-        {
-            return;
-        }
-
-        try (final Statement statement = connection.createStatement())
-        {
-            statement.executeQuery(sqlQuery);
-        }
-        catch (final SQLException exception)
-        {
-            exception.printStackTrace();
         }
     }
 
@@ -412,7 +470,7 @@ public final class AccountManager
                 // from memory.
                 else
                 {
-                    if (account.saveToDatabase(connection) || account.isDead())
+                    if (saveToDatabase(account) || account.isDead())
                     {
                         accounts.remove(entry.getKey());
                     }

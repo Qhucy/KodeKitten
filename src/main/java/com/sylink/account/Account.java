@@ -10,10 +10,6 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,33 +19,6 @@ import java.util.List;
  */
 public class Account
 {
-
-    // The SQL query used to insert new account data in to the database.
-    private static final String SQL_INSERT_QUERY = """
-            INSERT INTO accounts (id,permissions,roles,balance)
-            VALUES(%s,%s,%s,%g)
-            """;
-    // The SQL query used to update existing column data for an account.
-    private static final String SQL_UPDATE_QUERY = """
-            UPDATE accounts
-            SET permissions = %s,
-                roles = %s,
-                balance = %g
-            WHERE id = %d
-            """;
-    // The SQL query used to load account data from the database.
-    private static final String SQL_LOAD_QUERY = """
-            SELECT
-                permissions,
-                roles,
-                balance
-            FROM
-                accounts
-            WHERE
-                id=%d;
-            """;
-    // The SQL query used to test whether an account exists in the database.
-    private static final String SQL_EXISTS_QUERY = "SELECT id FROM accounts WHERE id=%d";
 
     @Getter(AccessLevel.PUBLIC)
     private final long discordId;
@@ -75,6 +44,14 @@ public class Account
     protected Account(final long discordId)
     {
         this.discordId = discordId;
+    }
+
+    /**
+     * Flags that the account has been loaded.
+     */
+    protected final void setLoaded()
+    {
+        this.loaded = true;
     }
 
     /**
@@ -131,9 +108,17 @@ public class Account
     /**
      * @return True if Account data has been changed and needs to be saved to the database.
      */
-    public final boolean needsToSync()
+    protected final boolean needsToSync()
     {
         return needsToSync;
+    }
+
+    /**
+     * Flags that the account needs to sync to database.
+     */
+    protected final void setNeedsToSync()
+    {
+        this.needsToSync = true;
     }
 
     /**
@@ -303,37 +288,9 @@ public class Account
     }
 
     /**
-     * Loads all account data from the database connection and returns whether the data was loaded.
-     * The proper way to call this method is to buffer it through the AccountManager method.
-     */
-    protected boolean loadFromDatabase(@NonNull final Connection connection)
-    {
-        try (final Statement statement = connection.createStatement(); final ResultSet resultSet =
-                statement.executeQuery(String.format(SQL_LOAD_QUERY, discordId)))
-        {
-            if (resultSet.next())
-            {
-                loadPermissions(resultSet.getString("permissions"));
-                loadRoles(resultSet.getString("roles"));
-                balance = resultSet.getDouble("balance");
-            }
-
-            lastActivityTime = System.currentTimeMillis();
-
-            this.loaded = true;
-            return true;
-        }
-        catch (final SQLException sqlException)
-        {
-            sqlException.printStackTrace();
-            return false;
-        }
-    }
-
-    /**
      * Loads permission data from the SQL column string to a list of permissions.
      */
-    private void loadPermissions(@NonNull final String permissionData)
+    protected void loadPermissions(@NonNull final String permissionData)
     {
         permissions.clear();
 
@@ -346,7 +303,7 @@ public class Account
     /**
      * Loads role data from the SQL column string to a list of roles.
      */
-    private void loadRoles(@NonNull final String roleData)
+    protected void loadRoles(@NonNull final String roleData)
     {
         roles.clear();
 
@@ -360,69 +317,9 @@ public class Account
     }
 
     /**
-     * Saves all data from this object to the account's column in the database.
-     * The proper way to call this method is to buffer it through the AccountManager method.
-     *
-     * @return True if data was saved to the database if needed.
-     */
-    protected boolean saveToDatabase(@NonNull final Connection connection)
-    {
-        final boolean existsInDatabase = existsInDatabase(connection);
-
-        if (existsInDatabase && !needsToSync)
-        {
-            return false;
-        }
-
-        try (final Statement statement = connection.createStatement())
-        {
-            // Insert into database as a new column.
-            if (!existsInDatabase)
-            {
-                statement.executeUpdate(String.format(SQL_INSERT_QUERY, discordId, getPermissionData(), getRoleData()
-                        , balance));
-            }
-            // Update the existing column with new data.
-            else
-            {
-                statement.executeUpdate(String.format(SQL_UPDATE_QUERY, getPermissionData(), getRoleData(), balance,
-                        discordId));
-            }
-
-            // Data no longer needs to be updated.
-            this.needsToSync = false;
-            return true;
-        }
-        catch (final SQLException sqlException)
-        {
-            KodeKitten.logSevere("Unable to save account data for discord id " + discordId);
-            sqlException.printStackTrace();
-            return false;
-        }
-    }
-
-    /**
-     * The proper way to call this method is to buffer it through the AccountManager method.
-     *
-     * @return true if the account exists as a column in the database.
-     */
-    protected boolean existsInDatabase(@NonNull final Connection connection)
-    {
-        try (final Statement statement = connection.createStatement(); final ResultSet resultSet =
-                statement.executeQuery(String.format(SQL_EXISTS_QUERY, discordId)))
-        {
-            return resultSet.next();
-        }
-        catch (final SQLException sqlException)
-        {
-            return false;
-        }
-    }
-
-    /**
      * @return The list of account permissions as a string of data.
      */
-    private String getPermissionData()
+    protected final String getPermissionData()
     {
         if (permissions.isEmpty())
         {
@@ -449,7 +346,7 @@ public class Account
     /**
      * @return The list of account roles as a string of data.
      */
-    private String getRoleData()
+    protected final String getRoleData()
     {
         if (roles.isEmpty())
         {
