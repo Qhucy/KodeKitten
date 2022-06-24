@@ -39,11 +39,15 @@ public final class KodeKitten
      * (3) figure out a way to test the output of commands (console, internal logic, etc)
      * (maybe will need a messages.toml file or similar to have same messages to test)
      * (4) Then redo tests for all commands
+     * unit tests for KodeKitten.java main setup startup methods?
      */
 
     private static final Logger logger = Logger.getLogger(KodeKitten.class.getName());
 
     private static Bot bot = null;
+
+    // Internal list of all registered commands.
+    private static Command[] commands = new Command[]{new CmdHelp(), new CmdBalance(), new CmdDatabase()};
 
     /**
      * Processes setup of the bot and connection to Discord servers as well as console inputs and shutdown.
@@ -129,9 +133,11 @@ public final class KodeKitten
      */
     private static void registerCommands()
     {
-        Command.registerGuildCommand(new CmdHelp());
-        Command.registerGuildCommand(new CmdBalance());
-        Command.registerGuildCommand(new CmdDatabase());
+        for (final Command command : commands)
+        {
+            Command.registerGuildCommand(command);
+            //Command.registerCommand(command);
+        }
     }
 
     /**
@@ -178,8 +184,8 @@ public final class KodeKitten
                 throw new IllegalArgumentException(String.format("Unable to find resource %s", resourcePath));
             }
 
-            final File destFile = new File(resourcePath);
-            final File destDir = new File(resourcePath.substring(0, Math.max(resourcePath.lastIndexOf('/'), 0)));
+            final File destFile = new File(destinationPath);
+            final File destDir = new File(destinationPath.substring(0, Math.max(destinationPath.lastIndexOf('/'), 0)));
 
             if (!destDir.exists())
             {
@@ -231,9 +237,9 @@ public final class KodeKitten
         return null;
     }
 
-    public static void log(@NonNull final Level logLevel, @Nullable final String... messages)
+    public static void log(@NonNull final Level logLevel, @NonNull final String... messages)
     {
-        if (messages == null || messages.length == 0)
+        if (messages.length == 0)
         {
             return;
         }
@@ -244,9 +250,9 @@ public final class KodeKitten
         }
     }
 
-    public static void logInfo(@Nullable final String... messages)
+    public static void logInfo(@NonNull final String... messages)
     {
-        if (messages == null || messages.length == 0)
+        if (messages.length == 0)
         {
             return;
         }
@@ -257,9 +263,9 @@ public final class KodeKitten
         }
     }
 
-    public static void logWarning(@Nullable final String... messages)
+    public static void logWarning(@NonNull final String... messages)
     {
-        if (messages == null || messages.length == 0)
+        if (messages.length == 0)
         {
             return;
         }
@@ -270,9 +276,9 @@ public final class KodeKitten
         }
     }
 
-    public static void logSevere(@Nullable final String... messages)
+    public static void logSevere(@NonNull final String... messages)
     {
-        if (messages == null || messages.length == 0)
+        if (messages.length == 0)
         {
             return;
         }
