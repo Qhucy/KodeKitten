@@ -188,6 +188,8 @@ public final class AccountManager
      */
     public void executeQuery(@NonNull final String sqlQuery)
     {
+        final Connection connection = getConnection();
+
         if (connection == null)
         {
             return;
@@ -208,6 +210,8 @@ public final class AccountManager
      */
     public boolean existsInDatabase(final long discordId)
     {
+        final Connection connection = getConnection();
+
         if (connection == null)
         {
             KodeKitten.logWarning(String.format("Unable to check if account %d exists in database with an inactive " + "connection", discordId));
@@ -261,6 +265,8 @@ public final class AccountManager
      */
     public boolean saveToDatabase(@NonNull final Account account)
     {
+        final Connection connection = getConnection();
+
         if (connection == null)
         {
             KodeKitten.logWarning(String.format("Unable to save account %d to the database as there is no connection "
@@ -335,6 +341,13 @@ public final class AccountManager
      */
     public boolean loadFromDatabase(@NonNull final Account account)
     {
+        final Connection connection = getConnection();
+
+        if (connection == null)
+        {
+            return false;
+        }
+
         try (final Statement statement = connection.createStatement(); final ResultSet resultSet =
                 statement.executeQuery(String.format(SQL_LOAD_QUERY, account.getDiscordId())))
         {
@@ -405,6 +418,8 @@ public final class AccountManager
      */
     public void closeDatabaseConnection()
     {
+        final Connection connection = getConnection();
+
         if (connection == null)
         {
             return;
@@ -421,7 +436,7 @@ public final class AccountManager
         }
         finally
         {
-            connection = null;
+            this.connection = null;
         }
     }
 
@@ -430,7 +445,7 @@ public final class AccountManager
      */
     public void cleanupConnectionInactivity()
     {
-        if (connection == null)
+        if (getConnection() == null)
         {
             return;
         }
