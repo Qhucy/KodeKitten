@@ -31,10 +31,10 @@ public class Account
 
     // List of permission strings for this account.
     @Getter(AccessLevel.PUBLIC)
-    private List<String> permissions = new ArrayList<>();
+    private final List<String> permissions = new ArrayList<>();
     // List of role ids for this account.
     @Getter(AccessLevel.PUBLIC)
-    private List<Long> roles = new ArrayList<>();
+    private final List<Long> roles = new ArrayList<>();
     @Getter(AccessLevel.PUBLIC)
     private double balance = 0.0;
 
