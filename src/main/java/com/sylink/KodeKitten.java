@@ -29,7 +29,6 @@ public final class KodeKitten
      * ========
      * | TODO |
      * ========
-     * (1) Write Unit tests for KodeKitten.java
      * (2) review all code for the entire program so far
      * (KodeKitten, Bot) CURRENTLY ON: Account
      * add command to talk in channels thru console
@@ -48,7 +47,6 @@ public final class KodeKitten
      * (3) figure out a way to test the output of commands (console, internal logic, etc)
      * (maybe will need a messages.toml file or similar to have same messages to test)
      * (4) Then redo tests for all commands
-     * unit tests for KodeKitten.java main setup startup methods?
      */
 
     /**
