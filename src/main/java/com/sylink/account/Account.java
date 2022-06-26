@@ -116,9 +116,9 @@ public class Account
     /**
      * Flags that the account needs to sync to database.
      */
-    protected final void setNeedsToSync()
+    protected final void setNeedsToSync(final boolean needsToSync)
     {
-        this.needsToSync = true;
+        this.needsToSync = needsToSync;
     }
 
     /**
