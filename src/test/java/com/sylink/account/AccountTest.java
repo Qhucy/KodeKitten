@@ -25,6 +25,16 @@ class AccountTest
     }
 
     @Test
+    void setLoaded()
+    {
+        assertFalse(account.isLoaded());
+
+        account.setLoaded();
+
+        assertTrue(account.isLoaded());
+    }
+
+    @Test
     void bumpingActivityTimeChangesValue()
     {
         assertEquals(0, account.getLastActivityTime());
