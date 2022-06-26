@@ -1,6 +1,8 @@
 package com.sylink.account;
 
 import com.sylink.KodeKitten;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
@@ -14,7 +16,6 @@ import java.util.Map;
 public final class AccountManager
 {
 
-    private static AccountManager accountManager = null;
     // JDBC URL to the accounts database.
     private final static String DATABASE_URL = "jdbc:sqlite:database.db";
     // The statement used to create a new table if one does not exist.
@@ -31,7 +32,8 @@ public final class AccountManager
     private static final String SQL_EXISTS_QUERY = "SELECT id FROM accounts WHERE id=%d";
     // The SQL query used to insert new account data in to the database.
     private static final String SQL_INSERT_QUERY = """
-            INSERT INTO accounts (id,permissions,roles,balance)
+            INSERT INTO accounts
+            (id,permissions,roles,balance)
             VALUES(%s,%s,%s,%g)
             """;
     // The SQL query used to update existing column data for an account.
@@ -56,6 +58,8 @@ public final class AccountManager
     // The SQL query used to delete an account from the database.
     private final static String SQL_DELETE = "DELETE FROM accounts WHERE id = %d";
 
+    private static AccountManager accountManager = null;
+
     public static AccountManager getInstance()
     {
         if (accountManager == null)
@@ -69,6 +73,7 @@ public final class AccountManager
     // Connection to the accounts database.
     private Connection connection = null;
     // Connection activity time to track how long a connection has been inactive.
+    @Getter(AccessLevel.PUBLIC)
     private long connectionLastActivity = System.currentTimeMillis();
     // Map the stores the Discord Id associated with its account.
     private final Map<Long, Account> accounts = new HashMap<>();
@@ -81,33 +86,31 @@ public final class AccountManager
      */
     public Account getAccount(final long discordId, boolean createNewIfNotFound)
     {
+        // Try and retrieve the account from local memory.
         if (existsInMemory(discordId))
         {
             final Account account = accounts.get(discordId);
 
+            // The account has been accessed, so we bump it's last activity time.
             account.bumpLastActivityTime();
             return account;
         }
 
-        final Connection connection = getConnection();
-
-        if (connection == null)
-        {
-            return null;
-        }
-
-        final Account account = new Account(discordId);
-        final boolean existsInDatabase = existsInDatabase(account.getDiscordId());
+        // Try and retrieve the account from the database.
+        final boolean existsInDatabase = existsInDatabase(discordId);
 
         if (!existsInDatabase && !createNewIfNotFound)
         {
             return null;
         }
 
+        final Account account = new Account(discordId);
+
         if (existsInDatabase && !loadFromDatabase(account))
         {
-            KodeKitten.logWarning(String.format("Unable to load account data for discord id %d in the accounts " +
-                    "database.", discordId));
+            KodeKitten.logWarning(String.format("""
+                    Unable to load account data for discord id %d \
+                    in the accounts database.""", discordId));
             return null;
         }
 
@@ -116,13 +119,16 @@ public final class AccountManager
         return account;
     }
 
+    /**
+     * @return The account attached to the Discord Id, creating a new account by default if it is not found.
+     */
     public Account getAccount(final long discordId)
     {
         return getAccount(discordId, true);
     }
 
     /**
-     * Returns the opened connection to the database.
+     * @return The opened connection to the database.
      * If the connection is not open then it opens a connection.
      */
     public Connection getConnection()
@@ -139,7 +145,7 @@ public final class AccountManager
     }
 
     /**
-     * Returns whether a successful connection with the accounts database was created.
+     * @return Whether a successful connection with the accounts database was created.
      */
     public boolean openDatabaseConnection(@NonNull final String databaseUrl, @Nullable final String sqlTableStatement)
     {
@@ -173,20 +179,28 @@ public final class AccountManager
         }
     }
 
+    /**
+     * @return Whether a successful connection with the accounts database was created.
+     * Uses the default SQL_TABLE statement.
+     */
     public boolean openDatabaseConnection(@NonNull final String databaseUrl)
     {
         return openDatabaseConnection(databaseUrl, SQL_TABLE);
     }
 
+    /**
+     * @return Whether a successful connection with the accounts database was created.
+     * Uses the default DATABASE_URL and SQL_TABLE statements.
+     */
     public boolean openDatabaseConnection()
     {
         return openDatabaseConnection(DATABASE_URL, SQL_TABLE);
     }
 
     /**
-     * Executes a given query to the SQL Database.
+     * Executes given queries to the SQL Database.
      */
-    public void executeQuery(@NonNull final String sqlQuery)
+    public void executeQuery(@NonNull final String... sqlQueries)
     {
         final Connection connection = getConnection();
 
@@ -197,7 +211,10 @@ public final class AccountManager
 
         try (final Statement statement = connection.createStatement())
         {
-            statement.executeQuery(sqlQuery);
+            for (final String sqlQuery : sqlQueries)
+            {
+                statement.execute(sqlQuery);
+            }
         }
         catch (final SQLException exception)
         {
@@ -214,7 +231,10 @@ public final class AccountManager
 
         if (connection == null)
         {
-            KodeKitten.logWarning(String.format("Unable to check if account %d exists in database with an inactive " + "connection", discordId));
+            KodeKitten.logWarning(String.format("""
+                    Unable to check if account %d exists in \
+                    database with an inactive connection
+                    """, discordId));
             return false;
         }
 
@@ -229,6 +249,9 @@ public final class AccountManager
         }
     }
 
+    /**
+     * @return True if the given account exists as a row in the database.
+     */
     public boolean existsInDatabase(@NonNull final Account account)
     {
         return existsInDatabase(account.getDiscordId());
@@ -239,15 +262,7 @@ public final class AccountManager
      */
     public boolean existsInMemory(final long discordId)
     {
-        for (var entry : accounts.entrySet())
-        {
-            if (entry.getKey() == discordId)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return accounts.containsKey(discordId);
     }
 
     /**
@@ -269,8 +284,10 @@ public final class AccountManager
 
         if (connection == null)
         {
-            KodeKitten.logWarning(String.format("Unable to save account %d to the database as there is no connection "
-                    + "to the database", account.getDiscordId()));
+            KodeKitten.logWarning(String.format("""
+                    Unable to save account %d to the database as \
+                    there is no connection to the database
+                    """, account.getDiscordId()));
             return false;
         }
 
@@ -297,7 +314,7 @@ public final class AccountManager
             }
 
             // Data no longer needs to be updated.
-            account.setNeedsToSync();
+            account.setNeedsToSync(false);
             return true;
         }
         catch (final SQLException sqlException)
@@ -308,6 +325,11 @@ public final class AccountManager
         }
     }
 
+    /**
+     * Obtains the account from its discord id and saves it to the database.
+     *
+     * @return True if the account was successfully saved to the database.
+     */
     public boolean saveToDatabase(final long discordId)
     {
         final Account account = getAccount(discordId, false);
@@ -329,6 +351,9 @@ public final class AccountManager
         }
     }
 
+    /**
+     * Saves an account to the database and keeps the account in memory if it was unable to save it.
+     */
     public void flushFromMemory(@NonNull final Account account)
     {
         flushFromMemory(account, true);
@@ -359,7 +384,6 @@ public final class AccountManager
             }
 
             account.bumpLastActivityTime();
-
             account.setLoaded();
             return true;
         }
@@ -378,6 +402,9 @@ public final class AccountManager
         accounts.remove(discordId);
     }
 
+    /**
+     * Removes a given account from memory.
+     */
     public void deleteFromMemory(@NonNull final Account account)
     {
         deleteFromMemory(account.getDiscordId());
@@ -394,6 +421,9 @@ public final class AccountManager
         }
     }
 
+    /**
+     * Deletes the given account from the database.
+     */
     public void deleteFromDatabase(@NonNull final Account account)
     {
         deleteFromDatabase(account.getDiscordId());
@@ -408,6 +438,9 @@ public final class AccountManager
         deleteFromMemory(discordId);
     }
 
+    /**
+     * Deletes the given account from the database AND from memory.
+     */
     public void delete(@NonNull final Account account)
     {
         delete(account.getDiscordId());
@@ -471,24 +504,26 @@ public final class AccountManager
         {
             final Account account = entry.getValue();
 
-            if (account.isInactive())
+            if (!account.isInactive())
             {
-                // If there is no active connection we only remove the account from memory if it is dead.
-                if (connection == null)
+                continue;
+            }
+
+            // If there is no active connection we only remove the account from memory if it is dead.
+            if (connection == null)
+            {
+                if (account.isDead())
                 {
-                    if (account.isDead())
-                    {
-                        accounts.remove(entry.getKey());
-                    }
+                    accounts.remove(entry.getKey());
                 }
-                // If there is an active connection we attempt to save the account to the database before removing it
-                // from memory.
-                else
+            }
+            // If there is an active connection we attempt to save the account to the database before removing it
+            // from memory.
+            else
+            {
+                if (saveToDatabase(account) || account.isDead())
                 {
-                    if (saveToDatabase(account) || account.isDead())
-                    {
-                        accounts.remove(entry.getKey());
-                    }
+                    accounts.remove(entry.getKey());
                 }
             }
         }

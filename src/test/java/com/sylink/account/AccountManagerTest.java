@@ -21,6 +21,22 @@ class AccountManagerTest
     }
 
     @Test
+    void getAccountFromMemory()
+    {
+        assertNotNull(accountManager.getAccount(76L, true));
+        assertNotNull(accountManager.getAccount(76L, false));
+    }
+
+    @Test
+    void gettingAccountFromMemoryBumpsActivityTime()
+    {
+        final long activityTime = accountManager.getAccount(78L).getLastActivityTime();
+
+        assertNotNull(accountManager.getAccount(78L, false));
+        assertNotEquals(activityTime, accountManager.getAccount(78L).getLastActivityTime());
+    }
+
+    @Test
     void getAccountNullIfNotExist()
     {
         assertNull(accountManager.getAccount(1L, false));
@@ -34,6 +50,7 @@ class AccountManagerTest
         assertNotNull(account);
         assertEquals(5L, account.getDiscordId());
         assertTrue(accountManager.existsInMemory(5L));
+        assertEquals(0.0, account.getBalance());
     }
 
     @Test
@@ -64,31 +81,304 @@ class AccountManagerTest
     }
 
     @Test
-    void loadingAccountFromDatabaseAgain()
+    void getAccountCreatesNewByDefault()
     {
-        Account account = accountManager.getAccount(10L);
+        assertFalse(accountManager.existsInMemory(444L));
 
-        account.setBalance(20.0);
+        final Account account = accountManager.getAccount(444L);
 
-        assertEquals(20.0, account.getBalance());
-        assertTrue(accountManager.existsInMemory(10L));
-
-        assertTrue(accountManager.loadFromDatabase(account));
-
-        assertEquals(10.0, account.getBalance());
+        assertTrue(accountManager.existsInMemory(444L));
+        assertEquals(0.0, account.getBalance());
     }
 
     @Test
-    void deletingAccountFromMemory()
+    void getConnectionBumpsLastActivity()
     {
-        Account account = accountManager.getAccount(11L);
+        final long activityTime = accountManager.getConnectionLastActivity();
+
+        assertNotNull(accountManager.getConnection());
+        assertNotEquals(activityTime, accountManager.getConnectionLastActivity());
+    }
+
+    @Test
+    void executingQueryToDatabase()
+    {
+        assertNotNull(accountManager.getAccount(578L));
+
+        accountManager.saveToDatabase(578L);
+
+        assertTrue(accountManager.existsInDatabase(578L));
+
+        accountManager.executeQuery("DELETE FROM accounts WHERE id = 578");
+
+        assertFalse(accountManager.existsInDatabase(578L));
+    }
+
+    @Test
+    void executingMultipleQueriesToDatabase()
+    {
+        assertNotNull(accountManager.getAccount(579L));
+        assertNotNull(accountManager.getAccount(580L));
+
+        accountManager.saveToDatabase(579L);
+        accountManager.saveToDatabase(580L);
+
+        assertTrue(accountManager.existsInDatabase(579L));
+        assertTrue(accountManager.existsInDatabase(580L));
+
+        accountManager.executeQuery("DELETE FROM accounts WHERE id = 579", "DELETE FROM accounts WHERE id = 580");
+
+        assertFalse(accountManager.existsInDatabase(579L));
+        assertFalse(accountManager.existsInDatabase(580L));
+    }
+
+    @Test
+    void accountDoesntExistInDatabase()
+    {
+        assertFalse(accountManager.existsInDatabase(2L));
+    }
+
+    @Test
+    void accountDoesExistInDatabase()
+    {
+        assertTrue(accountManager.existsInDatabase(10L));
+    }
+
+    @Test
+    void accountExistsIfInDatabaseAgain()
+    {
+        final Account account = new Account(10L);
+
+        assertTrue(accountManager.existsInDatabase(account));
+    }
+
+    @Test
+    void accountExistsInMemory()
+    {
+        assertNotNull(accountManager.getAccount(617L));
+        assertTrue(accountManager.existsInMemory(617L));
+    }
+
+    @Test
+    void accountExistsEntirelyIfInMemory()
+    {
+        assertFalse(accountManager.existsInDatabase(851L));
+        assertNotNull(accountManager.getAccount(851L));
+        assertTrue(accountManager.exists(851L));
+    }
+
+    @Test
+    void accountExistsEntirelyIfInDatabase()
+    {
+        accountManager.deleteFromMemory(10L);
+
+        assertFalse(accountManager.existsInMemory(10L));
+        assertTrue(accountManager.exists(10L));
+    }
+
+    @Test
+    void accountDoesntExist()
+    {
+        assertFalse(accountManager.exists(9999999L));
+    }
+
+    @Test
+    void savingNonExistentAccount()
+    {
+        assertFalse(accountManager.saveToDatabase(432908587L));
+    }
+
+    @Test
+    void dontSaveAccountToDatabaseIfExistsAndNoChanges()
+    {
+        final Account account = accountManager.getAccount(100L);
 
         assertNotNull(account);
-        assertTrue(accountManager.existsInMemory(11L));
 
+        account.setNeedsToSync(false);
+
+        assertFalse(account.needsToSync());
+
+        if (!accountManager.existsInDatabase(100L))
+        {
+            assertTrue(accountManager.saveToDatabase(account));
+        }
+
+        assertFalse(accountManager.saveToDatabase(100L));
+    }
+
+    @Test
+    void savingNewAccountToDatabase()
+    {
+        accountManager.delete(100L);
+
+        assertNotNull(accountManager.getAccount(100L));
+        assertTrue(accountManager.existsInMemory(100L));
+        assertFalse(accountManager.existsInDatabase(100L));
+
+        assertTrue(accountManager.saveToDatabase(100L));
+
+        assertTrue(accountManager.existsInDatabase(100L));
+        assertNotNull(accountManager.getAccount(100L, false));
+    }
+
+    @Test
+    void updatingExistingAccountInDatabase()
+    {
+        Account account = accountManager.getAccount(100L);
+
+        assertNotNull(account);
+
+        if (!accountManager.existsInDatabase(100L))
+        {
+            assertTrue(accountManager.saveToDatabase(100L));
+        }
+
+        account.setBalance(7.7);
+
+        assertTrue(accountManager.saveToDatabase(100L));
+
+        accountManager.deleteFromMemory(100L);
+
+        account = accountManager.getAccount(100L, false);
+
+        assertNotNull(account);
+        assertEquals(7.7, account.getBalance());
+    }
+
+    @Test
+    void savingLoadingAccountPermission()
+    {
+        Account account = accountManager.getAccount(100L);
+
+        assertNotNull(account);
+
+        account.addPermission("admin");
+
+        accountManager.saveToDatabase(account);
         accountManager.deleteFromMemory(account);
 
-        assertFalse(accountManager.existsInMemory(11L));
+        assertFalse(accountManager.existsInMemory(100L));
+
+        account = accountManager.getAccount(100L, false);
+
+        assertNotNull(account);
+        assertTrue(account.hasPermission("admin"));
+        assertTrue(account.hasPermissions());
+    }
+
+    @Test
+    void savingLoadingAccountPermissions()
+    {
+        Account account = accountManager.getAccount(100L);
+
+        assertNotNull(account);
+
+        account.addPermission("admin");
+        account.addPermission("*");
+        account.addPermission("all");
+
+        accountManager.saveToDatabase(account);
+        accountManager.deleteFromMemory(account);
+
+        assertFalse(accountManager.existsInMemory(100L));
+
+        account = accountManager.getAccount(100L, false);
+
+        assertNotNull(account);
+        assertTrue(account.hasPermission("admin"));
+        assertTrue(account.hasPermission("*"));
+        assertTrue(account.hasPermission("all"));
+        assertTrue(account.hasPermissions());
+    }
+
+    @Test
+    void savingLoadingAccountRole()
+    {
+        Account account = accountManager.getAccount(100L);
+
+        assertNotNull(account);
+
+        account.addRole(1L);
+
+        accountManager.saveToDatabase(account);
+        accountManager.deleteFromMemory(account);
+
+        assertFalse(accountManager.existsInMemory(100L));
+
+        account = accountManager.getAccount(100L, false);
+
+        assertNotNull(account);
+        assertTrue(account.hasRole(1L));
+        assertTrue(account.hasRoles());
+    }
+
+    @Test
+    void savingLoadingAccountRoles()
+    {
+        Account account = accountManager.getAccount(100L);
+
+        assertNotNull(account);
+
+        account.addRole(1L);
+        account.addRole(2L);
+        account.addRole(3L);
+
+        accountManager.saveToDatabase(account);
+        accountManager.deleteFromMemory(account);
+
+        assertFalse(accountManager.existsInMemory(100L));
+
+        account = accountManager.getAccount(100L, false);
+
+        assertNotNull(account);
+        assertTrue(account.hasRole(1L));
+        assertTrue(account.hasRole(2L));
+        assertTrue(account.hasRole(3L));
+        assertTrue(account.hasRoles());
+    }
+
+    @Test
+    void savingLoadingBalance()
+    {
+        Account account = accountManager.getAccount(100L);
+
+        assertNotNull(account);
+
+        account.setBalance(100.0);
+
+        accountManager.saveToDatabase(account);
+        accountManager.deleteFromMemory(account);
+
+        assertFalse(accountManager.existsInMemory(100L));
+
+        account = accountManager.getAccount(100L, false);
+
+        assertNotNull(account);
+        assertEquals(100.0, account.getBalance());
+    }
+
+    @Test
+    void flushingAccountSavesItToDatabase()
+    {
+        accountManager.delete(100L);
+
+        assertFalse(accountManager.existsInDatabase(100L));
+
+        Account account = accountManager.getAccount(100L);
+
+        assertNotNull(account);
+
+        account.setBalance(6.6);
+        accountManager.flushFromMemory(account, false);
+
+        assertFalse(accountManager.existsInMemory(100L));
+        assertTrue(accountManager.existsInDatabase(100L));
+
+        account = accountManager.getAccount(100L, false);
+
+        assertNotNull(account);
+        assertEquals(6.6, account.getBalance());
     }
 
     @Test
@@ -117,6 +407,52 @@ class AccountManagerTest
         accountManager.flushFromMemory(account);
 
         assertFalse(accountManager.existsInMemory(4L));
+    }
+
+    @Test
+    void loadingAccountDataFromDatabase()
+    {
+        Account account = accountManager.getAccount(10L, false);
+
+        assertNotNull(account);
+
+        account.setBalance(0.0);
+        account.clearRoles();
+        account.clearPermissions();
+
+        assertEquals(0.0, account.getBalance());
+        assertFalse(account.hasRoles());
+        assertFalse(account.hasPermissions());
+
+        assertTrue(accountManager.loadFromDatabase(account));
+
+        assertEquals(10.0, account.getBalance());
+        assertTrue(account.hasPermission("admin"));
+        assertTrue(account.hasRole(10L));
+    }
+
+    @Test
+    void deletingAccountFromMemory()
+    {
+        Account account = accountManager.getAccount(11L);
+
+        assertNotNull(account);
+        assertTrue(accountManager.existsInMemory(11L));
+
+        accountManager.deleteFromMemory(account);
+
+        assertFalse(accountManager.existsInMemory(11L));
+    }
+
+    @Test
+    void deletingAccountFromMemoryAgain()
+    {
+        assertNotNull(accountManager.getAccount(11L));
+        assertTrue(accountManager.existsInMemory(11L));
+
+        accountManager.deleteFromMemory(11L);
+
+        assertFalse(accountManager.existsInMemory(11L));
     }
 
     @Test
@@ -165,170 +501,28 @@ class AccountManagerTest
 
         assertTrue(accountManager.existsInDatabase(300L));
 
-        accountManager.delete(300L);
+        accountManager.delete(account);
 
         assertFalse(accountManager.existsInMemory(300L));
         assertFalse(accountManager.existsInDatabase(300L));
     }
 
     @Test
-    void doesntExistInDatabase()
+    void deletingAccountEntirelyAgain()
     {
-        assertFalse(accountManager.existsInDatabase(2L));
-    }
-
-    @Test
-    void doesExistInDatabase()
-    {
-        assertTrue(accountManager.existsInDatabase(10L));
-    }
-
-    @Test
-    void accountExistsIfInMemory()
-    {
-        accountManager.getAccount(20L, true);
-
-        assertTrue(accountManager.exists(20L));
-    }
-
-    @Test
-    void accountExistsIfInDatabase()
-    {
-        assertTrue(accountManager.existsInDatabase(10L));
-    }
-
-    @Test
-    void accountExistsIfInDatabaseAgain()
-    {
-        Account account = new Account(10L);
-
-        assertTrue(accountManager.existsInDatabase(account));
-    }
-
-    @Test
-    void savingAccountToDatabase()
-    {
-        Account account = accountManager.getAccount(100L);
+        Account account = accountManager.getAccount(300L);
 
         assertNotNull(account);
+        assertTrue(accountManager.existsInMemory(300L));
 
-        assertTrue(accountManager.existsInMemory(100L));
+        accountManager.saveToDatabase(account);
 
-        accountManager.flushFromMemory(account, false);
+        assertTrue(accountManager.existsInDatabase(300L));
 
-        assertFalse(accountManager.existsInMemory(100L));
-        assertTrue(accountManager.existsInDatabase(100L));
+        accountManager.delete(300L);
 
-        account = accountManager.getAccount(100L, false);
-
-        assertNotNull(account);
-    }
-
-    @Test
-    void savingLoadingAccountPermission()
-    {
-        Account account = accountManager.getAccount(100L);
-
-        assertNotNull(account);
-
-        account.addPermission("admin");
-
-        accountManager.flushFromMemory(account, false);
-
-        assertFalse(accountManager.existsInMemory(100L));
-
-        account = accountManager.getAccount(100L, false);
-
-        assertNotNull(account);
-        assertTrue(account.hasPermission("admin"));
-        assertTrue(account.hasPermissions());
-    }
-
-    @Test
-    void savingLoadingAccountPermissions()
-    {
-        Account account = accountManager.getAccount(100L);
-
-        assertNotNull(account);
-
-        account.addPermission("admin");
-        account.addPermission("*");
-        account.addPermission("all");
-
-        accountManager.flushFromMemory(account, false);
-
-        assertFalse(accountManager.existsInMemory(100L));
-
-        account = accountManager.getAccount(100L, false);
-
-        assertNotNull(account);
-        assertTrue(account.hasPermission("admin"));
-        assertTrue(account.hasPermission("*"));
-        assertTrue(account.hasPermission("all"));
-        assertTrue(account.hasPermissions());
-    }
-
-    @Test
-    void savingLoadingAccountRole()
-    {
-        Account account = accountManager.getAccount(100L);
-
-        assertNotNull(account);
-
-        account.addRole(1L);
-
-        accountManager.flushFromMemory(account, false);
-
-        assertFalse(accountManager.existsInMemory(100L));
-
-        account = accountManager.getAccount(100L, false);
-
-        assertNotNull(account);
-        assertTrue(account.hasRole(1L));
-        assertTrue(account.hasRoles());
-    }
-
-    @Test
-    void savingLoadingAccountRoles()
-    {
-        Account account = accountManager.getAccount(100L);
-
-        assertNotNull(account);
-
-        account.addRole(1L);
-        account.addRole(2L);
-        account.addRole(3L);
-
-        accountManager.flushFromMemory(account, false);
-
-        assertFalse(accountManager.existsInMemory(100L));
-
-        account = accountManager.getAccount(100L, false);
-
-        assertNotNull(account);
-        assertTrue(account.hasRole(1L));
-        assertTrue(account.hasRole(2L));
-        assertTrue(account.hasRole(3L));
-        assertTrue(account.hasRoles());
-    }
-
-    @Test
-    void savingLoadingBalance()
-    {
-        Account account = accountManager.getAccount(100L);
-
-        assertNotNull(account);
-
-        account.setBalance(100.0);
-
-        accountManager.flushFromMemory(account, false);
-
-        assertFalse(accountManager.existsInMemory(100L));
-
-        account = accountManager.getAccount(100L, false);
-
-        assertNotNull(account);
-        assertEquals(100.0, account.getBalance());
+        assertFalse(accountManager.existsInMemory(300L));
+        assertFalse(accountManager.existsInDatabase(300L));
     }
 
     @AfterAll
