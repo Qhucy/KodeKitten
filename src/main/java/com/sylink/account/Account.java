@@ -237,7 +237,7 @@ public class Account
     /**
      * Syncs internal account role data to the roles the user has on the main guild.
      */
-    public final void syncRoles()
+    public final void syncRolesFromServer()
     {
         final Guild guild = Snowflake.getInstance().getMainGuild();
 
@@ -255,6 +255,29 @@ public class Account
                 }
             }
         }
+    }
+
+    /**
+     * Sets all the roles to the ones stored on this account's data on the main discord server.
+     */
+    public final void syncRolesToServer()
+    {
+        final Guild guild = Snowflake.getInstance().getMainGuild();
+        final List<Role> newRoles = new ArrayList<>();
+
+        for (final long roleId : roles)
+        {
+            final Role role = guild.getRoleById(roleId);
+
+            if (role == null)
+            {
+                continue;
+            }
+
+            newRoles.add(role);
+        }
+
+        guild.modifyMemberRoles(getMember(guild), newRoles).queue();
     }
 
     public final void setBalance(final double balance)
