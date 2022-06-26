@@ -10,9 +10,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Class that contains all data about a user account.
@@ -27,14 +25,14 @@ public class Account
     private boolean loaded = false;
     // Last activity time to track how long an account has been inactive in memory.
     @Getter(AccessLevel.PUBLIC)
-    private long lastActivityTime = 0;
+    private long lastActivityTime = System.currentTimeMillis();
 
     // List of permission strings for this account.
     @Getter(AccessLevel.PUBLIC)
-    private final List<String> permissions = new ArrayList<>();
+    private final Set<String> permissions = new HashSet<>();
     // List of role ids for this account.
     @Getter(AccessLevel.PUBLIC)
-    private final List<Long> roles = new ArrayList<>();
+    private final Set<Long> roles = new HashSet<>();
     @Getter(AccessLevel.PUBLIC)
     private double balance = 0.0;
 
@@ -131,15 +129,7 @@ public class Account
 
     public final boolean hasPermission(@NonNull final String permission)
     {
-        for (final String perm : permissions)
-        {
-            if (perm.equalsIgnoreCase(permission))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return permissions.contains(permission.toLowerCase(Locale.ROOT));
     }
 
     public final void addPermission(@NonNull final String permission)
@@ -149,23 +139,15 @@ public class Account
             return;
         }
 
-        this.permissions.add(permission);
+        this.permissions.add(permission.toLowerCase(Locale.ROOT));
         this.needsToSync = true;
     }
 
     public final void removePermission(@NonNull final String permission)
     {
-        for (final String perm : permissions)
-        {
-            if (!perm.equalsIgnoreCase(permission))
-            {
-                continue;
-            }
+        permissions.remove(permission.toLowerCase(Locale.ROOT));
 
-            this.permissions.remove(perm);
-            this.needsToSync = true;
-            return;
-        }
+        this.needsToSync = true;
     }
 
     /**
@@ -353,6 +335,8 @@ public class Account
 
         permissions.forEach((permission) ->
         {
+            permission = permission.toLowerCase(Locale.ROOT);
+
             if (stringBuilder.isEmpty())
             {
                 stringBuilder.append(permission);
