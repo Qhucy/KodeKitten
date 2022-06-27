@@ -53,32 +53,9 @@ public class Account
     }
 
     /**
-     * @return The Discord user object of the Account.
-     */
-    public final User getUser()
-    {
-        return KodeKitten.getJdaBot().retrieveUserById(discordId).complete();
-    }
-
-    /**
-     * @return The Discord member object of the Account.
-     */
-    public final Member getMember(@NonNull final Guild guild)
-    {
-        return guild.retrieveMemberById(discordId).complete();
-    }
-
-    public final Member getMember()
-    {
-        final Guild guild = Snowflake.getInstance().getMainGuild();
-
-        return (guild == null) ? null : getMember(guild);
-    }
-
-    /**
      * Sets the last activity time to the current time.
      */
-    public final void bumpLastActivityTime()
+    protected final void bumpLastActivityTime()
     {
         lastActivityTime = System.currentTimeMillis();
     }
@@ -120,6 +97,42 @@ public class Account
     }
 
     /**
+     * @return The Discord member object of the Account in the given guild.
+     */
+    public final Member getMember(@NonNull final Guild guild)
+    {
+        return guild.retrieveMemberById(discordId).complete();
+    }
+
+    /**
+     * @return The Discord member object of the Account in the main guild.
+     */
+    public final Member getMember()
+    {
+        final Guild guild = Snowflake.getInstance().getMainGuild();
+
+        return (guild == null) ? null : getMember(guild);
+    }
+
+    /**
+     * @return The Discord user object of the Account from the given guild.
+     */
+    public final User getUser(@NonNull final Guild guild)
+    {
+        return getMember(guild).getUser();
+    }
+
+    /**
+     * @return The Discord user object of the Account from the main guild.
+     */
+    public final User getUser()
+    {
+        final Member member = getMember();
+
+        return (member == null) ? null : member.getUser();
+    }
+
+    /**
      * @return True if the account has at least 1 permission.
      */
     public final boolean hasPermissions()
@@ -145,8 +158,12 @@ public class Account
 
     public final void removePermission(@NonNull final String permission)
     {
-        permissions.remove(permission.toLowerCase(Locale.ROOT));
+        if (!hasPermission(permission))
+        {
+            return;
+        }
 
+        permissions.remove(permission.toLowerCase(Locale.ROOT));
         this.needsToSync = true;
     }
 
@@ -155,7 +172,13 @@ public class Account
      */
     public final void clearPermissions()
     {
+        if (permissions.size() == 0)
+        {
+            return;
+        }
+
         permissions.clear();
+        this.needsToSync = true;
     }
 
     /**
