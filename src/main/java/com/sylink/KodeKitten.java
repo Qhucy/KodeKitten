@@ -48,6 +48,8 @@ public final class KodeKitten
      * (maybe will need a messages.toml file or similar to have same messages to test)
      * (4) Then redo tests for all commands
      *
+     * KodeKitten.java tests somehow?
+     *
      * unit tests for timers and schedulers - so that inactive accounts and connections
      * are handled
      */
