@@ -21,7 +21,12 @@ class AccountTest
     {
         assertEquals(0, account.getDiscordId());
         assertEquals(0.0, account.getBalance());
-        assertEquals(0, account.getLastActivityTime());
+    }
+
+    @Test
+    void accountIsntLoadedIfNotConnected()
+    {
+        assertFalse(account.isLoaded());
     }
 
     @Test
@@ -37,11 +42,172 @@ class AccountTest
     @Test
     void bumpingActivityTimeChangesValue()
     {
-        assertEquals(0, account.getLastActivityTime());
+        final long activityTime = account.getLastActivityTime();
+
+        assertDoesNotThrow(() -> Thread.sleep(5));
 
         account.bumpLastActivityTime();
 
-        assertNotEquals(0, account.getLastActivityTime());
+        assertNotEquals(activityTime, account.getLastActivityTime());
+    }
+
+    // is Inactive
+    // is Dead
+
+    @Test
+    void accountDoesntNeedsToSyncIfNotUpdated()
+    {
+        assertFalse(account.needsToSync());
+    }
+
+    @Test
+    void settingNeedsToSync()
+    {
+        account.setNeedsToSync(true);
+
+        assertTrue(account.needsToSync());
+
+        account.setNeedsToSync(false);
+
+        assertFalse(account.needsToSync());
+    }
+
+    // getMember
+    // getUser
+
+    @Test
+    void doesntHavePermissionsOnCreation()
+    {
+        assertFalse(account.hasPermissions());
+    }
+
+    @Test
+    void canAddPermissions()
+    {
+        account.addPermission("admin");
+
+        assertTrue(account.hasPermissions());
+        assertTrue(account.hasPermission("admin"));
+    }
+
+    @Test
+    void addingPermissionsNeedsToSync()
+    {
+        assertFalse(account.needsToSync());
+
+        account.addPermission("admin");
+
+        assertTrue(account.needsToSync());
+    }
+
+    @Test
+    void addingDuplicatePermissionDoesntNeedToSync()
+    {
+        assertFalse(account.needsToSync());
+
+        account.addPermission("admin");
+
+        assertTrue(account.needsToSync());
+
+        account.setNeedsToSync(false);
+
+        assertFalse(account.needsToSync());
+
+        account.addPermission("admin");
+
+        assertFalse(account.needsToSync());
+    }
+
+    @Test
+    void canRemovePermissions()
+    {
+        account.addPermission("admin");
+
+        assertTrue(account.hasPermissions());
+        assertTrue(account.hasPermission("admin"));
+
+        account.removePermission("admin");
+
+        assertFalse(account.hasPermissions());
+        assertFalse(account.hasPermission("admin"));
+    }
+
+    @Test
+    void removingPermissionsNeedsToSync()
+    {
+        assertFalse(account.needsToSync());
+
+        account.addPermission("admin");
+
+        assertTrue(account.needsToSync());
+
+        account.setNeedsToSync(false);
+
+        assertFalse(account.needsToSync());
+
+        account.removePermission("admin");
+
+        assertTrue(account.needsToSync());
+    }
+
+    @Test
+    void removingNonExistentPermissionDoesntNeedToSync()
+    {
+        assertFalse(account.needsToSync());
+
+        account.removePermission("all");
+
+        assertFalse(account.needsToSync());
+    }
+
+    @Test
+    void clearingPermissions()
+    {
+        account.addPermission("admin");
+
+        assertTrue(account.hasPermissions());
+        assertTrue(account.hasPermission("admin"));
+
+        account.clearPermissions();
+
+        assertFalse(account.hasPermissions());
+        assertFalse(account.hasPermission("admin"));
+        assertEquals(0, account.getPermissions().size());
+    }
+
+    @Test
+    void clearingPermissionsNeedsToSync()
+    {
+        assertFalse(account.needsToSync());
+
+        account.addPermission("admin");
+        account.addPermission("all");
+
+        assertTrue(account.needsToSync());
+
+        account.setNeedsToSync(false);
+
+        assertFalse(account.needsToSync());
+
+        account.clearPermissions();
+
+        assertTrue(account.needsToSync());
+    }
+
+    @Test
+    void clearingZeroPermissionsDoesntNeedToSync()
+    {
+        assertFalse(account.needsToSync());
+
+        account.clearPermissions();
+
+        assertFalse(account.needsToSync());
+    }
+
+    @Test
+    void accountBalanceZeroOnCreation()
+    {
+        assertEquals(0.0, account.getBalance());
     }
 
     @Test
@@ -151,18 +317,6 @@ class AccountTest
     }
 
     @Test
-    void accountIsntLoadedIfNotConnected()
-    {
-        assertFalse(account.isLoaded());
-    }
-
-    @Test
-    void accountDoesntNeedsToSyncIfNotUpdated()
-    {
-        assertFalse(account.needsToSync());
-    }
-
-    @Test
     void accountDoesntHaveRolesOnCreation()
     {
         assertFalse(account.hasRoles());
@@ -189,50 +343,6 @@ class AccountTest
 
         assertFalse(account.hasRoles());
         assertFalse(account.hasRole(1L));
-    }
-
-    @Test
-    void doesntHavePermissionsOnCreation()
-    {
-        assertFalse(account.hasPermissions());
-    }
-
-    @Test
-    void canAddPermissions()
-    {
-        account.addPermission("admin");
-
-        assertTrue(account.hasPermissions());
-        assertTrue(account.hasPermission("admin"));
-    }
-
-    @Test
-    void canRemovePermissions()
-    {
-        account.addPermission("admin");
-
-        assertTrue(account.hasPermissions());
-        assertTrue(account.hasPermission("admin"));
-
-        account.removePermission("admin");
-
-        assertFalse(account.hasPermissions());
-        assertFalse(account.hasPermission("admin"));
-    }
-
-    @Test
-    void clearingPermissions()
-    {
-        account.addPermission("admin");
-
-        assertTrue(account.hasPermissions());
-        assertTrue(account.hasPermission("admin"));
-
-        account.clearPermissions();
-
-        assertFalse(account.hasPermissions());
-        assertFalse(account.hasPermission("admin"));
-        assertEquals(0, account.getPermissions().size());
     }
 
     @Test
