@@ -29,16 +29,6 @@ class AccountTest
     }
 
     @Test
-    void constructorWithLastActivityTime()
-    {
-        Account account = new Account(0L, 100L);
-
-        assertEquals(0L, account.getDiscordId());
-        assertEquals(0.0, account.getBalance());
-        assertEquals(100L, account.getLastActivityTime());
-    }
-
-    @Test
     void accountIsntLoadedIfNotConnected()
     {
         assertFalse(account.isLoaded());
@@ -52,6 +42,14 @@ class AccountTest
         account.setLoaded();
 
         assertTrue(account.isLoaded());
+    }
+
+    @Test
+    void settingLastActivityTime()
+    {
+        account.setLastActivityTime(100L);
+
+        assertEquals(100L, account.getLastActivityTime());
     }
 
     @Test
@@ -70,7 +68,8 @@ class AccountTest
     void accountIsntInactive()
     {
         final long activeLessThan10MinutesAgo = System.currentTimeMillis() - (500 * 1000);
-        final Account account = new Account(0L, activeLessThan10MinutesAgo);
+
+        account.setLastActivityTime(activeLessThan10MinutesAgo);
 
         assertFalse(account.isInactive());
     }
@@ -79,7 +78,8 @@ class AccountTest
     void accountIsInactive()
     {
         final long activeMoreThan10MinutesAgo = System.currentTimeMillis() - (700 * 1000);
-        final Account account = new Account(0L, activeMoreThan10MinutesAgo);
+
+        account.setLastActivityTime(activeMoreThan10MinutesAgo);
 
         assertTrue(account.isInactive());
     }
@@ -88,7 +88,8 @@ class AccountTest
     void accountIsntDead()
     {
         final long activeLessThanAnHourAgo = System.currentTimeMillis() - (3500 * 1000);
-        final Account account = new Account(0L, activeLessThanAnHourAgo);
+
+        account.setLastActivityTime(activeLessThanAnHourAgo);
 
         assertFalse(account.isDead());
     }
@@ -97,7 +98,8 @@ class AccountTest
     void accountIsDead()
     {
         final long activeOverAnHourAgo = System.currentTimeMillis() - (3700 * 1000);
-        final Account account = new Account(0L, activeOverAnHourAgo);
+
+        account.setLastActivityTime(activeOverAnHourAgo);
 
         assertTrue(account.isDead());
     }
@@ -1041,6 +1043,8 @@ class AccountTest
             assertNotNull(role);
 
             guild.addRoleToMember(member, role).complete();
+
+            assertDoesNotThrow(() -> Thread.sleep(100));
 
             assertTrue(member.getRoles().contains(role));
         }
