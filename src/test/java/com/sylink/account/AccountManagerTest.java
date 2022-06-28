@@ -21,6 +21,18 @@ class AccountManagerTest
     }
 
     @Test
+    void setConnectionLastActivity()
+    {
+        assertDoesNotThrow(() -> Thread.sleep(5));
+
+        final long currentTime = System.currentTimeMillis();
+
+        accountManager.setConnectionLastActivity(currentTime);
+
+        assertEquals(currentTime, accountManager.getConnectionLastActivity());
+    }
+
+    @Test
     void getAccountFromMemory()
     {
         assertNotNull(accountManager.getAccount(76L, true));
@@ -98,6 +110,7 @@ class AccountManagerTest
     {
         final long activityTime = accountManager.getConnectionLastActivity();
 
+        assertDoesNotThrow(() -> Thread.sleep(5));
         assertNotNull(accountManager.getConnection());
         assertNotEquals(activityTime, accountManager.getConnectionLastActivity());
     }
@@ -525,6 +538,130 @@ class AccountManagerTest
 
         assertFalse(accountManager.existsInMemory(300L));
         assertFalse(accountManager.existsInDatabase(300L));
+    }
+
+    @Test
+    void cleanupNullConnection()
+    {
+        accountManager.closeDatabaseConnection();
+
+        assertFalse(accountManager.cleanupConnectionInactivity());
+
+        accountManager.openDatabaseConnection(DATABASE_URL);
+    }
+
+    @Test
+    void cleanupActiveConnection()
+    {
+        final long activityOneMinuteAgo = System.currentTimeMillis() - (60 * 1000);
+
+        accountManager.setConnectionLastActivity(activityOneMinuteAgo);
+
+        assertFalse(accountManager.cleanupConnectionInactivity());
+    }
+
+    @Test
+    void cleanupInactiveConnection()
+    {
+        final long activityTenMinutesAgo = System.currentTimeMillis() - (600 * 1000);
+
+        accountManager.setConnectionLastActivity(activityTenMinutesAgo);
+
+        assertTrue(accountManager.cleanupConnectionInactivity());
+
+        accountManager.openDatabaseConnection(DATABASE_URL);
+    }
+
+    @Test
+    void cleanupZeroInactiveAccounts()
+    {
+        assertFalse(accountManager.cleanupAccountInactivity());
+    }
+
+    @Test
+    void cleanupInactiveAccount()
+    {
+        accountManager.delete(4L);
+
+        assertFalse(accountManager.existsInDatabase(4L));
+
+        final Account account = accountManager.getAccount(4L);
+        final long activeTwentyMinutesAgo = System.currentTimeMillis() - (1200 * 1000);
+
+        account.addBalance(100.0);
+        account.setLastActivityTime(activeTwentyMinutesAgo);
+
+        assertTrue(account.needsToSync());
+        assertTrue(account.isInactive());
+        assertFalse(account.isDead());
+
+        assertTrue(accountManager.cleanupAccountInactivity());
+        assertFalse(accountManager.existsInMemory(4L));
+        assertTrue(accountManager.existsInDatabase(4L));
+    }
+
+    @Test
+    void cleanupInactiveAccountNoSave()
+    {
+        assertTrue(accountManager.existsInDatabase(10L));
+
+        final Account account = accountManager.getAccount(10L);
+        final long activeTwentyMinutesAgo = System.currentTimeMillis() - (1200 * 1000);
+
+        account.setLastActivityTime(activeTwentyMinutesAgo);
+
+        assertFalse(account.needsToSync());
+        assertTrue(account.isInactive());
+        assertFalse(account.isDead());
+
+        assertFalse(accountManager.cleanupAccountInactivity());
+        assertTrue(accountManager.existsInMemory(10L));
+    }
+
+    @Test
+    void cleanupInactiveAccountNoSaveAndIsDead()
+    {
+        assertTrue(accountManager.existsInDatabase(10L));
+
+        final Account account = accountManager.getAccount(10L);
+        final long activeTwoHoursAgo = System.currentTimeMillis() - (7200 * 1000);
+
+        account.setLastActivityTime(activeTwoHoursAgo);
+
+        assertFalse(account.needsToSync());
+        assertTrue(account.isInactive());
+        assertTrue(account.isDead());
+
+        assertTrue(accountManager.cleanupAccountInactivity());
+        assertFalse(accountManager.existsInMemory(10L));
+    }
+
+    @Test
+    void cleanupInactiveAccountNullConnection()
+    {
+        accountManager.closeDatabaseConnection();
+
+        assertFalse(accountManager.cleanupAccountInactivity());
+
+        accountManager.openDatabaseConnection(DATABASE_URL);
+    }
+
+    @Test
+    void cleanupInactiveAccountNullConnectionAndIsDead()
+    {
+        accountManager.closeDatabaseConnection();
+
+        final Account account = accountManager.getAccount(407L);
+        final long activeTwoHoursAgo = System.currentTimeMillis() - (7200 * 1000);
+
+        account.setLastActivityTime(activeTwoHoursAgo);
+
+        assertTrue(account.isInactive());
+        assertTrue(account.isDead());
+
+        assertTrue(accountManager.cleanupAccountInactivity());
+
+        accountManager.openDatabaseConnection(DATABASE_URL);
     }
 
     @AfterAll
