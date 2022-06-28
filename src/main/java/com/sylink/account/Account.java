@@ -4,6 +4,7 @@ import com.sylink.util.Snowflake;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
@@ -26,6 +27,7 @@ public class Account
     private boolean loaded = false;
     // Last activity time to track how long an account has been inactive in memory.
     @Getter(AccessLevel.PUBLIC)
+    @Setter(AccessLevel.PROTECTED)
     private long lastActivityTime = System.currentTimeMillis();
 
     // List of permission strings for this account.
@@ -43,12 +45,6 @@ public class Account
     protected Account(final long discordId)
     {
         this.discordId = discordId;
-    }
-
-    protected Account(final long discordId, final long lastActivityTime)
-    {
-        this.discordId = discordId;
-        this.lastActivityTime = lastActivityTime;
     }
 
     /**
