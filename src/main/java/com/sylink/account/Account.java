@@ -302,18 +302,18 @@ public class Account
     /**
      * Syncs internal account role data to the roles the user has on the given guild.
      */
-    public final void syncRolesFromServer(@Nullable final Guild guild)
+    public final boolean syncRolesFromServer(@Nullable final Guild guild)
     {
         if (guild == null)
         {
-            return;
+            return false;
         }
 
         final Member member = guild.retrieveMemberById(discordId).complete();
 
         if (member == null)
         {
-            return;
+            return false;
         }
 
         final Set<Long> newRoles = new HashSet<>();
@@ -330,31 +330,33 @@ public class Account
 
             this.needsToSync = true;
         }
+
+        return true;
     }
 
     /**
      * Syncs internal account role data to the roles the user has on the main guild.
      */
-    public final void syncRolesFromServer()
+    public final boolean syncRolesFromServer()
     {
-        syncRolesFromServer(Snowflake.getInstance().getMainGuild());
+        return syncRolesFromServer(Snowflake.getInstance().getMainGuild());
     }
 
     /**
      * Sets all the roles to the ones stored on this account's data on the given discord server.
      */
-    public final void syncRolesToServer(@Nullable final Guild guild)
+    public final boolean syncRolesToServer(@Nullable final Guild guild)
     {
         if (guild == null)
         {
-            return;
+            return false;
         }
 
         final Member member = guild.retrieveMemberById(discordId).complete();
 
         if (member == null)
         {
-            return;
+            return false;
         }
 
         final Set<Role> newRoles = new HashSet<>();
@@ -372,14 +374,16 @@ public class Account
         }
 
         guild.modifyMemberRoles(member, newRoles).complete();
+
+        return true;
     }
 
     /**
      * Sets all the roles to the ones stored on this account's data on the main discord server.
      */
-    public final void syncRolesToServer()
+    public final boolean syncRolesToServer()
     {
-        syncRolesToServer(Snowflake.getInstance().getMainGuild());
+        return syncRolesToServer(Snowflake.getInstance().getMainGuild());
     }
 
     /**
