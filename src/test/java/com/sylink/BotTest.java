@@ -9,11 +9,11 @@ import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BotTest
+public class BotTest
 {
 
     // The test token.txt file used for unit testing.
-    private static final Path TOKEN_PATH = Paths.get("src/test/java/com/sylink/token_test.txt");
+    public static final Path TOKEN_PATH = Paths.get("src/test/java/com/sylink/token_test.txt");
     // The path to a blank text file used for unit testing.
     private static final Path BLANK_TOKEN_PATH = Paths.get("src/test/java/com/sylink/blank_token_test.txt");
     // An example invalid path used for unit testing.
