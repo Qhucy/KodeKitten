@@ -933,7 +933,7 @@ class AccountTest
             assertTrue(account.hasRoles());
             assertTrue(account.hasRole(1L));
 
-            account.syncRolesFromServer();
+            assertFalse(account.syncRolesFromServer());
 
             assertTrue(account.hasRoles());
             assertTrue(account.hasRole(1L));
@@ -951,7 +951,7 @@ class AccountTest
 
             assertNotNull(guild);
 
-            account.syncRolesFromServer(guild);
+            assertTrue(account.syncRolesFromServer(guild));
 
             assertTrue(account.hasRoles());
             assertTrue(account.hasRole(Testing.ROLE_BOT_ID));
@@ -967,7 +967,7 @@ class AccountTest
 
             assertNotNull(guild);
 
-            account.syncRolesFromServer(guild);
+            assertTrue(account.syncRolesFromServer(guild));
 
             assertTrue(account.hasRoles());
             assertTrue(account.hasRole(Testing.ROLE_BOT_ID));
@@ -989,7 +989,7 @@ class AccountTest
 
             assertNotNull(guild);
 
-            account.syncRolesFromServer(guild);
+            assertTrue(account.syncRolesFromServer(guild));
 
             assertTrue(account.hasRoles());
             assertTrue(account.hasRole(Testing.ROLE_BOT_ID));
@@ -1012,7 +1012,7 @@ class AccountTest
             assertNotNull(member);
             assertEquals(2, member.getRoles().size());
 
-            account.syncRolesToServer();
+            assertFalse(account.syncRolesToServer());
 
             assertNotEquals(1, member.getRoles().size());
         }
@@ -1031,7 +1031,7 @@ class AccountTest
             assertNotNull(member);
             assertEquals(2, member.getRoles().size());
 
-            account.syncRolesToServer(guild);
+            assertTrue(account.syncRolesToServer(guild));
 
             assertEquals(1, member.getRoles().size());
             assertEquals(Testing.ROLE_KK_ID, member.getRoles().get(0).getIdLong());
