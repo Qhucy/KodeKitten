@@ -1,5 +1,6 @@
 package com.sylink;
 
+import com.sylink.util.Testing;
 import net.dv8tion.jda.api.entities.Activity;
 import org.junit.jupiter.api.*;
 
@@ -154,7 +155,7 @@ class BotTest
     @Test
     void connectingToDiscordFromNewToken()
     {
-        String token = Bot.getTokenFromFile(KodeKitten.TEST_TOKEN_PATH.toFile());
+        String token = Bot.getTokenFromFile(Testing.TOKEN_PATH.toFile());
 
         assertNotNull(token);
 
@@ -174,7 +175,7 @@ class BotTest
         @BeforeAll
         static void setUpAll()
         {
-            bot = KodeKitten.getTestBot();
+            bot = Testing.getBot();
 
             assertNotNull(bot);
             bot.connect();
@@ -238,7 +239,7 @@ class BotTest
     @Test
     void disconnectingBot()
     {
-        Bot bot = KodeKitten.getTestBot();
+        Bot bot = Testing.getBot();
 
         assertNotNull(bot);
         bot.connect();
