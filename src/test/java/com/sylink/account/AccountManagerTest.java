@@ -32,6 +32,8 @@ class AccountManagerTest
     {
         final long activityTime = accountManager.getAccount(78L).getLastActivityTime();
 
+        assertDoesNotThrow(() -> Thread.sleep(5));
+
         assertNotNull(accountManager.getAccount(78L, false));
         assertNotEquals(activityTime, accountManager.getAccount(78L).getLastActivityTime());
     }
