@@ -79,6 +79,14 @@ public final class AccountManager
     private final Map<Long, Account> accounts = new HashMap<>();
 
     /**
+     * Sets the time the connection was last accessed.
+     */
+    void setConnectionLastActivity(final long connectionLastActivity)
+    {
+        this.connectionLastActivity = connectionLastActivity;
+    }
+
+    /**
      * Returns the account from its discord id.
      * If it does not exist in the internal database, it loads it from the database file.
      *
@@ -476,11 +484,11 @@ public final class AccountManager
     /**
      * Closes the account database connection if it has been inactive for over 5 minutes.
      */
-    public void cleanupConnectionInactivity()
+    public boolean cleanupConnectionInactivity()
     {
         if (getConnection() == null)
         {
-            return;
+            return false;
         }
 
         int seconds = (int) ((System.currentTimeMillis() - connectionLastActivity) / 1000);
@@ -489,6 +497,11 @@ public final class AccountManager
         if (seconds > 300)
         {
             closeDatabaseConnection();
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 
@@ -496,9 +509,10 @@ public final class AccountManager
      * Removes accounts flagged as inactive from internal memory.
      * Saves all account data before removing them.
      */
-    public void cleanupAccountInactivity()
+    public boolean cleanupAccountInactivity()
     {
         final Connection connection = getConnection();
+        boolean accountsFlushed = false;
 
         for (var entry : accounts.entrySet())
         {
@@ -515,18 +529,19 @@ public final class AccountManager
                 if (account.isDead())
                 {
                     accounts.remove(entry.getKey());
+                    accountsFlushed = true;
                 }
             }
             // If there is an active connection we attempt to save the account to the database before removing it
             // from memory.
-            else
+            else if (saveToDatabase(account) || account.isDead())
             {
-                if (saveToDatabase(account) || account.isDead())
-                {
-                    accounts.remove(entry.getKey());
-                }
+                accounts.remove(entry.getKey());
+                accountsFlushed = true;
             }
         }
+
+        return accountsFlushed;
     }
 
 }
