@@ -2,6 +2,8 @@ package com.sylink.util;
 
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.sylink.KodeKitten;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 
 import java.io.File;
@@ -17,7 +19,7 @@ public final class ConfigManager
     // The path to the resource in the class loader.
     private final static String RESOURCE_PATH = "config.toml";
     // The path for the config file in the program directory.
-    private final static String CONFIG_PATH = "config.toml";
+    private final static String PROJECT_PATH = "config.toml";
 
     private static ConfigManager instance = null;
 
@@ -31,47 +33,62 @@ public final class ConfigManager
         return instance;
     }
 
-    private List<String> statusMessages;
+    // List of status messages in config key status_messages.
+    @Getter(AccessLevel.PUBLIC)
+    private List<String> statusMessages = null;
+    @Getter(AccessLevel.PUBLIC)
+    // Flags whether configuration data has been loaded yet.
+    private boolean loaded = false;
+
+    /**
+     * Generates a default toml config if it doesn't exist in the program's directory.
+     *
+     * @return If a new config was created.
+     */
+    public boolean createConfigIfNotExist(@NonNull final String resourcePath, @NonNull final String projectPath)
+    {
+        if (!(new File(projectPath)).exists())
+        {
+            KodeKitten.saveResource(resourcePath, projectPath);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Generates a default toml config if it doesn't exist in the program's directory using default paths.
+     *
+     * @return If a new config was created.
+     */
+    public boolean createConfigIfNotExist()
+    {
+        return createConfigIfNotExist(RESOURCE_PATH, PROJECT_PATH);
+    }
 
     /**
      * Loads all configuration data from the config file.
      */
-    public void load(@NonNull final String resourcePath, @NonNull final String configPath)
+    public void load(@NonNull final String resourcePath, @NonNull final String projectPath)
     {
-        createConfigIfNotExist(resourcePath, configPath);
+        createConfigIfNotExist(resourcePath, projectPath);
 
-        try (final FileConfig fileConfig = FileConfig.of(configPath))
+        try (final FileConfig fileConfig = FileConfig.of(projectPath))
         {
             fileConfig.load();
 
             statusMessages = fileConfig.get("status_messages");
-        }
-    }
 
-    public void load()
-    {
-        load(RESOURCE_PATH, CONFIG_PATH);
+            this.loaded = true;
+        }
     }
 
     /**
-     * Generates a default toml config if it doesn't exist in the program's directory.
+     * Loads all configuration data from the default config file.
      */
-    private void createConfigIfNotExist(@NonNull final String resourcePath, @NonNull final String configPath)
+    public void load()
     {
-        if (!(new File(configPath)).exists())
-        {
-            KodeKitten.saveResource(resourcePath, configPath);
-        }
-    }
-
-    private void createConfigIfNotExist()
-    {
-        createConfigIfNotExist(RESOURCE_PATH, CONFIG_PATH);
-    }
-
-    public List<String> getStatusMessages()
-    {
-        return statusMessages;
+        load(RESOURCE_PATH, PROJECT_PATH);
     }
 
     /**
