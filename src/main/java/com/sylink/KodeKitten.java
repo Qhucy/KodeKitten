@@ -28,7 +28,8 @@ public final class KodeKitten
      * | TODO |
      * ========
      * (2) review all code for the entire program so far
-     * (KodeKitten, Bot, AccountManager, Account) CURRENTLY ON: EventHandler
+     * (KodeKitten, Bot, AccountManager, Account, EventHandler, ConfigManager)
+     * CURRENTLY ON: SchedulerManager
      * add command to talk in channels thru console
      * add role check command in console only
      * finish balance command
@@ -220,7 +221,7 @@ public final class KodeKitten
     /**
      * @return The input stream of the given file resource path.
      */
-    private static InputStream getResource(@NonNull final String resourcePath)
+    public static InputStream getResource(@NonNull final String resourcePath)
     {
         try
         {
