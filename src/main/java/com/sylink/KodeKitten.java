@@ -28,8 +28,8 @@ public final class KodeKitten
      * | TODO |
      * ========
      * (2) review all code for the entire program so far
-     * (KodeKitten, Bot, AccountManager, Account, EventHandler, ConfigManager)
-     * CURRENTLY ON: SchedulerManager
+     * (KodeKitten, Bot, AccountManager, Account, EventHandler, ConfigManager, SchedulerManager)
+     * CURRENTLY ON: Snowflake
      * add command to talk in channels thru console
      * add role check command in console only
      * finish balance command
