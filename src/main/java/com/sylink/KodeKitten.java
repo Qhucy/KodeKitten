@@ -34,11 +34,11 @@ public final class KodeKitten
      * finish balance command
      * add coinflip command
      *
-     * Develop TEST discord bot to help run unit tests with JDA
-     * Have the test discord server mirror actual one and methods to use
      * snowflakes for test instead of real thing
      * Maybe make Snowflake.java an ENUM so it has EXACTLY TWO classes,
      * one for main use and one for test use
+     *
+     * consider moving database_test.db to another directory so github doesn't always update it
      * ================
      * | UNIT TESTING |
      * ================
@@ -47,9 +47,6 @@ public final class KodeKitten
      * (4) Then redo tests for all commands
      *
      * KodeKitten.java tests somehow?
-     *
-     * unit tests for timers and schedulers - so that inactive accounts and connections
-     * are handled
      */
 
     private static final Logger logger = Logger.getLogger(KodeKitten.class.getName());
