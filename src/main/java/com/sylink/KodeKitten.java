@@ -12,8 +12,6 @@ import net.dv8tion.jda.api.entities.SelfUser;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -30,7 +28,7 @@ public final class KodeKitten
      * | TODO |
      * ========
      * (2) review all code for the entire program so far
-     * (KodeKitten, Bot, AccountManager) CURRENTLY ON: Account
+     * (KodeKitten, Bot, AccountManager, Account) CURRENTLY ON: EventHandler
      * add command to talk in channels thru console
      * add role check command in console only
      * finish balance command
@@ -53,20 +51,6 @@ public final class KodeKitten
      * unit tests for timers and schedulers - so that inactive accounts and connections
      * are handled
      */
-
-    /**
-     * =============
-     * | IMPORTANT |
-     * =============
-     * The path to the text file that contains the Discord Bot Token for the testing bot.
-     * This is used for unit testing and must be correct to run tests.
-     */
-    public static final Path TEST_TOKEN_PATH = Paths.get("../test_token.txt");
-    /**
-     * The path to the test snowflake config that contains the Discord Snowflake Ids
-     * for the unit test bot to use in the testing discord server.
-     */
-    public static final String TEST_SNOWFLAKE_PATH = "../test_snowflake.toml";
 
     private static final Logger logger = Logger.getLogger(KodeKitten.class.getName());
 
@@ -129,16 +113,6 @@ public final class KodeKitten
     private static void setupLogger()
     {
         System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tF %1$tT] [%4$-7s] %5$s %n");
-    }
-
-    /**
-     * @return The unit testing bot that is separate from the main discord bot.
-     */
-    public static Bot getTestBot()
-    {
-        final String token = Bot.getTokenFromFile(TEST_TOKEN_PATH.toFile());
-
-        return (token == null) ? null : new Bot(token);
     }
 
     public static Bot getBot()
