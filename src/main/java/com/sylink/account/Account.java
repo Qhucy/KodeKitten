@@ -1,6 +1,5 @@
 package com.sylink.account;
 
-import com.sylink.KodeKitten;
 import com.sylink.util.Snowflake;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -9,7 +8,9 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -42,6 +43,12 @@ public class Account
     protected Account(final long discordId)
     {
         this.discordId = discordId;
+    }
+
+    protected Account(final long discordId, final long lastActivityTime)
+    {
+        this.discordId = discordId;
+        this.lastActivityTime = lastActivityTime;
     }
 
     /**
@@ -101,7 +108,14 @@ public class Account
      */
     public final Member getMember(@NonNull final Guild guild)
     {
-        return guild.retrieveMemberById(discordId).complete();
+        try
+        {
+            return guild.retrieveMemberById(discordId).complete();
+        }
+        catch (final ErrorResponseException ignored)
+        {
+            return null;
+        }
     }
 
     /**
@@ -119,7 +133,9 @@ public class Account
      */
     public final User getUser(@NonNull final Guild guild)
     {
-        return getMember(guild).getUser();
+        final Member member = getMember(guild);
+
+        return (member == null) ? null : member.getUser();
     }
 
     /**
@@ -147,7 +163,7 @@ public class Account
 
     public final void addPermission(@NonNull final String permission)
     {
-        if (hasPermission(permission))
+        if (permission.isBlank() || hasPermission(permission))
         {
             return;
         }
@@ -158,7 +174,7 @@ public class Account
 
     public final void removePermission(@NonNull final String permission)
     {
-        if (!hasPermission(permission))
+        if (permission.isBlank() || !hasPermission(permission))
         {
             return;
         }
@@ -172,13 +188,51 @@ public class Account
      */
     public final void clearPermissions()
     {
-        if (permissions.size() == 0)
+        if (permissions.isEmpty())
         {
             return;
         }
 
         permissions.clear();
         this.needsToSync = true;
+    }
+
+    /**
+     * Loads permission data from the SQL column string to a list of permissions.
+     */
+    protected void loadPermissions(@NonNull final String permissionData)
+    {
+        permissions.clear();
+
+        if (!permissionData.isBlank())
+        {
+            permissions.addAll(Arrays.asList(permissionData.split(",")));
+        }
+    }
+
+    /**
+     * @return The list of account permissions as a string of data.
+     */
+    protected final String getPermissionData()
+    {
+        if (permissions.isEmpty())
+        {
+            return "''";
+        }
+
+        final StringBuilder stringBuilder = new StringBuilder("'");
+
+        permissions.forEach((permission) ->
+        {
+            if (stringBuilder.length() != 1)
+            {
+                stringBuilder.append(",");
+            }
+
+            stringBuilder.append(permission.toLowerCase(Locale.ROOT));
+        });
+
+        return stringBuilder.append("'").toString();
     }
 
     /**
@@ -236,7 +290,46 @@ public class Account
      */
     public final void clearRoles()
     {
+        if (roles.isEmpty())
+        {
+            return;
+        }
+
         roles.clear();
+        this.needsToSync = true;
+    }
+
+    /**
+     * Syncs internal account role data to the roles the user has on the given guild.
+     */
+    public final void syncRolesFromServer(@Nullable final Guild guild)
+    {
+        if (guild == null)
+        {
+            return;
+        }
+
+        final Member member = guild.retrieveMemberById(discordId).complete();
+
+        if (member == null)
+        {
+            return;
+        }
+
+        final Set<Long> newRoles = new HashSet<>();
+
+        for (final Role role : member.getRoles())
+        {
+            newRoles.add(role.getIdLong());
+        }
+
+        if (!newRoles.equals(roles))
+        {
+            roles.clear();
+            roles.addAll(newRoles);
+
+            this.needsToSync = true;
+        }
     }
 
     /**
@@ -244,31 +337,27 @@ public class Account
      */
     public final void syncRolesFromServer()
     {
-        final Guild guild = Snowflake.getInstance().getMainGuild();
-
-        if (guild != null)
-        {
-            final Member member = guild.retrieveMemberById(discordId).complete();
-
-            if (member != null)
-            {
-                roles.clear();
-
-                for (final Role role : member.getRoles())
-                {
-                    roles.add(role.getIdLong());
-                }
-            }
-        }
+        syncRolesFromServer(Snowflake.getInstance().getMainGuild());
     }
 
     /**
-     * Sets all the roles to the ones stored on this account's data on the main discord server.
+     * Sets all the roles to the ones stored on this account's data on the given discord server.
      */
-    public final void syncRolesToServer()
+    public final void syncRolesToServer(@Nullable final Guild guild)
     {
-        final Guild guild = Snowflake.getInstance().getMainGuild();
-        final List<Role> newRoles = new ArrayList<>();
+        if (guild == null)
+        {
+            return;
+        }
+
+        final Member member = guild.retrieveMemberById(discordId).complete();
+
+        if (member == null)
+        {
+            return;
+        }
+
+        final Set<Role> newRoles = new HashSet<>();
 
         for (final long roleId : roles)
         {
@@ -282,50 +371,15 @@ public class Account
             newRoles.add(role);
         }
 
-        guild.modifyMemberRoles(getMember(guild), newRoles).queue();
-    }
-
-    public final void setBalance(final double balance)
-    {
-        // Balance cannot be less than 0.
-        this.balance = Math.max(0, balance);
-        this.needsToSync = true;
-    }
-
-    public final void addBalance(final double balance)
-    {
-        // Balance cannot be less than 0.
-        this.balance = Math.max(0, this.balance + balance);
-        this.needsToSync = true;
-    }
-
-    public final void removeBalance(final double balance)
-    {
-        // Balance cannot be less than 0.
-        this.balance = Math.max(0, this.balance - balance);
-        this.needsToSync = true;
+        guild.modifyMemberRoles(member, newRoles).complete();
     }
 
     /**
-     * Resets the account's balance to 0.0
+     * Sets all the roles to the ones stored on this account's data on the main discord server.
      */
-    public final void resetBalance()
+    public final void syncRolesToServer()
     {
-        this.balance = 0.0;
-        this.needsToSync = true;
-    }
-
-    /**
-     * Loads permission data from the SQL column string to a list of permissions.
-     */
-    protected void loadPermissions(@NonNull final String permissionData)
-    {
-        permissions.clear();
-
-        if (!permissionData.isBlank())
-        {
-            permissions.addAll(Arrays.asList(permissionData.split(",")));
-        }
+        syncRolesToServer(Snowflake.getInstance().getMainGuild());
     }
 
     /**
@@ -345,35 +399,6 @@ public class Account
     }
 
     /**
-     * @return The list of account permissions as a string of data.
-     */
-    protected final String getPermissionData()
-    {
-        if (permissions.isEmpty())
-        {
-            return "''";
-        }
-
-        final StringBuilder stringBuilder = new StringBuilder("'");
-
-        permissions.forEach((permission) ->
-        {
-            permission = permission.toLowerCase(Locale.ROOT);
-
-            if (stringBuilder.isEmpty())
-            {
-                stringBuilder.append(permission);
-            }
-            else
-            {
-                stringBuilder.append(permission).append(",");
-            }
-        });
-
-        return stringBuilder.append("'").toString();
-    }
-
-    /**
      * @return The list of account roles as a string of data.
      */
     protected final String getRoleData()
@@ -387,23 +412,88 @@ public class Account
 
         roles.forEach((roleId) ->
         {
-            if (stringBuilder.isEmpty())
+            if (stringBuilder.length() != 1)
             {
-                stringBuilder.append(roleId);
+                stringBuilder.append(",");
             }
-            else
-            {
-                stringBuilder.append(roleId).append(",");
-            }
+
+            stringBuilder.append(roleId);
         });
 
         return stringBuilder.append("'").toString();
     }
 
+    public final void setBalance(final double balance)
+    {
+        if (this.balance == balance)
+        {
+            return;
+        }
+
+        // Balance cannot be less than 0.
+        this.balance = Math.max(0, balance);
+        this.needsToSync = true;
+    }
+
+    public final void addBalance(final double balance)
+    {
+        final double oldBalance = this.balance;
+
+        // Balance cannot be less than 0.
+        this.balance = Math.max(0, this.balance + balance);
+
+        if (oldBalance != this.balance)
+        {
+            this.needsToSync = true;
+        }
+    }
+
+    public final void removeBalance(final double balance)
+    {
+        final double oldBalance = this.balance;
+
+        // Balance cannot be less than 0.
+        this.balance = Math.max(0, this.balance - balance);
+
+        if (oldBalance != this.balance)
+        {
+            this.needsToSync = true;
+        }
+    }
+
+    /**
+     * Resets the account's balance to 0.0
+     */
+    public final void resetBalance()
+    {
+        if (this.balance == 0.0)
+        {
+            return;
+        }
+
+        this.balance = 0.0;
+        this.needsToSync = true;
+    }
+
     @Override
     public final String toString()
     {
-        return "Account(" + discordId + ")";
+        return toString(Snowflake.getInstance().getMainGuild());
+    }
+
+    public final String toString(@Nullable final Guild guild)
+    {
+        if (guild != null)
+        {
+            final User user = getUser(guild);
+
+            if (user != null)
+            {
+                return String.format("Account(%d, %s#%s)", discordId, user.getName(), user.getDiscriminator());
+            }
+        }
+
+        return String.format("Account(%d)", discordId);
     }
 
 }
