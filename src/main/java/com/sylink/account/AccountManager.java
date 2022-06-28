@@ -4,11 +4,12 @@ import com.sylink.KodeKitten;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 
 import javax.annotation.Nullable;
 import java.sql.*;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Singleton class that handles the management of Accounts stored and processed in memory.
@@ -74,17 +75,10 @@ public final class AccountManager
     private Connection connection = null;
     // Connection activity time to track how long a connection has been inactive.
     @Getter(AccessLevel.PUBLIC)
+    @Setter(AccessLevel.PROTECTED)
     private long connectionLastActivity = System.currentTimeMillis();
     // Map the stores the Discord Id associated with its account.
-    private final Map<Long, Account> accounts = new HashMap<>();
-
-    /**
-     * Sets the time the connection was last accessed.
-     */
-    void setConnectionLastActivity(final long connectionLastActivity)
-    {
-        this.connectionLastActivity = connectionLastActivity;
-    }
+    private final Map<Long, Account> accounts = new ConcurrentHashMap<>();
 
     /**
      * Returns the account from its discord id.
@@ -141,7 +135,7 @@ public final class AccountManager
      */
     public Connection getConnection()
     {
-        if (connection == null && !openDatabaseConnection())
+        if (connection == null)
         {
             return null;
         }
@@ -393,6 +387,7 @@ public final class AccountManager
 
             account.bumpLastActivityTime();
             account.setLoaded();
+            account.setNeedsToSync(false);
             return true;
         }
         catch (final SQLException sqlException)
@@ -459,8 +454,6 @@ public final class AccountManager
      */
     public void closeDatabaseConnection()
     {
-        final Connection connection = getConnection();
-
         if (connection == null)
         {
             return;
@@ -486,7 +479,7 @@ public final class AccountManager
      */
     public boolean cleanupConnectionInactivity()
     {
-        if (getConnection() == null)
+        if (connection == null)
         {
             return false;
         }
