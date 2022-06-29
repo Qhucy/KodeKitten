@@ -26,8 +26,21 @@ import java.util.Scanner;
 public class Bot
 {
 
-    // The path to the file that contains the Discord bot token.
+    /**
+     * =============
+     * | IMPORTANT |
+     * =============
+     * The path to the text file that contains the Discord Bot Token for the main bot.
+     */
     private static final Path TOKEN_PATH = Paths.get("token.txt");
+    /**
+     * =============
+     * | IMPORTANT |
+     * =============
+     * The path to the text file that contains the Discord Bot Token for the testing bot.
+     * This is used for unit testing and must be correct to run tests.
+     */
+    public static final Path TEST_TOKEN_PATH = Paths.get("../test_token.txt");
 
     /**
      * @return The discord bot token found from first the token path file and then from user input.
