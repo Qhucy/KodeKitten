@@ -216,7 +216,7 @@ public final class CmdDatabase
                                 for (final long roleId : account.getRoles())
                                 {
                                     final Role role =
-                                            Snowflake.getInstance().getMainGuild().getRoleById(roleId);
+                                            Snowflake.MAIN.getGuild().getRoleById(roleId);
                                     final String roleName = (role == null) ? "null" : role.getName();
 
                                     if (display.isEmpty())
@@ -360,11 +360,11 @@ public final class CmdDatabase
                                         {
                                             account.addRole(roleId);
                                             final Role role =
-                                                    Snowflake.getInstance().getMainGuild().getRoleById(discordId);
+                                                    Snowflake.MAIN.getGuild().getRoleById(discordId);
 
                                             if (role != null)
                                             {
-                                                Snowflake.getInstance().getMainGuild().addRoleToMember(account.getDiscordId(), role).queue();
+                                                Snowflake.MAIN.getGuild().addRoleToMember(account.getDiscordId(), role).queue();
                                             }
 
                                             System.out.println("Added role " + roleId + " to this account");
@@ -375,11 +375,11 @@ public final class CmdDatabase
                                         {
                                             account.removeRole(roleId);
                                             final Role role =
-                                                    Snowflake.getInstance().getMainGuild().getRoleById(discordId);
+                                                    Snowflake.MAIN.getGuild().getRoleById(discordId);
 
                                             if (role != null)
                                             {
-                                                Snowflake.getInstance().getMainGuild().removeRoleFromMember(account.getDiscordId(), role).queue();
+                                                Snowflake.MAIN.getGuild().removeRoleFromMember(account.getDiscordId(), role).queue();
                                             }
 
                                             System.out.println("Removed role " + roleId + " from this account");
@@ -398,7 +398,7 @@ public final class CmdDatabase
 
                                             if (member != null)
                                             {
-                                                Snowflake.getInstance().getMainGuild().modifyMemberRoles(member).queue();
+                                                Snowflake.MAIN.getGuild().modifyMemberRoles(member).queue();
                                             }
 
                                             System.out.println("Cleared all roles from this account");

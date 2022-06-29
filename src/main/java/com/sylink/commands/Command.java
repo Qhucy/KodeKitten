@@ -239,7 +239,7 @@ public abstract class Command
     public void registerGuildCommand()
     {
         // Default implementation is a basic command with a name and description.
-        final Guild guild = Snowflake.getInstance().getMainGuild();
+        final Guild guild = Snowflake.MAIN.getGuild();
         final String name = getName();
 
         if (guild != null)

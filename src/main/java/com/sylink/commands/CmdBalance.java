@@ -68,7 +68,7 @@ public final class CmdBalance
     @Override
     public void registerGuildCommand()
     {
-        final Guild guild = Snowflake.getInstance().getMainGuild();
+        final Guild guild = Snowflake.MAIN.getGuild();
         final String name = super.getName();
 
         if (guild != null)

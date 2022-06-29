@@ -119,7 +119,7 @@ public class Account
      */
     public final Member getMember()
     {
-        final Guild guild = Snowflake.getInstance().getMainGuild();
+        final Guild guild = Snowflake.MAIN.getGuild();
 
         return (guild == null) ? null : getMember(guild);
     }
@@ -335,7 +335,7 @@ public class Account
      */
     public final boolean syncRolesFromServer()
     {
-        return syncRolesFromServer(Snowflake.getInstance().getMainGuild());
+        return syncRolesFromServer(Snowflake.MAIN.getGuild());
     }
 
     /**
@@ -379,7 +379,7 @@ public class Account
      */
     public final boolean syncRolesToServer()
     {
-        return syncRolesToServer(Snowflake.getInstance().getMainGuild());
+        return syncRolesToServer(Snowflake.MAIN.getGuild());
     }
 
     /**
@@ -478,7 +478,7 @@ public class Account
     @Override
     public final String toString()
     {
-        return toString(Snowflake.getInstance().getMainGuild());
+        return toString(Snowflake.MAIN.getGuild());
     }
 
     public final String toString(@Nullable final Guild guild)
