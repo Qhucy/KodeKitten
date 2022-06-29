@@ -35,9 +35,7 @@ public final class KodeKitten
      * finish balance command
      * add coinflip command
      *
-     * snowflakes for test instead of real thing
-     * Maybe make Snowflake.java an ENUM so it has EXACTLY TWO classes,
-     * one for main use and one for test use
+     * Bot make into Enum for MAIN and TEST like Snowflake.java
      *
      * consider moving database_test.db to another directory so github doesn't always update it
      * ================
@@ -48,6 +46,7 @@ public final class KodeKitten
      * (4) Then redo tests for all commands
      *
      * KodeKitten.java tests somehow?
+     * break up into smaller testable methods
      */
 
     private static final Logger logger = Logger.getLogger(KodeKitten.class.getName());
@@ -87,8 +86,8 @@ public final class KodeKitten
         logInfo(getBotUser().getName() + "#" + getBotUser().getDiscriminator() + " connected to Discord!");
 
         // Load all needed data.
-        Snowflake.getInstance().loadFromConfig();
-        Snowflake.getInstance().loadMainGuild();
+        Snowflake.MAIN.loadFromConfig();
+        Snowflake.MAIN.loadGuild(bot);
         ConfigManager.getInstance().load();
         SchedulerManager.getInstance().startTimers();
         registerCommands();
