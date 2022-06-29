@@ -43,14 +43,9 @@ class SchedulerManagerTest
 
         assertEquals(0, balance.get());
 
-        assertDoesNotThrow(() -> Thread.sleep(60));
+        assertDoesNotThrow(() -> Thread.sleep(70));
         assertEquals(1, balance.get());
 
-        assertDoesNotThrow(() -> Thread.sleep(60));
-        assertEquals(2, balance.get());
-
-        assertDoesNotThrow(() -> Thread.sleep(60));
-        assertEquals(3, balance.get());
     }
 
     @Test
@@ -63,16 +58,13 @@ class SchedulerManagerTest
 
         assertEquals(0, balance.get());
 
-        assertDoesNotThrow(() -> Thread.sleep(60));
+        assertDoesNotThrow(() -> Thread.sleep(70));
         assertEquals(1, balance.get());
-
-        assertDoesNotThrow(() -> Thread.sleep(60));
-        assertEquals(2, balance.get());
 
         schedulerManager.stopTimers();
 
-        assertDoesNotThrow(() -> Thread.sleep(60));
-        assertEquals(2, balance.get());
+        assertDoesNotThrow(() -> Thread.sleep(70));
+        assertEquals(1, balance.get());
     }
 
 }
