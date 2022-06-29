@@ -2,86 +2,108 @@ package com.sylink.util;
 
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.file.FileConfig;
+import com.sylink.Bot;
 import com.sylink.KodeKitten;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import net.dv8tion.jda.api.entities.Guild;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Singleton class that holds all Discord Snowflake Id data with easy retrievable functions.
+ * Enums for the main and testing bot that holds all Discord Snowflake Id data with easy retrievable functions.
  */
-public final class Snowflake
+public enum Snowflake
 {
 
-    // The path to the resource in the class loader.
-    private final static String RESOURCE_PATH = "snowflake.toml";
-    // The path for the config file in the program directory.
-    private final static String CONFIG_PATH = "snowflake.toml";
-    private static Snowflake instance = null;
+    MAIN("snowflake.toml", "snowflake.toml"),
+    TEST("snowflake.toml", "../test_snowflake.toml");
 
-    public static Snowflake getInstance()
-    {
-        if (instance == null)
-        {
-            instance = new Snowflake();
-        }
+    // The path to the default snowflake config in code.
+    @Getter(AccessLevel.PUBLIC)
+    private final String resourcePath;
+    // The path to the snowflake config in the project.
+    @Getter(AccessLevel.PUBLIC)
+    private final String projectPath;
 
-        return instance;
-    }
+    @Getter(AccessLevel.PUBLIC)
+    // Flags whether snowflake data has been loaded yet.
+    private boolean loaded = false;
 
     // Map that hold all snowflake ids associated with their key.
     private final Map<String, Long> snowflakes = new HashMap<>();
-    // The main discord guild the bots runs on.
+
+    // The main guild the bot runs on.
     @Getter(AccessLevel.PUBLIC)
-    private Guild mainGuild = null;
+    private Guild guild = null;
 
-    /**
-     * Loads all data from the snowflake toml file into the snowflakes map.
-     */
-    public void loadFromConfig(@NonNull final String resourcePath, @NonNull final String configPath)
+    Snowflake(@NonNull final String resourcePath, @NonNull final String projectPath)
     {
-        snowflakes.clear();
-
-        createConfigIfNotExist(resourcePath, configPath);
-
-        try (final FileConfig fileConfig = FileConfig.of(configPath))
-        {
-            fileConfig.load();
-
-            loadConfigSection(fileConfig, null);
-        }
-    }
-
-    public void loadFromConfig()
-    {
-        loadFromConfig(RESOURCE_PATH, CONFIG_PATH);
+        this.resourcePath = resourcePath;
+        this.projectPath = projectPath;
     }
 
     /**
      * Generates a default snowflake toml config if it doesn't exist in the program's directory.
+     *
+     * @return True if a new config was created.
      */
-    private void createConfigIfNotExist(@NonNull final String resourcePath, @NonNull final String configPath)
+    boolean createConfigIfNotExist(@NonNull final String resourcePath, @NonNull final String projectPath)
     {
-        if (!(new File(configPath)).exists())
+        if (!(new File(projectPath)).exists())
         {
-            KodeKitten.saveResource(resourcePath, configPath);
+            KodeKitten.saveResource(resourcePath, projectPath);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Generates a default snowflake toml config if it doesn't exist in the program's directory.
+     *
+     * @return True if a new config was created.
+     */
+    boolean createConfigIfNotExist()
+    {
+        return createConfigIfNotExist(resourcePath, projectPath);
+    }
+
+    /**
+     * Loads all data from the snowflake toml file into the snowflakes map.
+     */
+    public void loadFromConfig(@NonNull final String resourcePath, @NonNull final String projectPath)
+    {
+        snowflakes.clear();
+
+        createConfigIfNotExist(resourcePath, projectPath);
+
+        try (final FileConfig fileConfig = FileConfig.of(projectPath))
+        {
+            fileConfig.load();
+
+            loadConfigSection(fileConfig, null);
+
+            this.loaded = true;
         }
     }
 
-    private void createConfigIfNotExist()
+    /**
+     * Loads all data from the snowflake toml file into the snowflakes map.
+     */
+    public void loadFromConfig()
     {
-        createConfigIfNotExist(RESOURCE_PATH, CONFIG_PATH);
+        loadFromConfig(resourcePath, projectPath);
     }
 
     /**
      * Recursively loads all sections of the config file.
      */
-    private void loadConfigSection(@NonNull final Config config, String parentKey)
+    private void loadConfigSection(@NonNull final Config config, @Nullable String parentKey)
     {
         if (parentKey == null)
         {
@@ -105,9 +127,9 @@ public final class Snowflake
     /**
      * Loads the main guild object into memory.
      */
-    public void loadMainGuild()
+    public void loadGuild(@NonNull final Bot bot)
     {
-        mainGuild = KodeKitten.getJdaBot().getGuildById(getGuild("id"));
+        guild = bot.getBot().getGuildById(getGuild("id"));
     }
 
     /**
