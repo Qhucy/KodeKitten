@@ -28,14 +28,16 @@ public final class KodeKitten
      * | TODO |
      * ========
      * (2) review all code for the entire program so far
-     * (KodeKitten, Bot, AccountManager, Account, EventHandler, ConfigManager, SchedulerManager)
-     * CURRENTLY ON: Snowflake
+     * (KodeKitten, Bot, AccountManager, Account, EventHandler, ConfigManager, SchedulerManager, Snowflake)
+     * CURRENTLY ON: Bot / Testing -> THEN KodeKitten
+     *
      * add command to talk in channels thru console
      * add role check command in console only
      * finish balance command
      * add coinflip command
      *
      * Bot make into Enum for MAIN and TEST like Snowflake.java
+     * Then remove Testing.java
      *
      * consider moving database_test.db to another directory so github doesn't always update it
      * ================
