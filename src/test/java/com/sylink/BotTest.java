@@ -155,7 +155,7 @@ class BotTest
     @Test
     void connectingToDiscordFromNewToken()
     {
-        String token = Bot.getTokenFromFile(Testing.TOKEN_PATH.toFile());
+        String token = Bot.getTokenFromFile(Bot.TEST_TOKEN_PATH.toFile());
 
         assertNotNull(token);
 
