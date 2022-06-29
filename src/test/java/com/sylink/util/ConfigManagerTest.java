@@ -69,7 +69,6 @@ class ConfigManagerTest
     }
 
     @Test
-    @Order(6)
     void loadFromNonExistentConfigCreatesConfig()
     {
         configManager.load(RESOURCE_PATH, PROJECT_PATH);
@@ -83,7 +82,6 @@ class ConfigManagerTest
     }
 
     @Test
-    @Order(7)
     void loadingStatusMessages()
     {
         configManager.load(PATH, PATH);
@@ -100,7 +98,6 @@ class ConfigManagerTest
     }
 
     @Test
-    @Order(8)
     void getRandomStatusMessage()
     {
         configManager.load(PATH, PATH);
