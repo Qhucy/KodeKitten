@@ -33,12 +33,13 @@ public final class ConfigManager
         return instance;
     }
 
-    // List of status messages in config key status_messages.
-    @Getter(AccessLevel.PUBLIC)
-    private List<String> statusMessages = null;
     @Getter(AccessLevel.PUBLIC)
     // Flags whether configuration data has been loaded yet.
     private boolean loaded = false;
+
+    // List of status messages in config key status_messages.
+    @Getter(AccessLevel.PUBLIC)
+    private List<String> statusMessages = null;
 
     /**
      * Generates a default toml config if it doesn't exist in the program's directory.
