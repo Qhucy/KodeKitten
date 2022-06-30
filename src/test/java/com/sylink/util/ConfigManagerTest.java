@@ -3,6 +3,8 @@ package com.sylink.util;
 import org.junit.jupiter.api.*;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,7 +16,7 @@ class ConfigManagerTest
     private static final String PATH = "src/test/java/com/sylink/util/config_test.toml";
 
     private static final String RESOURCE_PATH = "config.toml";
-    private static final String PROJECT_PATH = "src/test/java/com/sylink/util/config_test_2.toml";
+    private static final Path PROJECT_PATH = Paths.get("src/test/java/com/sylink/util/config_test_2.toml");
 
     private static ConfigManager configManager = null;
 
@@ -44,7 +46,7 @@ class ConfigManagerTest
     {
         assertTrue(configManager.createConfigIfNotExist(RESOURCE_PATH, PROJECT_PATH));
 
-        final File projectFile = new File(PROJECT_PATH);
+        final File projectFile = PROJECT_PATH.toFile();
 
         assertTrue(projectFile.exists());
         assertTrue(projectFile.length() > 0);
@@ -56,14 +58,14 @@ class ConfigManagerTest
     @Order(4)
     void dontCreateNewConfigIfExist()
     {
-        assertFalse(configManager.createConfigIfNotExist(PATH, PATH));
+        assertFalse(configManager.createConfigIfNotExist(PATH, Paths.get(PATH)));
     }
 
     @Test
     @Order(5)
     void loadingFromConfigSetsLoaded()
     {
-        configManager.load(PATH, PATH);
+        configManager.load(PATH, Paths.get(PATH));
 
         assertTrue(configManager.isLoaded());
     }
@@ -73,7 +75,7 @@ class ConfigManagerTest
     {
         configManager.load(RESOURCE_PATH, PROJECT_PATH);
 
-        final File projectFile = new File(PROJECT_PATH);
+        final File projectFile = PROJECT_PATH.toFile();
 
         assertTrue(projectFile.exists());
         assertTrue(projectFile.length() > 0);
@@ -84,7 +86,7 @@ class ConfigManagerTest
     @Test
     void loadingStatusMessages()
     {
-        configManager.load(PATH, PATH);
+        configManager.load(PATH, Paths.get(PATH));
 
         List<String> statusMessages = configManager.getStatusMessages();
 
@@ -100,7 +102,7 @@ class ConfigManagerTest
     @Test
     void getRandomStatusMessage()
     {
-        configManager.load(PATH, PATH);
+        configManager.load(PATH, Paths.get(PATH));
 
         final String statusMessage = configManager.getRandomStatusMessage();
 
