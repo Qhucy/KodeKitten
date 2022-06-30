@@ -51,6 +51,8 @@ public final class KodeKitten
      */
 
     private static final Logger logger = Logger.getLogger(KodeKitten.class.getName());
+    // The logging prefix for each logged console message.
+    static final String LOGGING_FORMAT = "[%1$tF %1$tT] [%4$-7s] %5$s %n";
 
     // Internal list of all registered commands.
     private static final Command[] commands = new Command[]{new CmdHelp(), new CmdBalance(), new CmdDatabase()};
@@ -101,9 +103,9 @@ public final class KodeKitten
     /**
      * Sets up the format of the logger.
      */
-    private static void setupLogger()
+    static void setupLogger()
     {
-        System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tF %1$tT] [%4$-7s] %5$s %n");
+        System.setProperty("java.util.logging.SimpleFormatter.format", LOGGING_FORMAT);
     }
 
     /**
