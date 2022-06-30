@@ -43,6 +43,11 @@ public final class KodeKitten
      *
      * KodeKitten.java tests somehow?
      * break up into smaller testable methods
+     * ============
+     * | END GAME |
+     * ============
+     * Have code peer-reviewed
+     * Have new programmer try to understand project to test comment quality
      */
 
     private static final Logger logger = Logger.getLogger(KodeKitten.class.getName());
