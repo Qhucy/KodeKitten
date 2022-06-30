@@ -6,7 +6,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Random;
 
@@ -19,7 +20,7 @@ public final class ConfigManager
     // The path to the resource in the class loader.
     private final static String RESOURCE_PATH = "config.toml";
     // The path for the config file in the program directory.
-    private final static String PROJECT_PATH = "config.toml";
+    private final static Path PROJECT_PATH = Paths.get("config.toml");
 
     private static ConfigManager instance = null;
 
@@ -46,9 +47,9 @@ public final class ConfigManager
      *
      * @return If a new config was created.
      */
-    public boolean createConfigIfNotExist(@NonNull final String resourcePath, @NonNull final String projectPath)
+    public boolean createConfigIfNotExist(@NonNull final String resourcePath, @NonNull final Path projectPath)
     {
-        if (!(new File(projectPath)).exists())
+        if (!projectPath.toFile().exists())
         {
             KodeKitten.saveResource(resourcePath, projectPath);
             return true;
@@ -70,7 +71,7 @@ public final class ConfigManager
     /**
      * Loads all configuration data from the config file.
      */
-    public void load(@NonNull final String resourcePath, @NonNull final String projectPath)
+    public void load(@NonNull final String resourcePath, @NonNull final Path projectPath)
     {
         createConfigIfNotExist(resourcePath, projectPath);
 
