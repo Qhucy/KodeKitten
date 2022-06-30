@@ -43,4 +43,12 @@ public enum CommandType
         return Arrays.asList(USER, GUILD, DM);
     }
 
+    /**
+     * @return The USER and GUILD command type
+     */
+    public static List<CommandType> guild()
+    {
+        return Arrays.asList(GUILD, USER);
+    }
+
 }
