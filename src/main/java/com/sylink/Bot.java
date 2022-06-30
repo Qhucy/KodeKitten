@@ -21,53 +21,13 @@ import java.nio.file.Paths;
 import java.util.Scanner;
 
 /**
- * Holds data for a JDA object and its connection token.
+ * Holds data for the MAIN and TEST JDA object and its connection token.
  */
-public class Bot
+public enum Bot
 {
 
-    /**
-     * =============
-     * | IMPORTANT |
-     * =============
-     * The path to the text file that contains the Discord Bot Token for the main bot.
-     */
-    private static final Path TOKEN_PATH = Paths.get("token.txt");
-    /**
-     * =============
-     * | IMPORTANT |
-     * =============
-     * The path to the text file that contains the Discord Bot Token for the testing bot.
-     * This is used for unit testing and must be correct to run tests.
-     */
-    public static final Path TEST_TOKEN_PATH = Paths.get("../test_token.txt");
-
-    /**
-     * @return The discord bot token found from first the token path file and then from user input.
-     */
-    public static String findToken(@NonNull final File file)
-    {
-        final String token = getTokenFromFile(file);
-
-        if (token == null)
-        {
-            System.out.println("Unable to find 'token.txt' from project directory.");
-
-            return getTokenFromInput();
-        }
-        else
-        {
-            return token;
-        }
-    }
-
-    /**
-     * Finds the discord bot token using the default token path file.
-     */
-    public static String findToken()
-    {
-        return findToken(TOKEN_PATH.toFile());
-    }
+    MAIN(Paths.get("token.txt")),
+    TEST(Paths.get("../test_token.txt"));
 
     /**
      * @return The discord bot token from the given file.
@@ -103,14 +63,54 @@ public class Bot
         return (token.isBlank()) ? null : token;
     }
 
+    /**
+     * @return The discord bot token found from first the token path file and then from user input.
+     */
+    public static String findToken(@NonNull final File file)
+    {
+        final String token = getTokenFromFile(file);
+
+        if (token == null)
+        {
+            KodeKitten.logSevere("Unable to find 'token.txt' from project directory.");
+
+            return getTokenFromInput();
+        }
+        else
+        {
+            return token;
+        }
+    }
+
+    // The path to the text file that contains the Discord connection token.
     @Getter(AccessLevel.PUBLIC)
-    private JDA bot = null;
+    private final Path tokenPath;
+    // The Discord Bot Connection Token.
     @Getter(AccessLevel.PUBLIC)
     private String token;
+    // The Discord JDA API Object that holds the connected discord bot.
+    @Getter(AccessLevel.PUBLIC)
+    private JDA bot = null;
 
-    public Bot(@NonNull final String token)
+    Bot(@NonNull final Path tokenPath)
     {
-        this.token = token;
+        this.tokenPath = tokenPath;
+    }
+
+    /**
+     * @return The discord bot token from the file at the token file's path.
+     */
+    String getTokenFromFile()
+    {
+        return getTokenFromFile(tokenPath.toFile());
+    }
+
+    /**
+     * Finds the discord bot token using the default token path file.
+     */
+    public String findToken()
+    {
+        return findToken(tokenPath.toFile());
     }
 
     /**
@@ -125,26 +125,39 @@ public class Bot
     }
 
     /**
-     * @return The SelfUser object of the JDA bot or null if not connected.
+     * Sets the token to the token located in the token path's file.
      */
-    public SelfUser getSelfUser()
+    public void setTokenFromFile()
     {
-        if (!isConnected())
+        final String token = getTokenFromFile();
+
+        if (token != null)
         {
-            sendConnectionError();
-            return null;
+            setToken(token);
         }
         else
         {
-            return bot.getSelfUser();
+            KodeKitten.logSevere("Unable to set null token from file " + tokenPath.toString());
         }
     }
 
     /**
      * Connects the Discord bot to the server.
+     *
+     * @return If the bot successfully connected to discord.
      */
-    public void connect()
+    public boolean connect()
     {
+        if (token == null)
+        {
+            setTokenFromFile();
+
+            if (token == null)
+            {
+                return false;
+            }
+        }
+
         try
         {
             final JDABuilder builder = JDABuilder.createDefault(token);
@@ -158,21 +171,26 @@ public class Bot
             bot = builder.build();
             // Wait for the JDA object to be fully connected and ready.
             bot.awaitReady();
+
+            return true;
         }
         catch (@NonNull final LoginException | InterruptedException exception)
         {
             KodeKitten.logSevere("Unable to login to Discord servers, shutting down!");
             exception.printStackTrace();
+            return false;
         }
     }
 
     /**
      * Changes the token of the Discord bot and connects it to the server.
+     *
+     * @return If the bot successfully connected to discord.
      */
-    public void connect(@NonNull final String token)
+    public boolean connect(@NonNull final String token)
     {
         setToken(token);
-        connect();
+        return connect();
     }
 
     /**
@@ -206,6 +224,22 @@ public class Bot
         for (final StackTraceElement element : Thread.currentThread().getStackTrace())
         {
             System.out.println(element.toString());
+        }
+    }
+
+    /**
+     * @return The SelfUser object of the JDA bot or null if not connected.
+     */
+    public SelfUser getSelfUser()
+    {
+        if (!isConnected())
+        {
+            sendConnectionError();
+            return null;
+        }
+        else
+        {
+            return bot.getSelfUser();
         }
     }
 
