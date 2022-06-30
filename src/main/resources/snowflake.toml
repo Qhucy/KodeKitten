@@ -3,6 +3,8 @@
 #########################
 # You can read about the TOML format at https://toml.io/en/.
 
+bot_id = 983205602631245834
+
 [guild]
 id = 976665240114696292
 
