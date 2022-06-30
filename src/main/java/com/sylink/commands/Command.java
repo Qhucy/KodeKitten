@@ -1,5 +1,6 @@
 package com.sylink.commands;
 
+import com.sylink.Bot;
 import com.sylink.KodeKitten;
 import com.sylink.account.Account;
 import com.sylink.account.AccountManager;
@@ -260,7 +261,7 @@ public abstract class Command
     {
         final String name = getName();
 
-        KodeKitten.getJdaBot().upsertCommand(name, description).queue();
+        Bot.MAIN.getBot().upsertCommand(name, description).queue();
     }
 
 }

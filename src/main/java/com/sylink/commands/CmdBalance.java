@@ -1,5 +1,6 @@
 package com.sylink.commands;
 
+import com.sylink.Bot;
 import com.sylink.KodeKitten;
 import com.sylink.account.Account;
 import com.sylink.account.AccountManager;
@@ -86,7 +87,7 @@ public final class CmdBalance
     {
         final String name = super.getName();
 
-        KodeKitten.getJdaBot().upsertCommand(name, super.getDescription()).queue();
+        Bot.MAIN.getBot().upsertCommand(name, super.getDescription()).queue();
     }
 
 }
