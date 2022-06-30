@@ -7,10 +7,12 @@ import com.sylink.KodeKitten;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import net.dv8tion.jda.api.entities.Guild;
 
 import javax.annotation.Nullable;
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,17 +22,18 @@ import java.util.Map;
 public enum Snowflake
 {
 
-    MAIN("snowflake.toml", "snowflake.toml"),
-    TEST("snowflake.toml", "../test_snowflake.toml");
+    MAIN("snowflake.toml", Paths.get("snowflake.toml")),
+    TEST("snowflake.toml", Paths.get("../test_snowflake.toml"));
 
     // The path to the default snowflake config in code.
     @Getter(AccessLevel.PUBLIC)
     private final String resourcePath;
     // The path to the snowflake config in the project.
     @Getter(AccessLevel.PUBLIC)
-    private final String projectPath;
+    private final Path projectPath;
 
     @Getter(AccessLevel.PUBLIC)
+    @Setter(AccessLevel.PROTECTED)
     // Flags whether snowflake data has been loaded yet.
     private boolean loaded = false;
 
@@ -41,7 +44,7 @@ public enum Snowflake
     @Getter(AccessLevel.PUBLIC)
     private Guild guild = null;
 
-    Snowflake(@NonNull final String resourcePath, @NonNull final String projectPath)
+    Snowflake(@NonNull final String resourcePath, @NonNull final Path projectPath)
     {
         this.resourcePath = resourcePath;
         this.projectPath = projectPath;
@@ -52,9 +55,9 @@ public enum Snowflake
      *
      * @return True if a new config was created.
      */
-    boolean createConfigIfNotExist(@NonNull final String resourcePath, @NonNull final String projectPath)
+    boolean createConfigIfNotExist(@NonNull final String resourcePath, @NonNull final Path projectPath)
     {
-        if (!(new File(projectPath)).exists())
+        if (!projectPath.toFile().exists())
         {
             KodeKitten.saveResource(resourcePath, projectPath);
             return true;
@@ -76,7 +79,7 @@ public enum Snowflake
     /**
      * Loads all data from the snowflake toml file into the snowflakes map.
      */
-    public void loadFromConfig(@NonNull final String resourcePath, @NonNull final String projectPath)
+    public void loadFromConfig(@NonNull final String resourcePath, @NonNull final Path projectPath)
     {
         snowflakes.clear();
 
@@ -138,6 +141,14 @@ public enum Snowflake
     public long get(@NonNull final String key)
     {
         return snowflakes.getOrDefault(key, 0L);
+    }
+
+    /**
+     * @return The snowflake id of the bot account in the config.
+     */
+    public long getBotId()
+    {
+        return snowflakes.get("bot_id");
     }
 
     /**
