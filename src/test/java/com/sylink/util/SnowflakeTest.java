@@ -4,6 +4,8 @@ import com.sylink.Bot;
 import org.junit.jupiter.api.*;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -11,28 +13,24 @@ import static org.junit.jupiter.api.Assertions.*;
 class SnowflakeTest
 {
 
-    private static final String PATH_SNOWFLAKE_TEST = "src/test/java/com/sylink/util/snowflake_test.toml";
-    private static final String PATH_SNOWFLAKE_TEST_2 = "src/test/java/com/sylink/util/snowflake_test_2.toml";
-    private static Snowflake snowflake = null;
-
-    @BeforeAll
-    static void setUpAll()
-    {
-        snowflake = Snowflake.TEST;
-    }
+    private static final Path PATH_SNOWFLAKE_TEST = Paths.get("src/test/java/com/sylink/util/snowflake_test.toml");
+    private static final Path PATH_SNOWFLAKE_TEST_2 = Paths.get("src/test/java/com/sylink/util/snowflake_test_2.toml");
 
     @Test
     @Order(1)
     void isntLoadedOnStartup()
     {
-        assertFalse(snowflake.isLoaded());
+        Snowflake.TEST.setLoaded(false);
+
+        assertFalse(Snowflake.TEST.isLoaded());
     }
 
     @Test
     @Order(2)
     void createNewConfigIfNotExist()
     {
-        assertTrue(snowflake.createConfigIfNotExist(Snowflake.TEST.getResourcePath(), "temp_snowflake.toml"));
+        assertTrue(Snowflake.TEST.createConfigIfNotExist(Snowflake.TEST.getResourcePath(),
+                Paths.get("temp_snowflake" + ".toml")));
 
         final File projectFile = new File("temp_snowflake.toml");
 
@@ -44,24 +42,24 @@ class SnowflakeTest
     @Order(3)
     void dontCreateNewConfigIfExists()
     {
-        assertFalse(snowflake.createConfigIfNotExist(Snowflake.TEST.getResourcePath(), PATH_SNOWFLAKE_TEST));
+        assertFalse(Snowflake.TEST.createConfigIfNotExist(Snowflake.TEST.getResourcePath(), PATH_SNOWFLAKE_TEST));
     }
 
     @Test
     @Order(4)
     void loadingConfigSetsLoaded()
     {
-        assertFalse(snowflake.isLoaded());
+        assertFalse(Snowflake.TEST.isLoaded());
 
-        snowflake.loadFromConfig(Snowflake.TEST.getResourcePath(), PATH_SNOWFLAKE_TEST);
+        Snowflake.TEST.loadFromConfig(Snowflake.TEST.getResourcePath(), PATH_SNOWFLAKE_TEST);
 
-        assertTrue(snowflake.isLoaded());
+        assertTrue(Snowflake.TEST.isLoaded());
     }
 
     @Test
     void loadingConfigCreatesNewIfNotExist()
     {
-        snowflake.loadFromConfig(Snowflake.TEST.getResourcePath(), "temp_snowflake.toml");
+        Snowflake.TEST.loadFromConfig(Snowflake.TEST.getResourcePath(), Paths.get("temp_snowflake.toml"));
 
         final File projectFile = new File("temp_snowflake.toml");
 
@@ -72,87 +70,82 @@ class SnowflakeTest
     @Test
     void loadingConfigCorrectValues()
     {
-        snowflake.loadFromConfig(Snowflake.TEST.getResourcePath(), PATH_SNOWFLAKE_TEST);
+        Snowflake.TEST.loadFromConfig(Snowflake.TEST.getResourcePath(), PATH_SNOWFLAKE_TEST);
 
-        assertEquals(1L, snowflake.get("guild.id"));
-        assertEquals(2L, snowflake.get("roles.member"));
-        assertEquals(4L, snowflake.get("channels.text.general"));
-        assertEquals(6L, snowflake.get("channels.voice.lounge"));
+        assertEquals(1L, Snowflake.TEST.get("guild.id"));
+        assertEquals(2L, Snowflake.TEST.get("roles.member"));
+        assertEquals(4L, Snowflake.TEST.get("channels.text.general"));
+        assertEquals(6L, Snowflake.TEST.get("channels.voice.lounge"));
     }
 
     @Test
     void loadingConfigClearsPastSnowflakes()
     {
-        snowflake.loadFromConfig(Snowflake.TEST.getResourcePath(), PATH_SNOWFLAKE_TEST);
+        Snowflake.TEST.loadFromConfig(Snowflake.TEST.getResourcePath(), PATH_SNOWFLAKE_TEST);
 
-        assertEquals(1L, snowflake.get("guild.id"));
-        assertEquals(2L, snowflake.get("roles.member"));
-        assertEquals(4L, snowflake.get("channels.text.general"));
-        assertEquals(6L, snowflake.get("channels.voice.lounge"));
+        assertEquals(1L, Snowflake.TEST.get("guild.id"));
+        assertEquals(2L, Snowflake.TEST.get("roles.member"));
+        assertEquals(4L, Snowflake.TEST.get("channels.text.general"));
+        assertEquals(6L, Snowflake.TEST.get("channels.voice.lounge"));
 
-        snowflake.loadFromConfig(Snowflake.TEST.getResourcePath(), PATH_SNOWFLAKE_TEST_2);
+        Snowflake.TEST.loadFromConfig(Snowflake.TEST.getResourcePath(), PATH_SNOWFLAKE_TEST_2);
 
-        assertEquals(10L, snowflake.get("guild.id"));
-        assertEquals(20L, snowflake.get("roles.member"));
-        assertEquals(40L, snowflake.get("channels.text.general"));
-        assertEquals(60L, snowflake.get("channels.voice.lounge"));
+        assertEquals(10L, Snowflake.TEST.get("guild.id"));
+        assertEquals(20L, Snowflake.TEST.get("roles.member"));
+        assertEquals(40L, Snowflake.TEST.get("channels.text.general"));
+        assertEquals(60L, Snowflake.TEST.get("channels.voice.lounge"));
     }
 
     @Test
     void loadingAndGettingGuild()
     {
-        snowflake.loadFromConfig();
+        Snowflake.TEST.loadFromConfig();
 
-        assertTrue(snowflake.getGuild("id") != 0L);
+        assertTrue(Snowflake.TEST.getGuild("id") != 0L);
 
-        final Bot bot = Testing.getBot();
+        assertTrue(Bot.TEST.connect());
+        assertTrue(Bot.TEST.isConnected());
 
-        assertNotNull(bot);
+        Snowflake.TEST.loadGuild(Bot.TEST);
 
-        bot.connect();
+        assertNotNull(Snowflake.TEST.getGuild());
 
-        assertTrue(bot.isConnected());
-
-        snowflake.loadGuild(bot);
-
-        assertNotNull(snowflake.getGuild());
-
-        bot.disconnect();
+        Bot.TEST.disconnect();
     }
 
     @Test
     void getGuildReturnsValues()
     {
-        snowflake.loadFromConfig(Snowflake.TEST.getResourcePath(), PATH_SNOWFLAKE_TEST);
+        Snowflake.TEST.loadFromConfig(Snowflake.TEST.getResourcePath(), PATH_SNOWFLAKE_TEST);
 
-        assertEquals(1L, snowflake.getGuild("id"));
+        assertEquals(1L, Snowflake.TEST.getGuild("id"));
     }
 
     @Test
     void getRoleReturnsValues()
     {
-        snowflake.loadFromConfig(Snowflake.TEST.getResourcePath(), PATH_SNOWFLAKE_TEST);
+        Snowflake.TEST.loadFromConfig(Snowflake.TEST.getResourcePath(), PATH_SNOWFLAKE_TEST);
 
-        assertEquals(2L, snowflake.getRole("member"));
-        assertEquals(3L, snowflake.getRole("admin"));
+        assertEquals(2L, Snowflake.TEST.getRole("member"));
+        assertEquals(3L, Snowflake.TEST.getRole("admin"));
     }
 
     @Test
     void getTextChannelReturnsValues()
     {
-        snowflake.loadFromConfig(Snowflake.TEST.getResourcePath(), PATH_SNOWFLAKE_TEST);
+        Snowflake.TEST.loadFromConfig(Snowflake.TEST.getResourcePath(), PATH_SNOWFLAKE_TEST);
 
-        assertEquals(4L, snowflake.getTextChannel("general"));
-        assertEquals(5L, snowflake.getTextChannel("bot_commands"));
+        assertEquals(4L, Snowflake.TEST.getTextChannel("general"));
+        assertEquals(5L, Snowflake.TEST.getTextChannel("bot_commands"));
     }
 
     @Test
     void getVoiceChannelReturnsValues()
     {
-        snowflake.loadFromConfig(Snowflake.TEST.getResourcePath(), PATH_SNOWFLAKE_TEST);
+        Snowflake.TEST.loadFromConfig(Snowflake.TEST.getResourcePath(), PATH_SNOWFLAKE_TEST);
 
-        assertEquals(6L, snowflake.getVoiceChannel("lounge"));
-        assertEquals(7L, snowflake.getVoiceChannel("music"));
+        assertEquals(6L, Snowflake.TEST.getVoiceChannel("lounge"));
+        assertEquals(7L, Snowflake.TEST.getVoiceChannel("music"));
     }
 
 }
