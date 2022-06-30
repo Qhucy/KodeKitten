@@ -6,12 +6,11 @@ import com.sylink.util.ConfigManager;
 import com.sylink.util.SchedulerManager;
 import com.sylink.util.Snowflake;
 import lombok.NonNull;
-import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.SelfUser;
 
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -29,17 +28,12 @@ public final class KodeKitten
      * ========
      * (2) review all code for the entire program so far
      * (KodeKitten, Bot, AccountManager, Account, EventHandler, ConfigManager, SchedulerManager, Snowflake)
-     * CURRENTLY ON: Bot / Testing -> THEN KodeKitten
+     * CURRENTLY ON: KodeKitten
      *
      * add command to talk in channels thru console
      * add role check command in console only
      * finish balance command
      * add coinflip command
-     *
-     * Bot make into Enum for MAIN and TEST like Snowflake.java
-     * Then remove Testing.java
-     *
-     * consider moving database_test.db to another directory so github doesn't always update it
      * ================
      * | UNIT TESTING |
      * ================
@@ -52,9 +46,6 @@ public final class KodeKitten
      */
 
     private static final Logger logger = Logger.getLogger(KodeKitten.class.getName());
-
-    // The object that manages the Discord connection of the bot.
-    private static Bot bot = null;
 
     // Internal list of all registered commands.
     private static final Command[] commands = new Command[]{new CmdHelp(), new CmdBalance(), new CmdDatabase()};
@@ -74,26 +65,22 @@ public final class KodeKitten
         }
 
         // Retrieves the token from startup arguments otherwise finds it elsewhere.
-        bot = new Bot((args.length > 0) ? args[0] : Bot.findToken());
-
-        bot.connect();
-
-        if (!bot.isConnected())
+        if (!Bot.MAIN.connect() || !Bot.MAIN.isConnected())
         {
             System.exit(0);
             return;
         }
 
         // The bot is now connected to Discord.
-        logInfo(getBotUser().getName() + "#" + getBotUser().getDiscriminator() + " connected to Discord!");
+        logInfo(Bot.MAIN.getSelfUser().getName() + "#" + Bot.MAIN.getSelfUser().getDiscriminator() + " connected to " + "Discord!");
 
         // Load all needed data.
         Snowflake.MAIN.loadFromConfig();
-        Snowflake.MAIN.loadGuild(bot);
+        Snowflake.MAIN.loadGuild(Bot.MAIN);
         ConfigManager.getInstance().load();
         SchedulerManager.getInstance().startTimers();
         registerCommands();
-        getJdaBot().addEventListener(new CommandHandler());
+        Bot.MAIN.getBot().addEventListener(new CommandHandler());
 
         // Read console commands while the bot is running.
         readConsoleCommands();
@@ -101,7 +88,7 @@ public final class KodeKitten
         // The program is now exiting.
         logInfo("Exiting the program");
         SchedulerManager.getInstance().stopTimers();
-        bot.disconnect();
+        Bot.MAIN.disconnect();
         AccountManager.getInstance().closeDatabaseConnection();
         System.exit(0);
     }
@@ -112,29 +99,6 @@ public final class KodeKitten
     private static void setupLogger()
     {
         System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tF %1$tT] [%4$-7s] %5$s %n");
-    }
-
-    public static Bot getBot()
-    {
-        return bot;
-    }
-
-    public static JDA getJdaBot()
-    {
-        return bot.getBot();
-    }
-
-    /**
-     * Returns the JDA Bot's SelfUser.
-     */
-    public static SelfUser getBotUser()
-    {
-        return bot.getSelfUser();
-    }
-
-    public static String getBotToken()
-    {
-        return bot.getToken();
     }
 
     /**
@@ -185,7 +149,7 @@ public final class KodeKitten
     /**
      * Saves a given resource ot a destination path.
      */
-    public static void saveResource(@NonNull final String resourcePath, @NonNull final String destinationPath)
+    public static void saveResource(@NonNull final String resourcePath, @NonNull final Path destinationPath)
     {
         try (final InputStream inputStream = getResource(resourcePath))
         {
@@ -194,8 +158,9 @@ public final class KodeKitten
                 throw new IllegalArgumentException(String.format("Unable to find resource %s", resourcePath));
             }
 
-            final File destFile = new File(destinationPath);
-            final File destDir = new File(destinationPath.substring(0, Math.max(destinationPath.lastIndexOf('/'), 0)));
+            final File destFile = destinationPath.toFile();
+            final File destDir = new File(destinationPath.toString().substring(0,
+                    Math.max(destinationPath.toString().lastIndexOf('/'), 0)));
 
             if (!destDir.exists())
             {
