@@ -1,7 +1,7 @@
 package com.sylink.account;
 
 import com.sylink.Bot;
-import com.sylink.util.Testing;
+import com.sylink.util.Snowflake;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
@@ -758,15 +758,15 @@ class AccountTest
     class ConnectionTesting
     {
 
-        private static Bot bot;
-
         @BeforeAll
         static void setUpAll()
         {
-            bot = Testing.getBot();
+            Snowflake.TEST.loadFromConfig();
 
-            assertNotNull(bot);
-            bot.connect();
+            assertTrue(Bot.TEST.connect());
+            assertTrue(Bot.TEST.isConnected());
+
+            Snowflake.TEST.loadGuild(Bot.TEST);
         }
 
         private Account account;
@@ -774,7 +774,7 @@ class AccountTest
         @BeforeEach
         void setUp()
         {
-            account = new Account(Testing.BOT_ID);
+            account = new Account(Snowflake.TEST.getBotId());
         }
 
         @Test
@@ -786,20 +786,20 @@ class AccountTest
         @Test
         void getValidMemberFromValidGuild()
         {
-            final Guild guild = bot.getBot().getGuildById(Testing.GUILD_ID);
+            final Guild guild = Snowflake.TEST.getGuild();
 
             assertNotNull(guild);
 
             final Member member = account.getMember(guild);
 
             assertNotNull(member);
-            assertEquals(Testing.BOT_ID, member.getIdLong());
+            assertEquals(Snowflake.TEST.getBotId(), member.getIdLong());
         }
 
         @Test
         void getInvalidMemberFromValidGuild()
         {
-            final Guild guild = bot.getBot().getGuildById(Testing.GUILD_ID);
+            final Guild guild = Snowflake.TEST.getGuild();
 
             assertNotNull(guild);
 
@@ -817,20 +817,20 @@ class AccountTest
         @Test
         void getValidUserFromValidGuild()
         {
-            final Guild guild = bot.getBot().getGuildById(Testing.GUILD_ID);
+            final Guild guild = Snowflake.TEST.getGuild();
 
             assertNotNull(guild);
 
             final User user = account.getUser(guild);
 
             assertNotNull(user);
-            assertEquals(Testing.BOT_ID, user.getIdLong());
+            assertEquals(Snowflake.TEST.getBotId(), user.getIdLong());
         }
 
         @Test
         void getInvalidUserFromValidGuild()
         {
-            final Guild guild = bot.getBot().getGuildById(Testing.GUILD_ID);
+            final Guild guild = Snowflake.TEST.getGuild();
 
             assertNotNull(guild);
 
@@ -842,17 +842,18 @@ class AccountTest
         @Test
         void toStringValidGuildNonNullUser()
         {
-            final Guild guild = bot.getBot().getGuildById(Testing.GUILD_ID);
+            final Guild guild = Snowflake.TEST.getGuild();
 
             assertNotNull(guild);
 
-            assertEquals("Account(" + Testing.BOT_ID + ", KodeKitten Testing#1981)", account.toString(guild));
+            assertEquals("Account(" + Snowflake.TEST.getBotId() + ", KodeKitten Testing#1981)",
+                    account.toString(guild));
         }
 
         @Test
         void toStringValidGuildNullUser()
         {
-            final Guild guild = bot.getBot().getGuildById(Testing.GUILD_ID);
+            final Guild guild = Snowflake.TEST.getGuild();
 
             assertNotNull(guild);
 
@@ -866,15 +867,15 @@ class AccountTest
         {
             assertFalse(account.hasRoles());
 
-            account.addRole(Testing.ROLE_BOT_ID);
+            account.addRole(Snowflake.TEST.getRole("bot"));
 
-            assertTrue(account.hasRole(Testing.ROLE_BOT_ID));
+            assertTrue(account.hasRole(Snowflake.TEST.getRole("bot")));
 
-            final Guild guild = bot.getBot().getGuildById(Testing.GUILD_ID);
+            final Guild guild = Snowflake.TEST.getGuild();
 
             assertNotNull(guild);
 
-            final Role role = guild.getRoleById(Testing.ROLE_BOT_ID);
+            final Role role = guild.getRoleById(Snowflake.TEST.getRole("bot"));
 
             assertNotNull(role);
 
@@ -886,11 +887,11 @@ class AccountTest
         {
             assertFalse(account.hasRoles());
 
-            final Guild guild = bot.getBot().getGuildById(Testing.GUILD_ID);
+            final Guild guild = Snowflake.TEST.getGuild();
 
             assertNotNull(guild);
 
-            final Role role = guild.getRoleById(Testing.ROLE_BOT_ID);
+            final Role role = guild.getRoleById(Snowflake.TEST.getRole("bot"));
 
             assertNotNull(role);
 
@@ -898,7 +899,7 @@ class AccountTest
 
             assertTrue(account.hasRoles());
             assertTrue(account.hasRole(role));
-            assertTrue(account.hasRole(Testing.ROLE_BOT_ID));
+            assertTrue(account.hasRole(Snowflake.TEST.getRole("bot")));
         }
 
         @Test
@@ -906,11 +907,11 @@ class AccountTest
         {
             assertFalse(account.hasRoles());
 
-            final Guild guild = bot.getBot().getGuildById(Testing.GUILD_ID);
+            final Guild guild = Snowflake.TEST.getGuild();
 
             assertNotNull(guild);
 
-            final Role role = guild.getRoleById(Testing.ROLE_BOT_ID);
+            final Role role = guild.getRoleById(Snowflake.TEST.getRole("bot"));
 
             assertNotNull(role);
 
@@ -918,13 +919,13 @@ class AccountTest
 
             assertTrue(account.hasRoles());
             assertTrue(account.hasRole(role));
-            assertTrue(account.hasRole(Testing.ROLE_BOT_ID));
+            assertTrue(account.hasRole(Snowflake.TEST.getRole("bot")));
 
             account.removeRole(role);
 
             assertFalse(account.hasRoles());
             assertFalse(account.hasRole(role));
-            assertFalse(account.hasRole(Testing.ROLE_BOT_ID));
+            assertFalse(account.hasRole(Snowflake.TEST.getRole("bot")));
         }
 
         @Test
@@ -949,15 +950,15 @@ class AccountTest
             assertTrue(account.hasRoles());
             assertTrue(account.hasRole(1L));
 
-            final Guild guild = bot.getBot().getGuildById(Testing.GUILD_ID);
+            final Guild guild = Snowflake.TEST.getGuild();
 
             assertNotNull(guild);
 
             assertTrue(account.syncRolesFromServer(guild));
 
             assertTrue(account.hasRoles());
-            assertTrue(account.hasRole(Testing.ROLE_BOT_ID));
-            assertTrue(account.hasRole(Testing.ROLE_KK_ID));
+            assertTrue(account.hasRole(Snowflake.TEST.getRole("bot")));
+            assertTrue(account.hasRole(Snowflake.TEST.getRole("kode_kitten")));
         }
 
         @Test
@@ -965,15 +966,15 @@ class AccountTest
         {
             assertFalse(account.needsToSync());
 
-            final Guild guild = bot.getBot().getGuildById(Testing.GUILD_ID);
+            final Guild guild = Snowflake.TEST.getGuild();
 
             assertNotNull(guild);
 
             assertTrue(account.syncRolesFromServer(guild));
 
             assertTrue(account.hasRoles());
-            assertTrue(account.hasRole(Testing.ROLE_BOT_ID));
-            assertTrue(account.hasRole(Testing.ROLE_KK_ID));
+            assertTrue(account.hasRole(Snowflake.TEST.getRole("bot")));
+            assertTrue(account.hasRole(Snowflake.TEST.getRole("kode_kitten")));
 
             assertTrue(account.needsToSync());
         }
@@ -981,21 +982,21 @@ class AccountTest
         @Test
         void syncRolesFromValidServerDoesntNeedToSync()
         {
-            account.addRole(Testing.ROLE_BOT_ID);
-            account.addRole(Testing.ROLE_KK_ID);
+            account.addRole(Snowflake.TEST.getRole("bot"));
+            account.addRole(Snowflake.TEST.getRole("kode_kitten"));
             account.setNeedsToSync(false);
 
             assertFalse(account.needsToSync());
 
-            final Guild guild = bot.getBot().getGuildById(Testing.GUILD_ID);
+            final Guild guild = Snowflake.TEST.getGuild();
 
             assertNotNull(guild);
 
             assertTrue(account.syncRolesFromServer(guild));
 
             assertTrue(account.hasRoles());
-            assertTrue(account.hasRole(Testing.ROLE_BOT_ID));
-            assertTrue(account.hasRole(Testing.ROLE_KK_ID));
+            assertTrue(account.hasRole(Snowflake.TEST.getRole("bot")));
+            assertTrue(account.hasRole(Snowflake.TEST.getRole("kode_kitten")));
 
             assertFalse(account.needsToSync());
         }
@@ -1003,9 +1004,9 @@ class AccountTest
         @Test
         void syncRolesToInvalidServer()
         {
-            account.addRole(Testing.ROLE_KK_ID);
+            account.addRole(Snowflake.TEST.getRole("kode_kitten"));
 
-            final Guild guild = bot.getBot().getGuildById(Testing.GUILD_ID);
+            final Guild guild = Snowflake.TEST.getGuild();
 
             assertNotNull(guild);
 
@@ -1022,9 +1023,9 @@ class AccountTest
         @Test
         void syncRolesToValidServer()
         {
-            account.addRole(Testing.ROLE_KK_ID);
+            account.addRole(Snowflake.TEST.getRole("kode_kitten"));
 
-            final Guild guild = bot.getBot().getGuildById(Testing.GUILD_ID);
+            final Guild guild = Snowflake.TEST.getGuild();
 
             assertNotNull(guild);
 
@@ -1036,9 +1037,9 @@ class AccountTest
             assertTrue(account.syncRolesToServer(guild));
 
             assertEquals(1, member.getRoles().size());
-            assertEquals(Testing.ROLE_KK_ID, member.getRoles().get(0).getIdLong());
+            assertEquals(Snowflake.TEST.getRole("kode_kitten"), member.getRoles().get(0).getIdLong());
 
-            final Role role = guild.getRoleById(Testing.ROLE_BOT_ID);
+            final Role role = guild.getRoleById(Snowflake.TEST.getRole("bot"));
 
             assertNotNull(role);
 
@@ -1052,7 +1053,7 @@ class AccountTest
         @AfterAll
         static void afterAll()
         {
-            bot.disconnect();
+            Bot.TEST.disconnect();
         }
 
     }

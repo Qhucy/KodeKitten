@@ -1,5 +1,6 @@
 package com.sylink.util;
 
+import com.sylink.Bot;
 import com.sylink.KodeKitten;
 import com.sylink.account.AccountManager;
 import lombok.NonNull;
@@ -85,7 +86,7 @@ public final class SchedulerManager
      */
     private final Runnable changeStatus = () ->
     {
-        KodeKitten.getBot().setStatus(ConfigManager.getInstance().getRandomStatusMessage());
+        Bot.MAIN.setStatus(ConfigManager.getInstance().getRandomStatusMessage());
     };
 
 }
