@@ -1,6 +1,5 @@
 package com.sylink;
 
-import com.sylink.util.Testing;
 import net.dv8tion.jda.api.entities.Activity;
 import org.junit.jupiter.api.*;
 
@@ -97,109 +96,81 @@ class BotTest
     }
 
     @Test
-    void constructorTest()
-    {
-        Bot bot = new Bot("abcd");
-
-        assertEquals("abcd", bot.getToken());
-        assertNull(bot.getBot());
-    }
-
-    @Test
     void getSelfUserNullWhenNotConnected()
     {
-        Bot bot = new Bot("abcd");
-
-        assertNull(bot.getSelfUser());
+        assertNull(Bot.TEST.getSelfUser());
     }
 
     @Test
     void isConnectedFalseWhenDisconnected()
     {
-        Bot bot = new Bot("abcd");
-
-        assertFalse(bot.isConnected());
+        assertFalse(Bot.TEST.isConnected());
     }
 
     @Test
     void settingTheToken()
     {
-        Bot bot = new Bot("abcd");
+        Bot.TEST.setToken("1234");
 
-        assertEquals("abcd", bot.getToken());
-
-        bot.setToken("1234");
-
-        assertEquals("1234", bot.getToken());
+        assertEquals("1234", Bot.TEST.getToken());
     }
 
     @Test
     void connectWithNewTokenChangesExistingToken()
     {
-        Bot bot = new Bot("abcd");
-
-        assertEquals("abcd", bot.getToken());
-
         try
         {
-            bot.connect("1234");
+            Bot.TEST.connect("1234");
         }
         catch (Throwable ignored)
         {
 
         }
 
-        assertEquals("1234", bot.getToken());
+        assertEquals("1234", Bot.TEST.getToken());
     }
 
     @Test
     void connectingToDiscordFromNewToken()
     {
-        String token = Bot.getTokenFromFile(Bot.TEST_TOKEN_PATH.toFile());
+        Bot.TEST.setToken("abcde");
 
-        assertNotNull(token);
-
-        Bot bot = new Bot("1234");
-
-        assertDoesNotThrow(() -> bot.connect(token));
-        assertNotNull(bot.getBot());
-        assertNotNull(bot.getBot().getSelfUser());
+        assertDoesNotThrow(() -> Bot.TEST.connect(Bot.TEST.getTokenFromFile()));
+        assertNotNull(Bot.TEST.getBot());
+        assertNotNull(Bot.TEST.getSelfUser());
     }
 
     @Nested
     class ConnectionTesting
     {
 
-        private static Bot bot;
-
         @BeforeAll
         static void setUpAll()
         {
-            bot = Testing.getBot();
+            Bot.TEST.setTokenFromFile();
 
-            assertNotNull(bot);
-            bot.connect();
+            assertTrue(Bot.TEST.connect());
         }
 
         @Test
         void isConnectedTrueWhenConnected()
         {
-            assertNotNull(bot.getBot());
-            assertTrue(bot.isConnected());
+            assertNotNull(Bot.TEST.getBot());
+            assertTrue(Bot.TEST.isConnected());
         }
 
         @Test
         void canGetSelfUserWhenConnected()
         {
-            assertNotNull(bot.getSelfUser());
+            assertNotNull(Bot.TEST.getSelfUser());
         }
 
         @Test
         void setStatus()
         {
-            bot.setStatus(Activity.ActivityType.LISTENING, "Test");
+            Bot.TEST.setStatus(Activity.ActivityType.LISTENING, "Test");
 
-            Activity activity = bot.getBot().getPresence().getActivity();
+            Activity activity = Bot.TEST.getBot().getPresence().getActivity();
 
             assertNotNull(activity);
 
@@ -210,9 +181,9 @@ class BotTest
         @Test
         void setStatusWithDefaultActivityType()
         {
-            bot.setStatus("Test");
+            Bot.TEST.setStatus("Test");
 
-            Activity activity = bot.getBot().getPresence().getActivity();
+            Activity activity = Bot.TEST.getBot().getPresence().getActivity();
 
             assertNotNull(activity);
 
@@ -223,15 +194,15 @@ class BotTest
         @Test
         void clearStatus()
         {
-            bot.setStatus(null);
+            Bot.TEST.setStatus(null);
 
-            assertNull(bot.getBot().getPresence().getActivity());
+            assertNull(Bot.TEST.getBot().getPresence().getActivity());
         }
 
         @AfterAll
         static void afterAll()
         {
-            bot.disconnect();
+            Bot.TEST.disconnect();
         }
 
     }
@@ -239,19 +210,17 @@ class BotTest
     @Test
     void disconnectingBot()
     {
-        Bot bot = Testing.getBot();
+        Bot.TEST.setTokenFromFile();
 
-        assertNotNull(bot);
-        bot.connect();
+        assertTrue(Bot.TEST.connect());
+        assertTrue(Bot.TEST.isConnected());
+        assertNotNull(Bot.TEST.getBot());
 
-        assertTrue(bot.isConnected());
-        assertNotNull(bot.getBot());
+        Bot.TEST.disconnect();
 
-        bot.disconnect();
-
-        assertNull(bot.getBot());
-        assertNull(bot.getSelfUser());
-        assertFalse(bot.isConnected());
+        assertNull(Bot.TEST.getBot());
+        assertNull(Bot.TEST.getSelfUser());
+        assertFalse(Bot.TEST.isConnected());
     }
 
 }
