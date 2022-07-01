@@ -27,8 +27,7 @@ public final class KodeKitten
      * | TODO |
      * ========
      * (2) review all code for the entire program so far
-     * (KodeKitten, Bot, AccountManager, Account, EventHandler, ConfigManager, SchedulerManager, Snowflake)
-     * CURRENTLY ON: KodeKitten
+     * Left to do (Command, CmdHelp, CmdDatabase, CmdBalance, CmdRole)
      *
      * add command to talk in channels thru console
      * add role check command in console only
@@ -40,9 +39,6 @@ public final class KodeKitten
      * (3) figure out a way to test the output of commands (console, internal logic, etc)
      * (maybe will need a messages.toml file or similar to have same messages to test)
      * (4) Then redo tests for all commands
-     *
-     * KodeKitten.java tests somehow?
-     * break up into smaller testable methods
      * ============
      * | END GAME |
      * ============
@@ -56,6 +52,8 @@ public final class KodeKitten
 
     // Internal list of all registered commands.
     private static final Command[] commands = new Command[]{new CmdHelp(), new CmdBalance(), new CmdDatabase()};
+
+
 
     /**
      * Processes setup of the bot and connection to Discord servers as well as console inputs and shutdown.
