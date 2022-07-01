@@ -12,9 +12,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Abstract parent class for all commands that manages all commands.
@@ -23,7 +21,7 @@ public abstract class Command
 {
 
     // List that contains all registered and runnable commands.
-    private static final List<Command> commands = new ArrayList<>();
+    private static final Set<Command> commands = new HashSet<>();
 
     /**
      * Interprets a slash command to its stored commands and runs the command if the user is able to.
