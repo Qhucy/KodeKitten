@@ -50,7 +50,7 @@ public class Account
     /**
      * Flags that the account has been loaded.
      */
-    protected final void setLoaded()
+    final void setLoaded()
     {
         this.loaded = true;
     }
@@ -196,7 +196,7 @@ public class Account
     /**
      * Loads permission data from the SQL column string to a list of permissions.
      */
-    protected void loadPermissions(@NonNull final String permissionData)
+    void loadPermissions(@NonNull final String permissionData)
     {
         permissions.clear();
 
@@ -209,7 +209,7 @@ public class Account
     /**
      * @return The list of account permissions as a string of data.
      */
-    protected final String getPermissionData()
+    final String getPermissionData()
     {
         if (permissions.isEmpty())
         {
@@ -385,7 +385,7 @@ public class Account
     /**
      * Loads role data from the SQL column string to a list of roles.
      */
-    protected void loadRoles(@NonNull final String roleData)
+    void loadRoles(@NonNull final String roleData)
     {
         roles.clear();
 
@@ -401,7 +401,7 @@ public class Account
     /**
      * @return The list of account roles as a string of data.
      */
-    protected final String getRoleData()
+    final String getRoleData()
     {
         if (roles.isEmpty())
         {
