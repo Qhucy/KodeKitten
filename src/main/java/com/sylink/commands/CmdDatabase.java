@@ -143,7 +143,8 @@ public final class CmdDatabase
                     output.append("\n").append("This account does not exist in the SQL Database");
                 }
 
-                return super.consoleOutput(output.toString());
+                System.out.println(output);
+                return output.toString();
             case "check":
                 if (!AccountManager.getInstance().exists(discordId))
                 {
