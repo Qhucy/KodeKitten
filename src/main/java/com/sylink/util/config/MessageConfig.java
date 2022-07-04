@@ -3,6 +3,8 @@ package com.sylink.util.config;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Singleton class that manages all output message data from the config.
@@ -10,6 +12,11 @@ import javax.annotation.Nullable;
 public final class MessageConfig
         extends ConfigManager
 {
+
+    // The path to the resource in the class loader.
+    private final static String RESOURCE_PATH = "messages.toml";
+    // The path for the config file in the program directory.
+    private final static Path PROJECT_PATH = Paths.get("messages.toml");
 
     private static MessageConfig instance = null;
 
@@ -21,6 +28,14 @@ public final class MessageConfig
         }
 
         return instance;
+    }
+
+    /**
+     * Loads all configuration data from the default config file.
+     */
+    public void loadFromConfig()
+    {
+        loadFromConfig(RESOURCE_PATH, PROJECT_PATH);
     }
 
     /**
