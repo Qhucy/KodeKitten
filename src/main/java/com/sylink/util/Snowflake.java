@@ -89,7 +89,7 @@ public enum Snowflake
         {
             fileConfig.load();
 
-            loadConfigSection(fileConfig, null);
+            loadConfigSection(fileConfig);
 
             this.loaded = true;
         }
@@ -125,6 +125,14 @@ public enum Snowflake
                 snowflakes.put(parentKey + entry.getKey(), entry.getLong());
             }
         }
+    }
+
+    /**
+     * Recursively loads all sections of the config file.
+     */
+    private void loadConfigSection(@NonNull final Config config)
+    {
+        loadConfigSection(config, null);
     }
 
     /**
