@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class MainConfigTest
 {
 
-    private static final String PATH = "src/test/java/com/sylink/util/config_test.toml";
+    private static final String PATH = "src/test/java/com/sylink/util/config/config_test.toml";
     private static MainConfig mainConfig = null;
 
     @BeforeAll
