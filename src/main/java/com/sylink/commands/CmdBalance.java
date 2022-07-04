@@ -5,6 +5,7 @@ import com.sylink.KodeKitten;
 import com.sylink.util.account.Account;
 import com.sylink.util.account.AccountManager;
 import com.sylink.util.Snowflake;
+import com.sylink.util.config.MessageConfig;
 import lombok.NonNull;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
@@ -28,7 +29,7 @@ public final class CmdBalance
     {
         if (args.length == 0)
         {
-            return super.userOutput(event, "Your balance is $%g", account.getBalance());
+            return super.userOutput(event, "display_balance", account.getBalance());
         }
 
         return null;
@@ -49,16 +50,16 @@ public final class CmdBalance
 
             if (account == null)
             {
-                return super.consoleOutput("That account does not exist");
+                return super.consoleOutput("account_no_exist");
             }
             else
             {
-                return super.consoleOutput("%d's balance is $%g", account.getDiscordId(), account.getBalance());
+                return super.consoleOutput("display_balance_other", account.getDiscordId(), account.getBalance());
             }
         }
         catch (final NumberFormatException exception)
         {
-            return super.consoleOutput("You must input a proper account id.");
+            return super.consoleOutput("proper_account_id");
         }
     }
 
@@ -75,7 +76,7 @@ public final class CmdBalance
         }
         else
         {
-            KodeKitten.logSevere(String.format("Unable to register command '%s' to the main guild", name));
+            KodeKitten.logSevere(String.format(MessageConfig.getInstance().getCommand("cant_register_command"), name));
         }
     }
 
@@ -84,8 +85,8 @@ public final class CmdBalance
     {
         final String name = super.getName();
 
-        Bot.MAIN.getBot().upsertCommand(name, super.getDescription()).addOption(OptionType.USER, "user", "Another " +
-                "user", false).queue();
+        Bot.MAIN.getBot().upsertCommand(name, super.getDescription()).addOption(OptionType.USER, "user",
+                "Another " + "user", false).queue();
     }
 
 }

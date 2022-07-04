@@ -36,7 +36,7 @@ public abstract class Command
 
         if (account == null)
         {
-            event.reply("Unable to load your account data").queue();
+            event.reply(MessageConfig.getInstance().getCommand("cant_load_account")).queue();
             return null;
         }
 
@@ -49,14 +49,12 @@ public abstract class Command
 
             if (event.isFromGuild() && !command.containsCommandType(CommandType.GUILD))
             {
-                event.reply("You can only use this command in a DM with me").queue();
-                continue;
+                return command.userOutput(event, "dm_only_command");
             }
 
             if (!event.isFromGuild() && !command.containsCommandType(CommandType.USER))
             {
-                event.reply("You can only use this command inside of a discord server").queue();
-                continue;
+                return command.userOutput(event, "guild_only_command");
             }
 
             return command.onUserCommand(event, account, label, args);
@@ -81,8 +79,7 @@ public abstract class Command
 
             if (!command.containsCommandType(CommandType.CONSOLE))
             {
-                System.out.println("This command cannot be executed by console");
-                continue;
+                return command.consoleOutput("no_console_command");
             }
 
             return command.onConsoleCommand(label, args);
@@ -196,7 +193,7 @@ public abstract class Command
     {
         if (usage == null)
         {
-            event.reply("There is no defined usage for this command.").queue();
+            event.reply(MessageConfig.getInstance().getCommand("no_usage")).queue();
             return;
         }
 
@@ -210,7 +207,7 @@ public abstract class Command
     {
         if (usage == null)
         {
-            System.out.println("There is no defined usage for this command.");
+            System.out.println(MessageConfig.getInstance().getCommand("no_usage"));
             return;
         }
 
@@ -226,18 +223,14 @@ public abstract class Command
     public String onUserCommand(@NonNull final SlashCommandEvent event, @NonNull final Account account,
                                 @NonNull final String label, @NonNull final String[] args)
     {
-        final String reply = "This command has no user implementation.";
-
-        event.reply(reply).queue();
-
-        return reply;
+        return userOutput(event, "no_user_command");
     }
 
     /**
      * Sends an output command message to the user and returns its contents as a string.
      *
-     * @param messageKey The key to the output message in the message config.
-     * @param ephemeral Whether the message is visible to others or not.
+     * @param messageKey    The key to the output message in the message config.
+     * @param ephemeral     Whether the message is visible to others or not.
      * @param formatObjects The list of format objects if needed.
      *
      * @return The content of the message before formatting.
@@ -263,7 +256,7 @@ public abstract class Command
      * Sends an output command message to the user and returns its contents as a string.
      * Ephemeral is true by default.
      *
-     * @param messageKey The key to the output message in the message config.
+     * @param messageKey    The key to the output message in the message config.
      * @param formatObjects The list of format objects if needed.
      *
      * @return The content of the message before formatting.
@@ -281,17 +274,13 @@ public abstract class Command
      */
     public String onConsoleCommand(@NonNull final String label, @NonNull final String[] args)
     {
-        final String reply = "'/%s' does not have a console implementation.";
-
-        System.out.printf(reply + "%n", label);
-
-        return reply;
+        return consoleOutput("'/%s' does not have a console implementation.");
     }
 
     /**
      * Sends an output command message to the console and returns its contents as a string.
      *
-     * @param messageKey The key to the output message in the message config.
+     * @param messageKey    The key to the output message in the message config.
      * @param formatObjects The list of format objects if needed.
      *
      * @return The content of the message before formatting.
@@ -328,7 +317,7 @@ public abstract class Command
         }
         else
         {
-            KodeKitten.logSevere(String.format("Unable to register command '%s' to the main guild", name));
+            KodeKitten.logSevere(String.format(MessageConfig.getInstance().getCommand("no_register"), name));
         }
     }
 

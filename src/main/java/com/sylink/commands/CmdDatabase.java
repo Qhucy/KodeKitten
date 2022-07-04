@@ -3,6 +3,7 @@ package com.sylink.commands;
 import com.sylink.util.account.Account;
 import com.sylink.util.account.AccountManager;
 import com.sylink.util.Snowflake;
+import com.sylink.util.config.MessageConfig;
 import lombok.NonNull;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
@@ -47,7 +48,7 @@ public final class CmdDatabase
 
             AccountManager.getInstance().executeQuery(query);
 
-            return super.consoleOutput("Executed the query.");
+            return super.consoleOutput("executed_query");
         }
 
         long discordId;
@@ -58,7 +59,7 @@ public final class CmdDatabase
         }
         catch (final NumberFormatException exception)
         {
-            return super.consoleOutput("You must input a valid number for the id");
+            return super.consoleOutput("proper_account_id");
         }
 
         Account account;
@@ -68,79 +69,79 @@ public final class CmdDatabase
             case "create":
                 if (AccountManager.getInstance().existsInMemory(discordId))
                 {
-                    return super.consoleOutput("That account id already exists in memory");
+                    return super.consoleOutput("account_already_exist");
                 }
 
                 AccountManager.getInstance().getAccount(discordId);
 
-                return super.consoleOutput("Created the account in the system");
+                return super.consoleOutput("created_account");
             case "load":
                 if (!AccountManager.getInstance().existsInDatabase(discordId))
                 {
-                    return super.consoleOutput("That account id does not exist in the database");
+                    return super.consoleOutput("account_no_exist");
                 }
 
                 account = AccountManager.getInstance().getAccount(discordId, false);
 
                 if (account == null)
                 {
-                    return super.consoleOutput("Unable to load the account from the database");
+                    return super.consoleOutput("cant_load_account");
                 }
 
-                return super.consoleOutput("Loaded the account from the database");
+                return super.consoleOutput("loaded_account");
             case "save":
                 account = AccountManager.getInstance().getAccount(discordId, false);
 
                 if (account == null)
                 {
-                    return super.consoleOutput("This account does not exist in data to be saved");
+                    return super.consoleOutput("account_no_exist");
                 }
 
                 AccountManager.getInstance().saveToDatabase(account);
 
-                return super.consoleOutput("Saved the account to the database");
+                return super.consoleOutput("saved_account");
             case "flush":
                 account = AccountManager.getInstance().getAccount(discordId, false);
 
                 if (account == null)
                 {
-                    return super.consoleOutput("This account does not exist in data to be flushed");
+                    return super.consoleOutput("account_no_exist");
                 }
 
                 AccountManager.getInstance().flushFromMemory(account, true);
 
-                return super.consoleOutput("Saved the account to the database");
+                return super.consoleOutput("saved_account");
             case "delete":
             case "del":
                 account = AccountManager.getInstance().getAccount(discordId, false);
 
                 if (account == null)
                 {
-                    return super.consoleOutput("This account does not exist");
+                    return super.consoleOutput("account_no_exist");
                 }
 
                 AccountManager.getInstance().delete(account);
 
-                return super.consoleOutput("Deleted this account from the database and memory");
+                return super.consoleOutput("deleted_account");
             case "exists":
                 final StringBuilder output = new StringBuilder();
 
                 if (AccountManager.getInstance().existsInMemory(discordId))
                 {
-                    output.append("This account exists in memory");
+                    output.append(MessageConfig.getInstance().getCommand("account_in_memory"));
                 }
                 else
                 {
-                    output.append("This account does not exist in memory");
+                    output.append(MessageConfig.getInstance().getCommand("account_not_in_memory"));
                 }
 
                 if (AccountManager.getInstance().existsInDatabase(discordId))
                 {
-                    output.append("\n").append("This account exists in the SQL Database");
+                    output.append("\n").append(MessageConfig.getInstance().getCommand("account_in_sql"));
                 }
                 else
                 {
-                    output.append("\n").append("This account does not exist in the SQL Database");
+                    output.append("\n").append(MessageConfig.getInstance().getCommand("account_not_in_sql"));
                 }
 
                 System.out.println(output);
@@ -148,14 +149,14 @@ public final class CmdDatabase
             case "check":
                 if (!AccountManager.getInstance().exists(discordId))
                 {
-                    return super.consoleOutput("This account does not exist in data");
+                    return super.consoleOutput("account_no_exist");
                 }
 
                 account = AccountManager.getInstance().getAccount(discordId, false);
 
                 if (account == null)
                 {
-                    return super.consoleOutput("Unable to load the account from the database");
+                    return super.consoleOutput("cant_load_account");
                 }
 
                 StringBuilder display;
@@ -164,14 +165,15 @@ public final class CmdDatabase
                 {
                     case "balance":
                     case "bal":
-                        return super.consoleOutput("This account's balance is $%g", account.getBalance());
+                        return super.consoleOutput("display_balance_other", account.getDiscordId(),
+                                account.getBalance());
                     case "permissions":
                     case "permission":
                     case "perms":
                     case "perm":
                         if (!account.hasPermissions())
                         {
-                            return super.consoleOutput("This account does not have any permissions");
+                            return super.consoleOutput("account_no_permissions");
                         }
 
                         display = new StringBuilder("\n");
@@ -188,12 +190,12 @@ public final class CmdDatabase
                             }
                         }
 
-                        return super.consoleOutput("Permissions on this account:", display);
+                        return super.consoleOutput("display_permissions", display);
                     case "roles":
                     case "role":
                         if (!account.hasRoles())
                         {
-                            return super.consoleOutput("This account does not have any roles");
+                            return super.consoleOutput("account_no_roles");
                         }
 
                         display = new StringBuilder("\n");
@@ -213,26 +215,21 @@ public final class CmdDatabase
                             }
                         }
 
-                        return super.consoleOutput("Roles on this account:", display);
+                        return super.consoleOutput("display_roles", display);
                     default:
-                        return super.consoleOutput("""
-                                Available keys to check:
-                                  balance
-                                  permissions
-                                  roles
-                                """);
+                        return sendAvailableUpdateKeys();
                 }
             case "update":
                 if (!AccountManager.getInstance().exists(discordId))
                 {
-                    return super.consoleOutput("This account does not exist in data");
+                    return super.consoleOutput("account_no_exist");
                 }
 
                 account = AccountManager.getInstance().getAccount(discordId, false);
 
                 if (account == null)
                 {
-                    return super.consoleOutput("Unable to load the account from the database");
+                    return super.consoleOutput("cant_load_account");
                 }
 
                 switch (args[2].toLowerCase(Locale.ROOT))
@@ -247,12 +244,12 @@ public final class CmdDatabase
                         }
                         catch (final NumberFormatException exception)
                         {
-                            return super.consoleOutput("Value must be a double");
+                            return super.consoleOutput("value_double");
                         }
 
                         account.setBalance(balance);
 
-                        return super.consoleOutput("Set account's balance to $%g", account.getBalance());
+                        return super.consoleOutput("set_balance_to", account.getBalance());
                     case "permissions":
                     case "permission":
                     case "perms":
@@ -269,30 +266,30 @@ public final class CmdDatabase
                             case "add":
                                 if (account.hasPermission(permission))
                                 {
-                                    super.consoleOutput("This account already has this permission");
+                                    super.consoleOutput("already_have_permission");
                                 }
 
                                 account.addPermission(permission);
 
-                                return super.consoleOutput("Added permission '%s' to this account", permission);
+                                return super.consoleOutput("added_permission", permission);
                             case "remove":
                                 if (account.hasPermission(permission))
                                 {
                                     account.removePermission(permission);
 
-                                    return super.consoleOutput("Removed permission '%s' from this account", permission);
+                                    return super.consoleOutput("removed_permission", permission);
                                 }
 
-                                return super.consoleOutput("This account does not have this permission");
+                                return super.consoleOutput("account_no_permission");
                             case "clear":
                                 if (account.hasPermissions())
                                 {
                                     account.clearPermissions();
 
-                                    return super.consoleOutput("Cleared all permissions from this account");
+                                    return super.consoleOutput("cleared_permissions");
                                 }
 
-                                return super.consoleOutput("This account does not have any permissions to clear");
+                                return super.consoleOutput("account_no_permissions");
                             default:
                                 return sendAvailableUpdateKeys();
                         }
@@ -311,7 +308,7 @@ public final class CmdDatabase
                         }
                         catch (final NumberFormatException exception)
                         {
-                            return super.consoleOutput("The role id must be a number");
+                            return super.consoleOutput("value_integer");
                         }
 
                         Role role;
@@ -321,7 +318,7 @@ public final class CmdDatabase
                             case "add":
                                 if (account.hasRole(roleId))
                                 {
-                                    return super.consoleOutput("This account already has this role");
+                                    return super.consoleOutput("already_have_role");
                                 }
 
                                 account.addRole(roleId);
@@ -332,7 +329,7 @@ public final class CmdDatabase
                                     Snowflake.MAIN.getGuild().addRoleToMember(account.getDiscordId(), role).queue();
                                 }
 
-                                return super.consoleOutput("Added role %d to this account", roleId);
+                                return super.consoleOutput("added_role", roleId);
                             case "remove":
                                 if (account.hasRole(roleId))
                                 {
@@ -344,10 +341,10 @@ public final class CmdDatabase
                                         Snowflake.MAIN.getGuild().removeRoleFromMember(account.getDiscordId(), role).queue();
                                     }
 
-                                    return super.consoleOutput("Removed role %d from this account", roleId);
+                                    return super.consoleOutput("removed_role", roleId);
                                 }
 
-                                super.consoleOutput("This account does not have this role");
+                                super.consoleOutput("no_role");
                             case "clear":
                                 if (account.hasRoles())
                                 {
@@ -360,10 +357,10 @@ public final class CmdDatabase
                                         Snowflake.MAIN.getGuild().modifyMemberRoles(member).queue();
                                     }
 
-                                    super.consoleOutput("Cleared all roles from this account");
+                                    super.consoleOutput("cleared_roles");
                                 }
 
-                                super.consoleOutput("This account does not have any roles to clear");
+                                super.consoleOutput("no_roles");
                             default:
                                 return sendAvailableUpdateKeys();
                         }
