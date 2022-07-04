@@ -23,24 +23,25 @@ public final class CmdHelp
     }
 
     @Override
-    public void onUserCommand(@NonNull final SlashCommandEvent event, @NonNull final Account account,
-                              @NonNull final String label, @NonNull final String[] args)
+    public String onUserCommand(@NonNull final SlashCommandEvent event, @NonNull final Account account,
+                                @NonNull final String label, @NonNull final String[] args)
     {
         if (event.getChannel() instanceof PrivateChannel)
         {
-            event.reply(helpMessage).queue();
+            return super.userOutput(event, helpMessage, false);
         }
         else
         {
-            event.reply("Check your DMs for command help!").setEphemeral(true).queue();
             event.getUser().openPrivateChannel().complete().sendMessage(helpMessage).queue();
+
+            return super.userOutput(event, "Check your DMs for command help!");
         }
     }
 
     @Override
-    public void onConsoleCommand(@NonNull final String label, @NonNull final String[] args)
+    public String onConsoleCommand(@NonNull final String label, @NonNull final String[] args)
     {
-        System.out.println(helpMessage);
+        return super.consoleOutput(helpMessage);
     }
 
 }

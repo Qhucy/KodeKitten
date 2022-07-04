@@ -34,12 +34,11 @@ public final class CmdDatabase
     }
 
     @Override
-    public void onConsoleCommand(@NonNull final String label, @NonNull final String[] args)
+    public String onConsoleCommand(@NonNull final String label, @NonNull final String[] args)
     {
         if (args.length < 2)
         {
-            super.sendUsage(label);
-            return;
+            return super.consoleOutput(super.getUsage(label));
         }
 
         if (args[0].equalsIgnoreCase("query"))
@@ -47,8 +46,8 @@ public final class CmdDatabase
             final String query = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
 
             AccountManager.getInstance().executeQuery(query);
-            System.out.println("Executed the query.");
-            return;
+
+            return super.consoleOutput("Executed the query.");
         }
 
         long discordId;
@@ -59,8 +58,7 @@ public final class CmdDatabase
         }
         catch (final NumberFormatException exception)
         {
-            System.out.println("You must input a valid number for the id");
-            return;
+            return super.consoleOutput("You must input a valid number for the id");
         }
 
         Account account;
@@ -70,365 +68,318 @@ public final class CmdDatabase
             case "create":
                 if (AccountManager.getInstance().existsInMemory(discordId))
                 {
-                    System.out.println("That account id already exists in memory");
-                    return;
+                    return super.consoleOutput("That account id already exists in memory");
                 }
 
                 AccountManager.getInstance().getAccount(discordId);
-                System.out.println("Created the account in the system");
-                break;
+
+                return super.consoleOutput("Created the account in the system");
             case "load":
                 if (!AccountManager.getInstance().existsInDatabase(discordId))
                 {
-                    System.out.println("That account id does not exist in the database");
-                    return;
+                    return super.consoleOutput("That account id does not exist in the database");
                 }
 
                 account = AccountManager.getInstance().getAccount(discordId, false);
 
                 if (account == null)
                 {
-                    System.out.println("Unable to load the account from the database");
+                    return super.consoleOutput("Unable to load the account from the database");
                 }
-                else
-                {
-                    System.out.println("Loaded the account from the database");
-                }
-                break;
+
+                return super.consoleOutput("Loaded the account from the database");
             case "save":
                 account = AccountManager.getInstance().getAccount(discordId, false);
 
                 if (account == null)
                 {
-                    System.out.println("This account does not exist in data to be saved");
+                    return super.consoleOutput("This account does not exist in data to be saved");
                 }
-                else
-                {
-                    AccountManager.getInstance().saveToDatabase(account);
-                    System.out.println("Saved the account to the database");
-                }
-                break;
+
+                AccountManager.getInstance().saveToDatabase(account);
+
+                return super.consoleOutput("Saved the account to the database");
             case "flush":
                 account = AccountManager.getInstance().getAccount(discordId, false);
 
                 if (account == null)
                 {
-                    System.out.println("This account does not exist in data to be flushed");
+                    return super.consoleOutput("This account does not exist in data to be flushed");
                 }
-                else
-                {
-                    AccountManager.getInstance().flushFromMemory(account, true);
-                    System.out.println("Saved the account to the database");
-                }
-                break;
+
+                AccountManager.getInstance().flushFromMemory(account, true);
+
+                return super.consoleOutput("Saved the account to the database");
             case "delete":
             case "del":
                 account = AccountManager.getInstance().getAccount(discordId, false);
 
                 if (account == null)
                 {
-                    System.out.println("This account does not exist");
+                    return super.consoleOutput("This account does not exist");
                 }
-                else
-                {
-                    AccountManager.getInstance().delete(account);
-                    System.out.println("Deleted this account from the database and memory");
-                }
-                break;
+
+                AccountManager.getInstance().delete(account);
+
+                return super.consoleOutput("Deleted this account from the database and memory");
             case "exists":
+                final StringBuilder output = new StringBuilder();
+
                 if (AccountManager.getInstance().existsInMemory(discordId))
                 {
-                    System.out.println("This account exists in memory");
+                    output.append("This account exists in memory");
                 }
                 else
                 {
-                    System.out.println("This account does not exist in memory");
+                    output.append("This account does not exist in memory");
                 }
 
                 if (AccountManager.getInstance().existsInDatabase(discordId))
                 {
-                    System.out.println("This account exists in the SQL Database");
+                    output.append("\n").append("This account exists in the SQL Database");
                 }
                 else
                 {
-                    System.out.println("This account does not exist in the SQL Database");
+                    output.append("\n").append("This account does not exist in the SQL Database");
                 }
-                break;
+
+                return super.consoleOutput(output.toString());
             case "check":
                 if (!AccountManager.getInstance().exists(discordId))
                 {
-                    System.out.println("This account does not exist in data");
+                    return super.consoleOutput("This account does not exist in data");
                 }
-                else
+
+                account = AccountManager.getInstance().getAccount(discordId, false);
+
+                if (account == null)
                 {
-                    account = AccountManager.getInstance().getAccount(discordId, false);
+                    return super.consoleOutput("Unable to load the account from the database");
+                }
 
-                    if (account == null)
-                    {
-                        System.out.println("Unable to load the account from the database");
-                    }
-                    else
-                    {
-                        StringBuilder display;
+                StringBuilder display;
 
-                        switch (args[2].toLowerCase(Locale.ROOT))
+                switch (args[2].toLowerCase(Locale.ROOT))
+                {
+                    case "balance":
+                    case "bal":
+                        return super.consoleOutput("This account's balance is $%g", account.getBalance());
+                    case "permissions":
+                    case "permission":
+                    case "perms":
+                    case "perm":
+                        if (!account.hasPermissions())
                         {
-                            case "balance":
-                            case "bal":
-                                System.out.printf("This account's balance is $%g\n", account.getBalance());
-                                break;
-                            case "permissions":
-                            case "permission":
-                            case "perms":
-                            case "perm":
-                                if (!account.hasPermissions())
-                                {
-                                    System.out.println("This account does not have any permissions");
-                                    return;
-                                }
-
-                                display = new StringBuilder("\n");
-
-                                for (final String permission : account.getPermissions())
-                                {
-                                    if (display.isEmpty())
-                                    {
-                                        display.append(permission);
-                                    }
-                                    else
-                                    {
-                                        display.append(permission).append("\n");
-                                    }
-                                }
-
-                                System.out.println("Permissions on this account:" + display);
-                                break;
-                            case "roles":
-                            case "role":
-                                if (!account.hasRoles())
-                                {
-                                    System.out.println("This account does not have any roles");
-                                    return;
-                                }
-
-                                display = new StringBuilder("\n");
-
-                                for (final long roleId : account.getRoles())
-                                {
-                                    final Role role =
-                                            Snowflake.MAIN.getGuild().getRoleById(roleId);
-                                    final String roleName = (role == null) ? "null" : role.getName();
-
-                                    if (display.isEmpty())
-                                    {
-                                        display.append("(").append(roleId).append(") ").append(roleName);
-                                    }
-                                    else
-                                    {
-                                        display.append("(").append(roleId).append(") ").append(roleName).append("\n");
-                                    }
-                                }
-
-                                System.out.println("Roles on this account:" + display);
-                                break;
-                            default:
-                                System.out.println("""
-                                                Available keys to check:
-                                                  balance
-                                                  permissions
-                                                  roles
-                                                """);
+                            return super.consoleOutput("This account does not have any permissions");
                         }
-                    }
+
+                        display = new StringBuilder("\n");
+
+                        for (final String permission : account.getPermissions())
+                        {
+                            if (display.isEmpty())
+                            {
+                                display.append(permission);
+                            }
+                            else
+                            {
+                                display.append(permission).append("\n");
+                            }
+                        }
+
+                        return super.consoleOutput("Permissions on this account:", display);
+                    case "roles":
+                    case "role":
+                        if (!account.hasRoles())
+                        {
+                            return super.consoleOutput("This account does not have any roles");
+                        }
+
+                        display = new StringBuilder("\n");
+
+                        for (final long roleId : account.getRoles())
+                        {
+                            final Role role = Snowflake.MAIN.getGuild().getRoleById(roleId);
+                            final String roleName = (role == null) ? "null" : role.getName();
+
+                            if (display.isEmpty())
+                            {
+                                display.append("(").append(roleId).append(") ").append(roleName);
+                            }
+                            else
+                            {
+                                display.append("(").append(roleId).append(") ").append(roleName).append("\n");
+                            }
+                        }
+
+                        return super.consoleOutput("Roles on this account:", display);
+                    default:
+                        return super.consoleOutput("""
+                                Available keys to check:
+                                  balance
+                                  permissions
+                                  roles
+                                """);
                 }
             case "update":
                 if (!AccountManager.getInstance().exists(discordId))
                 {
-                    System.out.println("This account does not exist in data");
+                    return super.consoleOutput("This account does not exist in data");
                 }
-                else
+
+                account = AccountManager.getInstance().getAccount(discordId, false);
+
+                if (account == null)
                 {
-                    account = AccountManager.getInstance().getAccount(discordId, false);
-
-                    if (account == null)
-                    {
-                        System.out.println("Unable to load the account from the database");
-                    }
-                    else
-                    {
-                        switch (args[2].toLowerCase(Locale.ROOT))
-                        {
-                            case "balance":
-                            case "bal":
-                                double balance;
-
-                                try
-                                {
-                                    balance = Double.parseDouble(args[3]);
-                                }
-                                catch (final NumberFormatException exception)
-                                {
-                                    System.out.println("Value must be a double");
-                                    return;
-                                }
-
-                                account.setBalance(balance);
-
-                                System.out.printf("Set account's balance to $%g\n", account.getBalance());
-                                break;
-                            case "permissions":
-                            case "permission":
-                            case "perms":
-                            case "perm":
-                                if (args.length < 5)
-                                {
-                                    sendAvailableUpdateKeys();
-                                    return;
-                                }
-
-                                final String permission = args[4].toLowerCase(Locale.ROOT);
-
-                                switch (args[3].toLowerCase(Locale.ROOT))
-                                {
-                                    case "add":
-                                        if (account.hasPermission(permission))
-                                        {
-                                            System.out.println("This account already has this permission");
-                                        }
-                                        else
-                                        {
-                                            account.addPermission(permission);
-                                            System.out.println("Added permission '" + permission + "' to " +
-                                                    "this" + " account");
-                                        }
-                                        break;
-                                    case "remove":
-                                        if (account.hasPermission(permission))
-                                        {
-                                            account.removePermission(permission);
-                                            System.out.println("Removed permission '" + permission + "' from "
-                                                    + "this account");
-                                        }
-                                        else
-                                        {
-                                            System.out.println("This account does not have this permission");
-                                        }
-                                        break;
-                                    case "clear":
-                                        if (account.hasPermissions())
-                                        {
-                                            account.clearPermissions();
-                                            System.out.println("Cleared all permissions from this account");
-                                        }
-                                        else
-                                        {
-                                            System.out.println("This account does not have any permissions " + "to" + " clear");
-                                        }
-                                        break;
-                                    default:
-                                        sendAvailableUpdateKeys();
-                                }
-                                break;
-                            case "roles":
-                            case "role":
-                                if (args.length < 5)
-                                {
-                                    sendAvailableUpdateKeys();
-                                    return;
-                                }
-
-                                long roleId;
-
-                                try
-                                {
-                                    roleId = Long.parseLong(args[4]);
-                                }
-                                catch (final NumberFormatException exception)
-                                {
-                                    System.out.println("The role id must be a number");
-                                    return;
-                                }
-
-                                switch (args[3].toLowerCase(Locale.ROOT))
-                                {
-                                    case "add":
-                                        if (account.hasRole(roleId))
-                                        {
-                                            System.out.println("This account already has this role");
-                                        }
-                                        else
-                                        {
-                                            account.addRole(roleId);
-                                            final Role role =
-                                                    Snowflake.MAIN.getGuild().getRoleById(discordId);
-
-                                            if (role != null)
-                                            {
-                                                Snowflake.MAIN.getGuild().addRoleToMember(account.getDiscordId(), role).queue();
-                                            }
-
-                                            System.out.println("Added role " + roleId + " to this account");
-                                        }
-                                        break;
-                                    case "remove":
-                                        if (account.hasRole(roleId))
-                                        {
-                                            account.removeRole(roleId);
-                                            final Role role =
-                                                    Snowflake.MAIN.getGuild().getRoleById(discordId);
-
-                                            if (role != null)
-                                            {
-                                                Snowflake.MAIN.getGuild().removeRoleFromMember(account.getDiscordId(), role).queue();
-                                            }
-
-                                            System.out.println("Removed role " + roleId + " from this account");
-                                        }
-                                        else
-                                        {
-                                            System.out.println("This account does not have this role");
-                                        }
-                                        break;
-                                    case "clear":
-                                        if (account.hasRoles())
-                                        {
-                                            account.clearRoles();
-
-                                            final Member member = account.getMember();
-
-                                            if (member != null)
-                                            {
-                                                Snowflake.MAIN.getGuild().modifyMemberRoles(member).queue();
-                                            }
-
-                                            System.out.println("Cleared all roles from this account");
-                                        }
-                                        else
-                                        {
-                                            System.out.println("This account does not have any roles to clear");
-                                        }
-                                        break;
-                                    default:
-                                        sendAvailableUpdateKeys();
-                                }
-                                break;
-                            default:
-                                sendAvailableUpdateKeys();
-                        }
-                    }
+                    return super.consoleOutput("Unable to load the account from the database");
                 }
-                break;
+
+                switch (args[2].toLowerCase(Locale.ROOT))
+                {
+                    case "balance":
+                    case "bal":
+                        double balance;
+
+                        try
+                        {
+                            balance = Double.parseDouble(args[3]);
+                        }
+                        catch (final NumberFormatException exception)
+                        {
+                            return super.consoleOutput("Value must be a double");
+                        }
+
+                        account.setBalance(balance);
+
+                        return super.consoleOutput("Set account's balance to $%g", account.getBalance());
+                    case "permissions":
+                    case "permission":
+                    case "perms":
+                    case "perm":
+                        if (args.length < 5)
+                        {
+                            return sendAvailableUpdateKeys();
+                        }
+
+                        final String permission = args[4].toLowerCase(Locale.ROOT);
+
+                        switch (args[3].toLowerCase(Locale.ROOT))
+                        {
+                            case "add":
+                                if (account.hasPermission(permission))
+                                {
+                                    super.consoleOutput("This account already has this permission");
+                                }
+
+                                account.addPermission(permission);
+
+                                return super.consoleOutput("Added permission '%s' to this account", permission);
+                            case "remove":
+                                if (account.hasPermission(permission))
+                                {
+                                    account.removePermission(permission);
+
+                                    return super.consoleOutput("Removed permission '%s' from this account", permission);
+                                }
+
+                                return super.consoleOutput("This account does not have this permission");
+                            case "clear":
+                                if (account.hasPermissions())
+                                {
+                                    account.clearPermissions();
+
+                                    return super.consoleOutput("Cleared all permissions from this account");
+                                }
+
+                                return super.consoleOutput("This account does not have any permissions to clear");
+                            default:
+                                return sendAvailableUpdateKeys();
+                        }
+                    case "roles":
+                    case "role":
+                        if (args.length < 5)
+                        {
+                            return sendAvailableUpdateKeys();
+                        }
+
+                        long roleId;
+
+                        try
+                        {
+                            roleId = Long.parseLong(args[4]);
+                        }
+                        catch (final NumberFormatException exception)
+                        {
+                            return super.consoleOutput("The role id must be a number");
+                        }
+
+                        Role role;
+
+                        switch (args[3].toLowerCase(Locale.ROOT))
+                        {
+                            case "add":
+                                if (account.hasRole(roleId))
+                                {
+                                    return super.consoleOutput("This account already has this role");
+                                }
+
+                                account.addRole(roleId);
+                                role = Snowflake.MAIN.getGuild().getRoleById(discordId);
+
+                                if (role != null)
+                                {
+                                    Snowflake.MAIN.getGuild().addRoleToMember(account.getDiscordId(), role).queue();
+                                }
+
+                                return super.consoleOutput("Added role %d to this account", roleId);
+                            case "remove":
+                                if (account.hasRole(roleId))
+                                {
+                                    account.removeRole(roleId);
+                                    role = Snowflake.MAIN.getGuild().getRoleById(discordId);
+
+                                    if (role != null)
+                                    {
+                                        Snowflake.MAIN.getGuild().removeRoleFromMember(account.getDiscordId(), role).queue();
+                                    }
+
+                                    return super.consoleOutput("Removed role %d from this account", roleId);
+                                }
+
+                                super.consoleOutput("This account does not have this role");
+                            case "clear":
+                                if (account.hasRoles())
+                                {
+                                    account.clearRoles();
+
+                                    final Member member = account.getMember();
+
+                                    if (member != null)
+                                    {
+                                        Snowflake.MAIN.getGuild().modifyMemberRoles(member).queue();
+                                    }
+
+                                    super.consoleOutput("Cleared all roles from this account");
+                                }
+
+                                super.consoleOutput("This account does not have any roles to clear");
+                            default:
+                                return sendAvailableUpdateKeys();
+                        }
+                    default:
+                        return sendAvailableUpdateKeys();
+                }
             default:
-                sendUsage(label);
+                return super.consoleOutput(super.getUsage(label));
         }
     }
 
     /**
      * Prints to console the available keys to update in an account.
      */
-    private void sendAvailableUpdateKeys()
+    private String sendAvailableUpdateKeys()
     {
-        System.out.println("""
+        return super.consoleOutput("""
                 Available keys to update:
                   balance [double]
                   permission [add:remove:clear] [permission]

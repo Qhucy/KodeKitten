@@ -69,9 +69,9 @@ class CommandTest
     {
         Command.registerCommand(new CmdHelp());
 
-        assertTrue(Command.runCommands("help", new String[]{}));
-        assertTrue(Command.runCommands("?", new String[]{}));
-        assertFalse(Command.runCommands("test", new String[]{}));
+        assertNotNull(Command.runCommands("help", new String[]{}));
+        assertNotNull(Command.runCommands("?", new String[]{}));
+        assertNull(Command.runCommands("test", new String[]{}));
     }
 
 }

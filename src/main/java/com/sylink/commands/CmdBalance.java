@@ -8,6 +8,7 @@ import com.sylink.util.Snowflake;
 import lombok.NonNull;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 
 /**
  * Balance command that displays the balance of an account.
@@ -18,51 +19,46 @@ public final class CmdBalance
 
     public CmdBalance()
     {
-        super(CommandType.universal(), "Displays the balance of an account", "[user]", null, "bal", "money",
-                "dollars");
+        super(CommandType.universal(), "Displays the balance of an account", "[user]", null, "bal", "money", "dollars");
     }
 
     @Override
-    public void onUserCommand(@NonNull final SlashCommandEvent event, @NonNull final Account account,
-                              @NonNull final String label, @NonNull final String[] args)
+    public String onUserCommand(@NonNull final SlashCommandEvent event, @NonNull final Account account,
+                                @NonNull final String label, @NonNull final String[] args)
     {
         if (args.length == 0)
         {
-            event.reply("Your balance is $" + account.getBalance()).setEphemeral(true).queue();
+            return super.userOutput(event, "Your balance is $%g", account.getBalance());
         }
-        else
-        {
 
-        }
+        return null;
     }
 
     @Override
-    public void onConsoleCommand(@NonNull final String label, @NonNull final String[] args)
+    public String onConsoleCommand(@NonNull final String label, @NonNull final String[] args)
     {
         if (args.length == 0)
         {
-            super.sendUsage(label);
+            return super.consoleOutput(getUsage(label));
         }
-        else
-        {
-            try
-            {
-                final long discordId = Long.parseLong(args[0]);
-                final Account account = AccountManager.getInstance().getAccount(discordId);
 
-                if (account == null)
-                {
-                    System.out.println("That account does not exist");
-                }
-                else
-                {
-                    System.out.printf("%d's balance is $%g\n", account.getDiscordId(), account.getBalance());
-                }
-            }
-            catch (final NumberFormatException exception)
+        try
+        {
+            final long discordId = Long.parseLong(args[0]);
+            final Account account = AccountManager.getInstance().getAccount(discordId);
+
+            if (account == null)
             {
-                System.out.println("You must input a proper account id.");
+                return super.consoleOutput("That account does not exist");
             }
+            else
+            {
+                return super.consoleOutput("%d's balance is $%g", account.getDiscordId(), account.getBalance());
+            }
+        }
+        catch (final NumberFormatException exception)
+        {
+            return super.consoleOutput("You must input a proper account id.");
         }
     }
 
@@ -74,7 +70,8 @@ public final class CmdBalance
 
         if (guild != null)
         {
-            guild.upsertCommand(name, super.getDescription()).queue();
+            guild.upsertCommand(name, super.getDescription()).addOption(OptionType.USER, "user", "Another user",
+                    false).queue();
         }
         else
         {
@@ -87,7 +84,8 @@ public final class CmdBalance
     {
         final String name = super.getName();
 
-        Bot.MAIN.getBot().upsertCommand(name, super.getDescription()).queue();
+        Bot.MAIN.getBot().upsertCommand(name, super.getDescription()).addOption(OptionType.USER, "user", "Another " +
+                "user", false).queue();
     }
 
 }

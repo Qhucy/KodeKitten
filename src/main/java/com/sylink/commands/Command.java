@@ -25,16 +25,18 @@ public abstract class Command
 
     /**
      * Interprets a slash command to its stored commands and runs the command if the user is able to.
+     *
+     * @return The output response of the command.
      */
-    public static void runCommands(@NonNull final SlashCommandEvent event, @NonNull final String label,
-                                   @NonNull final String[] args)
+    public static String runCommands(@NonNull final SlashCommandEvent event, @NonNull final String label,
+                                     @NonNull final String[] args)
     {
         final Account account = AccountManager.getInstance().getAccount(event.getUser().getIdLong());
 
         if (account == null)
         {
             event.reply("Unable to load your account data").queue();
-            return;
+            return null;
         }
 
         for (final Command command : commands)
@@ -56,15 +58,18 @@ public abstract class Command
                 continue;
             }
 
-            command.onUserCommand(event, account, label, args);
-            return;
+            return command.onUserCommand(event, account, label, args);
         }
+
+        return null;
     }
 
     /**
      * Interprets a console command and runs the command.
+     *
+     * @return The output response of the command.
      */
-    public static boolean runCommands(@NonNull final String label, @NonNull final String[] args)
+    public static String runCommands(@NonNull final String label, @NonNull final String[] args)
     {
         for (final Command command : commands)
         {
@@ -79,11 +84,10 @@ public abstract class Command
                 continue;
             }
 
-            command.onConsoleCommand(label, args);
-            return true;
+            return command.onConsoleCommand(label, args);
         }
 
-        return false;
+        return null;
     }
 
     /**
@@ -215,20 +219,84 @@ public abstract class Command
     /**
      * Execution method of the command after passing all initial checks for user commands.
      * If there is no override, the command doesn't exist.
+     *
+     * @return The output response of the command.
      */
-    public void onUserCommand(@NonNull final SlashCommandEvent event, @NonNull final Account account,
-                              @NonNull final String label, @NonNull final String[] args)
+    public String onUserCommand(@NonNull final SlashCommandEvent event, @NonNull final Account account,
+                                @NonNull final String label, @NonNull final String[] args)
     {
-        // Default implementation is an empty command.
+        final String reply = "This command has no user implementation.";
+
+        event.reply(reply).queue();
+
+        return reply;
+    }
+
+    /**
+     * Sends an output command reply to the user and returns its contents as a string.
+     *
+     * @param reply The output reply message.
+     * @param ephemeral Whether the message is visible to others or not.
+     * @param formatObjects The list of format objects if needed.
+     *
+     * @return The content of the reply before formatting.
+     */
+    public String userOutput(@NonNull final SlashCommandEvent event, @NonNull final String reply,
+                             final boolean ephemeral, @Nullable final Object... formatObjects)
+    {
+        if (formatObjects == null || formatObjects.length == 0)
+        {
+            event.reply(reply).setEphemeral(ephemeral).queue();
+        }
+        else
+        {
+            event.reply(String.format(reply, formatObjects)).setEphemeral(ephemeral).queue();
+        }
+
+        return reply;
+    }
+
+    /**
+     * Sends an output command reply to the user and returns its contents as a string.
+     * Ephemeral is true by default.
+     *
+     * @param reply The output reply message.
+     * @param formatObjects The list of format objects if needed.
+     *
+     * @return The content of the reply before formatting.
+     */
+    public String userOutput(@NonNull final SlashCommandEvent event, @NonNull final String reply,
+                             @Nullable final Object... formatObjects)
+    {
+        return userOutput(event, reply, true, formatObjects);
     }
 
     /**
      * Execution method of the command after passing all initial checks for console commands.
+     *
+     * @return The output response of the command.
      */
-    public void onConsoleCommand(@NonNull final String label, @NonNull final String[] args)
+    public String onConsoleCommand(@NonNull final String label, @NonNull final String[] args)
     {
-        // The default implementation if there is no implementation.
-        System.out.printf("'/%s' does not have a console implementation.\n", label);
+        final String reply = "'/%s' does not have a console implementation.";
+
+        System.out.printf(reply + "%n", label);
+
+        return reply;
+    }
+
+    public String consoleOutput(@NonNull final String reply, @Nullable final Object... formatObjects)
+    {
+        if (formatObjects == null || formatObjects.length == 0)
+        {
+            System.out.println(reply);
+        }
+        else
+        {
+            System.out.printf(reply + "%n", formatObjects);
+        }
+
+        return reply;
     }
 
     /**

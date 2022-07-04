@@ -143,7 +143,7 @@ public final class KodeKitten
             final String label = inputSplit[0];
             final String[] args = Arrays.copyOfRange(inputSplit, 1, inputSplit.length);
 
-            if (!Command.runCommands(label, args))
+            if (Command.runCommands(label, args) == null)
             {
                 System.out.println(MessageConfig.getInstance().getInternal("unknown_command"));
             }
