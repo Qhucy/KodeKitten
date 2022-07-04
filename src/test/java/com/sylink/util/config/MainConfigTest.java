@@ -2,8 +2,6 @@ package com.sylink.util.config;
 
 import org.junit.jupiter.api.*;
 
-import java.io.File;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -14,10 +12,6 @@ class MainConfigTest
 {
 
     private static final String PATH = "src/test/java/com/sylink/util/config_test.toml";
-
-    private static final String RESOURCE_PATH = "config.toml";
-    private static final Path PROJECT_PATH = Paths.get("src/test/java/com/sylink/util/config_test_2.toml");
-
     private static MainConfig mainConfig = null;
 
     @BeforeAll
@@ -28,59 +22,9 @@ class MainConfigTest
 
     @Test
     @Order(1)
-    void isntLoadedOnStartup()
-    {
-        assertFalse(mainConfig.isLoaded());
-    }
-
-    @Test
-    @Order(2)
     void getRandomStatusMessageNullWhenNotLoaded()
     {
         assertNull(mainConfig.getRandomStatusMessage());
-    }
-
-    @Test
-    @Order(3)
-    void createNewConfigIfNotExist()
-    {
-        assertTrue(mainConfig.createConfigIfNotExist(RESOURCE_PATH, PROJECT_PATH));
-
-        final File projectFile = PROJECT_PATH.toFile();
-
-        assertTrue(projectFile.exists());
-        assertTrue(projectFile.length() > 0);
-
-        assertTrue(projectFile.delete());
-    }
-
-    @Test
-    @Order(4)
-    void dontCreateNewConfigIfExist()
-    {
-        assertFalse(mainConfig.createConfigIfNotExist(PATH, Paths.get(PATH)));
-    }
-
-    @Test
-    @Order(5)
-    void loadingFromConfigSetsLoaded()
-    {
-        mainConfig.loadFromConfig(PATH, Paths.get(PATH));
-
-        assertTrue(mainConfig.isLoaded());
-    }
-
-    @Test
-    void loadFromNonExistentConfigCreatesConfig()
-    {
-        mainConfig.loadFromConfig(RESOURCE_PATH, PROJECT_PATH);
-
-        final File projectFile = PROJECT_PATH.toFile();
-
-        assertTrue(projectFile.exists());
-        assertTrue(projectFile.length() > 0);
-
-        assertTrue(projectFile.delete());
     }
 
     @Test
