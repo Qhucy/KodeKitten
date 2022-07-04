@@ -80,10 +80,10 @@ public final class KodeKitten
         logInfo(Bot.MAIN.getSelfUser().getName() + "#" + Bot.MAIN.getSelfUser().getDiscriminator() + " connected to " + "Discord!");
 
         // Load all needed data.
+        MessageConfig.getInstance().loadFromConfig();
         Snowflake.MAIN.loadFromConfig();
         Snowflake.MAIN.loadGuild(Bot.MAIN);
         MainConfig.getInstance().loadFromConfig();
-        MessageConfig.getInstance().loadFromConfig();
         SchedulerManager.getInstance().startTimers();
         registerCommands();
         Bot.MAIN.getBot().addEventListener(new CommandHandler());

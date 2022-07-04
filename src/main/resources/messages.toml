@@ -11,6 +11,13 @@ cant_find_token = "Unable to find 'token.txt' from project directory."
 set_null_token = "Unable to set null token from file %s"
 no_login = "Unable to login to Discord servers, shutting down!"
 must_connect = "You have to connect the bot to Discord to use it!"
+unable_to_load_account = "Unable to load account data for discord id %d in the accounts database."
+cant_access_database = "Unable to access database"
+cant_access_jdbc = "Unable to access JDBC SQLite drivers"
+inactive_connection = "Unable to check if account %d exists in database with an inactive connection"
+cant_save_account = "Unable to save account %d to the database as there is no connection to the database"
+cant_save_account_for_id = "Unable to save account data for discord id %d"
+cant_close_connection = "Unable to properly close database connection."
 
 [command]
 

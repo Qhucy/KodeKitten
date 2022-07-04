@@ -1,6 +1,7 @@
 package com.sylink.util.account;
 
 import com.sylink.KodeKitten;
+import com.sylink.util.config.MessageConfig;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -110,9 +111,8 @@ public final class AccountManager
 
         if (existsInDatabase && !loadFromDatabase(account))
         {
-            KodeKitten.logWarning(String.format("""
-                    Unable to load account data for discord id %d \
-                    in the accounts database.""", discordId));
+            KodeKitten.logWarning(String.format(MessageConfig.getInstance().getInternal("unable_to_load_account"),
+                    discordId));
             return null;
         }
 
@@ -169,13 +169,13 @@ public final class AccountManager
         }
         catch (final SQLException sqlException)
         {
-            KodeKitten.logSevere("Unable to access database");
+            KodeKitten.logSevere(MessageConfig.getInstance().getInternal("cant_access_database"));
             sqlException.printStackTrace();
             return false;
         }
         catch (final ClassNotFoundException classNotFoundException)
         {
-            KodeKitten.logSevere("Unable to access JDBC SQLite drivers");
+            KodeKitten.logSevere(MessageConfig.getInstance().getInternal("cant_access_jdbc"));
             classNotFoundException.printStackTrace();
             return false;
         }
@@ -233,10 +233,7 @@ public final class AccountManager
 
         if (connection == null)
         {
-            KodeKitten.logWarning(String.format("""
-                    Unable to check if account %d exists in \
-                    database with an inactive connection
-                    """, discordId));
+            KodeKitten.logWarning(String.format(MessageConfig.getInstance().getInternal("inactive_connection"), discordId));
             return false;
         }
 
@@ -286,10 +283,7 @@ public final class AccountManager
 
         if (connection == null)
         {
-            KodeKitten.logWarning(String.format("""
-                    Unable to save account %d to the database as \
-                    there is no connection to the database
-                    """, account.getDiscordId()));
+            KodeKitten.logWarning(String.format(MessageConfig.getInstance().getInternal("cant_save_account"), account.getDiscordId()));
             return false;
         }
 
@@ -321,7 +315,7 @@ public final class AccountManager
         }
         catch (final SQLException sqlException)
         {
-            KodeKitten.logSevere("Unable to save account data for discord id " + account.getDiscordId());
+            KodeKitten.logSevere(String.format(MessageConfig.getInstance().getInternal("cant_save_account_for_id"), account.getDiscordId()));
             sqlException.printStackTrace();
             return false;
         }
@@ -465,7 +459,7 @@ public final class AccountManager
         }
         catch (final SQLException sqlException)
         {
-            KodeKitten.logSevere("Unable to properly close database connection.");
+            KodeKitten.logSevere(MessageConfig.getInstance().getInternal("cant_close_connection"));
             sqlException.printStackTrace();
         }
         finally
