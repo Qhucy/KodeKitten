@@ -4,6 +4,8 @@
 # You can read about the TOML format at https://toml.io/en/.
 
 [internal]
+unknown_command = "Unknown command. Enter 'help' for help or 'exit' to exit."
+resource_not_found = "Unable to find resource %s"
 
 [command]
 
