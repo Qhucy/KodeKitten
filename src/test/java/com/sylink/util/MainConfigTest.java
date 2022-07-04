@@ -66,7 +66,7 @@ class MainConfigTest
     @Order(5)
     void loadingFromConfigSetsLoaded()
     {
-        mainConfig.load(PATH, Paths.get(PATH));
+        mainConfig.loadFromConfig(PATH, Paths.get(PATH));
 
         assertTrue(mainConfig.isLoaded());
     }
@@ -74,7 +74,7 @@ class MainConfigTest
     @Test
     void loadFromNonExistentConfigCreatesConfig()
     {
-        mainConfig.load(RESOURCE_PATH, PROJECT_PATH);
+        mainConfig.loadFromConfig(RESOURCE_PATH, PROJECT_PATH);
 
         final File projectFile = PROJECT_PATH.toFile();
 
@@ -87,7 +87,7 @@ class MainConfigTest
     @Test
     void loadingStatusMessages()
     {
-        mainConfig.load(PATH, Paths.get(PATH));
+        mainConfig.loadFromConfig(PATH, Paths.get(PATH));
 
         List<String> statusMessages = mainConfig.getStatusMessages();
 
@@ -103,7 +103,7 @@ class MainConfigTest
     @Test
     void getRandomStatusMessage()
     {
-        mainConfig.load(PATH, Paths.get(PATH));
+        mainConfig.loadFromConfig(PATH, Paths.get(PATH));
 
         final String statusMessage = mainConfig.getRandomStatusMessage();
 
