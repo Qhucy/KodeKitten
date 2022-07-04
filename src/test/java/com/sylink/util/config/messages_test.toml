@@ -1,0 +1,11 @@
+[internal]
+internal = "internal"
+
+[command]
+command = "command"
+
+[event]
+event = "event"
+
+[other]
+other = "other"
