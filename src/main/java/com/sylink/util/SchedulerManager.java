@@ -14,16 +14,16 @@ import java.util.concurrent.TimeUnit;
 public final class SchedulerManager
 {
 
-    private static SchedulerManager schedulerManager = null;
+    private static SchedulerManager instance = null;
 
     public static SchedulerManager getInstance()
     {
-        if (schedulerManager == null)
+        if (instance == null)
         {
-            schedulerManager = new SchedulerManager();
+            instance = new SchedulerManager();
         }
 
-        return schedulerManager;
+        return instance;
     }
 
     // ScheduledExecutorService that manages all timers.
