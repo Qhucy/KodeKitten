@@ -1,0 +1,7 @@
+first = 1
+
+[second]
+third = 2
+
+[second.fourth]
+    fifth = 3
