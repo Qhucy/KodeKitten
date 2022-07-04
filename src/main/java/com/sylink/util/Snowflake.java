@@ -148,7 +148,7 @@ public enum Snowflake
      */
     public long getBotId()
     {
-        return snowflakes.get("bot_id");
+        return get("bot_id");
     }
 
     /**
