@@ -1,4 +1,4 @@
-package com.sylink.account;
+package com.sylink.util.account;
 
 import com.sylink.Bot;
 import com.sylink.util.Snowflake;

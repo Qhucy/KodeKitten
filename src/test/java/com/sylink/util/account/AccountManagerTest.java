@@ -1,4 +1,4 @@
-package com.sylink.account;
+package com.sylink.util.account;
 
 import com.sylink.util.account.Account;
 import com.sylink.util.account.AccountManager;
