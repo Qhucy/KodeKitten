@@ -7,6 +7,10 @@
 unknown_command = "Unknown command. Enter 'help' for help or 'exit' to exit."
 resource_not_found = "Unable to find resource %s"
 get_bot_token = "Enter Discord Bot Token: "
+cant_find_token = "Unable to find 'token.txt' from project directory."
+set_null_token = "Unable to set null token from file %s"
+no_login = "Unable to login to Discord servers, shutting down!"
+must_connect = "You have to connect the bot to Discord to use it!"
 
 [command]
 

@@ -1,5 +1,7 @@
 package com.sylink;
 
+import com.sylink.util.config.ConfigManager;
+import com.sylink.util.config.MessageConfig;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -54,7 +56,7 @@ public enum Bot
     {
         final Scanner scanner = new Scanner(System.in);
 
-        System.out.print("Enter Discord Bot Token: ");
+        System.out.print(MessageConfig.getInstance().getInternal("get_bot_token"));
 
         final String token = scanner.nextLine().trim();
 
@@ -72,7 +74,7 @@ public enum Bot
 
         if (token == null)
         {
-            KodeKitten.logSevere("Unable to find 'token.txt' from project directory.");
+            KodeKitten.logSevere(MessageConfig.getInstance().getInternal("cant_find_token"));
 
             return getTokenFromInput();
         }
@@ -137,7 +139,7 @@ public enum Bot
         }
         else
         {
-            KodeKitten.logSevere("Unable to set null token from file " + tokenPath.toString());
+            KodeKitten.logSevere(String.format(MessageConfig.getInstance().getInternal("set_null_token") ,tokenPath));
         }
     }
 
@@ -176,7 +178,7 @@ public enum Bot
         }
         catch (@NonNull final LoginException | InterruptedException exception)
         {
-            KodeKitten.logSevere("Unable to login to Discord servers, shutting down!");
+            KodeKitten.logSevere(MessageConfig.getInstance().getInternal("no_login"));
             exception.printStackTrace();
             return false;
         }
@@ -218,7 +220,7 @@ public enum Bot
      */
     private void sendConnectionError()
     {
-        KodeKitten.logWarning("You have to connect the bot to Discord to use it!");
+        KodeKitten.logWarning(MessageConfig.getInstance().getInternal("must_connect"));
 
         // Print the stack trace.
         for (final StackTraceElement element : Thread.currentThread().getStackTrace())
