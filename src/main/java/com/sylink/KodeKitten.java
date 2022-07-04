@@ -29,6 +29,7 @@ public final class KodeKitten
      * ========
      * (2) review all code for the entire program so far
      * Left to do (Command, CmdHelp, CmdDatabase, CmdBalance, CmdRole)
+     * RIGHT NOW: Go over unit tests for commands, review code real quick for commands too
      * <p>
      * add command to talk in channels thru console
      * add role check command in console only
