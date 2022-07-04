@@ -6,6 +6,7 @@
 [internal]
 unknown_command = "Unknown command. Enter 'help' for help or 'exit' to exit."
 resource_not_found = "Unable to find resource %s"
+get_bot_token = "Enter Discord Bot Token: "
 
 [command]
 

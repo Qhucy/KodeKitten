@@ -145,7 +145,7 @@ public final class KodeKitten
 
             if (!Command.runCommands(label, args))
             {
-                System.out.println(MessageConfig.getInstance().get("unknown_command"));
+                System.out.println(MessageConfig.getInstance().getInternal("unknown_command"));
             }
         }
 
@@ -161,7 +161,8 @@ public final class KodeKitten
         {
             if (inputStream == null)
             {
-                throw new IllegalArgumentException(String.format(MessageConfig.getInstance().get("resource_not_found"), resourcePath));
+                throw new IllegalArgumentException(String.format(MessageConfig.getInstance().getInternal(
+                        "resource_not_found"), resourcePath));
             }
 
             final File destFile = destinationPath.toFile();
