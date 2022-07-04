@@ -5,6 +5,7 @@ import com.sylink.commands.*;
 import com.sylink.util.config.MainConfig;
 import com.sylink.util.SchedulerManager;
 import com.sylink.util.Snowflake;
+import com.sylink.util.config.MessageConfig;
 import lombok.NonNull;
 
 import java.io.*;
@@ -28,7 +29,7 @@ public final class KodeKitten
      * ========
      * (2) review all code for the entire program so far
      * Left to do (Command, CmdHelp, CmdDatabase, CmdBalance, CmdRole)
-     *
+     * <p>
      * add command to talk in channels thru console
      * add role check command in console only
      * finish balance command
@@ -52,7 +53,6 @@ public final class KodeKitten
 
     // Internal list of all registered commands.
     private static final Command[] commands = new Command[]{new CmdHelp(), new CmdBalance(), new CmdDatabase()};
-
 
 
     /**
@@ -83,6 +83,7 @@ public final class KodeKitten
         Snowflake.MAIN.loadFromConfig();
         Snowflake.MAIN.loadGuild(Bot.MAIN);
         MainConfig.getInstance().loadFromConfig();
+        MessageConfig.getInstance().loadFromConfig();
         SchedulerManager.getInstance().startTimers();
         registerCommands();
         Bot.MAIN.getBot().addEventListener(new CommandHandler());
@@ -144,7 +145,7 @@ public final class KodeKitten
 
             if (!Command.runCommands(label, args))
             {
-                System.out.println("Unknown command. Enter 'help' for help or 'exit' to exit.");
+                System.out.println(MessageConfig.getInstance().get("unknown_command"));
             }
         }
 
@@ -160,7 +161,7 @@ public final class KodeKitten
         {
             if (inputStream == null)
             {
-                throw new IllegalArgumentException(String.format("Unable to find resource %s", resourcePath));
+                throw new IllegalArgumentException(String.format(MessageConfig.getInstance().get("resource_not_found"), resourcePath));
             }
 
             final File destFile = destinationPath.toFile();
