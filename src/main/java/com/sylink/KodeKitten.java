@@ -82,7 +82,7 @@ public final class KodeKitten
         // Load all needed data.
         Snowflake.MAIN.loadFromConfig();
         Snowflake.MAIN.loadGuild(Bot.MAIN);
-        MainConfig.getInstance().load();
+        MainConfig.getInstance().loadFromConfig();
         SchedulerManager.getInstance().startTimers();
         registerCommands();
         Bot.MAIN.getBot().addEventListener(new CommandHandler());
