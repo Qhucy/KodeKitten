@@ -1,5 +1,6 @@
 package com.sylink.util;
 
+import com.sylink.util.config.MainConfig;
 import org.junit.jupiter.api.*;
 
 import java.io.File;

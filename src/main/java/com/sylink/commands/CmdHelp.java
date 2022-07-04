@@ -1,6 +1,6 @@
 package com.sylink.commands;
 
-import com.sylink.account.Account;
+import com.sylink.util.account.Account;
 import lombok.NonNull;
 import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;

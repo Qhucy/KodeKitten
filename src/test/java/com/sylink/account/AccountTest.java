@@ -2,6 +2,7 @@ package com.sylink.account;
 
 import com.sylink.Bot;
 import com.sylink.util.Snowflake;
+import com.sylink.util.account.Account;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;

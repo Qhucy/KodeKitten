@@ -2,8 +2,8 @@ package com.sylink.commands;
 
 import com.sylink.Bot;
 import com.sylink.KodeKitten;
-import com.sylink.account.Account;
-import com.sylink.account.AccountManager;
+import com.sylink.util.account.Account;
+import com.sylink.util.account.AccountManager;
 import com.sylink.util.Snowflake;
 import lombok.NonNull;
 import net.dv8tion.jda.api.entities.Guild;

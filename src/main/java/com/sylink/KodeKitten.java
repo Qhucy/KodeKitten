@@ -1,8 +1,8 @@
 package com.sylink;
 
-import com.sylink.account.AccountManager;
+import com.sylink.util.account.AccountManager;
 import com.sylink.commands.*;
-import com.sylink.util.MainConfig;
+import com.sylink.util.config.MainConfig;
 import com.sylink.util.SchedulerManager;
 import com.sylink.util.Snowflake;
 import lombok.NonNull;

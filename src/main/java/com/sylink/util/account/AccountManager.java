@@ -1,4 +1,4 @@
-package com.sylink.account;
+package com.sylink.util.account;
 
 import com.sylink.KodeKitten;
 import lombok.AccessLevel;

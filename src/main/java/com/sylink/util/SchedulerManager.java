@@ -1,7 +1,8 @@
 package com.sylink.util;
 
 import com.sylink.Bot;
-import com.sylink.account.AccountManager;
+import com.sylink.util.account.AccountManager;
+import com.sylink.util.config.MainConfig;
 import lombok.NonNull;
 
 import java.util.concurrent.Executors;

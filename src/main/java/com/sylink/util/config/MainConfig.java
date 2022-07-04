@@ -1,4 +1,4 @@
-package com.sylink.util;
+package com.sylink.util.config;
 
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.sylink.KodeKitten;
