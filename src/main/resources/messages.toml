@@ -1,0 +1,12 @@
+##########################
+# Displayed Bot Messages #
+##########################
+# You can read about the TOML format at https://toml.io/en/.
+
+[internal]
+
+[commands]
+
+[events]
+
+[other]
