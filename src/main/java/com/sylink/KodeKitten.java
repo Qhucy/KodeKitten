@@ -2,7 +2,7 @@ package com.sylink;
 
 import com.sylink.account.AccountManager;
 import com.sylink.commands.*;
-import com.sylink.util.ConfigManager;
+import com.sylink.util.MainConfig;
 import com.sylink.util.SchedulerManager;
 import com.sylink.util.Snowflake;
 import lombok.NonNull;
@@ -82,7 +82,7 @@ public final class KodeKitten
         // Load all needed data.
         Snowflake.MAIN.loadFromConfig();
         Snowflake.MAIN.loadGuild(Bot.MAIN);
-        ConfigManager.getInstance().load();
+        MainConfig.getInstance().load();
         SchedulerManager.getInstance().startTimers();
         registerCommands();
         Bot.MAIN.getBot().addEventListener(new CommandHandler());

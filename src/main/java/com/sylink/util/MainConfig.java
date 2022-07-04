@@ -14,7 +14,7 @@ import java.util.Random;
 /**
  * Singleton class that manages configuration data.
  */
-public final class ConfigManager
+public class MainConfig
 {
 
     // The path to the resource in the class loader.
@@ -22,13 +22,13 @@ public final class ConfigManager
     // The path for the config file in the program directory.
     private final static Path PROJECT_PATH = Paths.get("config.toml");
 
-    private static ConfigManager instance = null;
+    private static MainConfig instance = null;
 
-    public static ConfigManager getInstance()
+    public static MainConfig getInstance()
     {
         if (instance == null)
         {
-            instance = new ConfigManager();
+            instance = new MainConfig();
         }
 
         return instance;

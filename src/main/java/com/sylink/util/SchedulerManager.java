@@ -85,7 +85,7 @@ public final class SchedulerManager
      */
     private final Runnable changeStatus = () ->
     {
-        Bot.MAIN.setStatus(ConfigManager.getInstance().getRandomStatusMessage());
+        Bot.MAIN.setStatus(MainConfig.getInstance().getRandomStatusMessage());
     };
 
 }

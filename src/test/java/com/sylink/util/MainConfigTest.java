@@ -10,7 +10,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class ConfigManagerTest
+class MainConfigTest
 {
 
     private static final String PATH = "src/test/java/com/sylink/util/config_test.toml";
@@ -18,33 +18,33 @@ class ConfigManagerTest
     private static final String RESOURCE_PATH = "config.toml";
     private static final Path PROJECT_PATH = Paths.get("src/test/java/com/sylink/util/config_test_2.toml");
 
-    private static ConfigManager configManager = null;
+    private static MainConfig mainConfig = null;
 
     @BeforeAll
     static void setUpAll()
     {
-        configManager = ConfigManager.getInstance();
+        mainConfig = MainConfig.getInstance();
     }
 
     @Test
     @Order(1)
     void isntLoadedOnStartup()
     {
-        assertFalse(configManager.isLoaded());
+        assertFalse(mainConfig.isLoaded());
     }
 
     @Test
     @Order(2)
     void getRandomStatusMessageNullWhenNotLoaded()
     {
-        assertNull(configManager.getRandomStatusMessage());
+        assertNull(mainConfig.getRandomStatusMessage());
     }
 
     @Test
     @Order(3)
     void createNewConfigIfNotExist()
     {
-        assertTrue(configManager.createConfigIfNotExist(RESOURCE_PATH, PROJECT_PATH));
+        assertTrue(mainConfig.createConfigIfNotExist(RESOURCE_PATH, PROJECT_PATH));
 
         final File projectFile = PROJECT_PATH.toFile();
 
@@ -58,22 +58,22 @@ class ConfigManagerTest
     @Order(4)
     void dontCreateNewConfigIfExist()
     {
-        assertFalse(configManager.createConfigIfNotExist(PATH, Paths.get(PATH)));
+        assertFalse(mainConfig.createConfigIfNotExist(PATH, Paths.get(PATH)));
     }
 
     @Test
     @Order(5)
     void loadingFromConfigSetsLoaded()
     {
-        configManager.load(PATH, Paths.get(PATH));
+        mainConfig.load(PATH, Paths.get(PATH));
 
-        assertTrue(configManager.isLoaded());
+        assertTrue(mainConfig.isLoaded());
     }
 
     @Test
     void loadFromNonExistentConfigCreatesConfig()
     {
-        configManager.load(RESOURCE_PATH, PROJECT_PATH);
+        mainConfig.load(RESOURCE_PATH, PROJECT_PATH);
 
         final File projectFile = PROJECT_PATH.toFile();
 
@@ -86,9 +86,9 @@ class ConfigManagerTest
     @Test
     void loadingStatusMessages()
     {
-        configManager.load(PATH, Paths.get(PATH));
+        mainConfig.load(PATH, Paths.get(PATH));
 
-        List<String> statusMessages = configManager.getStatusMessages();
+        List<String> statusMessages = mainConfig.getStatusMessages();
 
         assertEquals(5, statusMessages.size());
 
@@ -102,9 +102,9 @@ class ConfigManagerTest
     @Test
     void getRandomStatusMessage()
     {
-        configManager.load(PATH, Paths.get(PATH));
+        mainConfig.load(PATH, Paths.get(PATH));
 
-        final String statusMessage = configManager.getRandomStatusMessage();
+        final String statusMessage = mainConfig.getRandomStatusMessage();
 
         assertNotNull(statusMessage);
         assertTrue(statusMessage.equals("1") || statusMessage.equals("2") || statusMessage.equals("3") || statusMessage.equals("4") || statusMessage.equals("5"));
