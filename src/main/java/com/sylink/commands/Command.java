@@ -5,6 +5,7 @@ import com.sylink.KodeKitten;
 import com.sylink.util.account.Account;
 import com.sylink.util.account.AccountManager;
 import com.sylink.util.Snowflake;
+import com.sylink.util.config.MessageConfig;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -233,42 +234,44 @@ public abstract class Command
     }
 
     /**
-     * Sends an output command reply to the user and returns its contents as a string.
+     * Sends an output command message to the user and returns its contents as a string.
      *
-     * @param reply The output reply message.
+     * @param messageKey The key to the output message in the message config.
      * @param ephemeral Whether the message is visible to others or not.
      * @param formatObjects The list of format objects if needed.
      *
-     * @return The content of the reply before formatting.
+     * @return The content of the message before formatting.
      */
-    public String userOutput(@NonNull final SlashCommandEvent event, @NonNull final String reply,
+    public String userOutput(@NonNull final SlashCommandEvent event, @NonNull final String messageKey,
                              final boolean ephemeral, @Nullable final Object... formatObjects)
     {
+        final String message = MessageConfig.getInstance().getCommand(messageKey);
+
         if (formatObjects == null || formatObjects.length == 0)
         {
-            event.reply(reply).setEphemeral(ephemeral).queue();
+            event.reply(message).setEphemeral(ephemeral).queue();
         }
         else
         {
-            event.reply(String.format(reply, formatObjects)).setEphemeral(ephemeral).queue();
+            event.reply(String.format(message, formatObjects)).setEphemeral(ephemeral).queue();
         }
 
-        return reply;
+        return message;
     }
 
     /**
-     * Sends an output command reply to the user and returns its contents as a string.
+     * Sends an output command message to the user and returns its contents as a string.
      * Ephemeral is true by default.
      *
-     * @param reply The output reply message.
+     * @param messageKey The key to the output message in the message config.
      * @param formatObjects The list of format objects if needed.
      *
-     * @return The content of the reply before formatting.
+     * @return The content of the message before formatting.
      */
-    public String userOutput(@NonNull final SlashCommandEvent event, @NonNull final String reply,
+    public String userOutput(@NonNull final SlashCommandEvent event, @NonNull final String messageKey,
                              @Nullable final Object... formatObjects)
     {
-        return userOutput(event, reply, true, formatObjects);
+        return userOutput(event, messageKey, true, formatObjects);
     }
 
     /**
@@ -285,18 +288,28 @@ public abstract class Command
         return reply;
     }
 
-    public String consoleOutput(@NonNull final String reply, @Nullable final Object... formatObjects)
+    /**
+     * Sends an output command message to the console and returns its contents as a string.
+     *
+     * @param messageKey The key to the output message in the message config.
+     * @param formatObjects The list of format objects if needed.
+     *
+     * @return The content of the message before formatting.
+     */
+    public String consoleOutput(@NonNull final String messageKey, @Nullable final Object... formatObjects)
     {
+        final String message = MessageConfig.getInstance().getCommand(messageKey);
+
         if (formatObjects == null || formatObjects.length == 0)
         {
-            System.out.println(reply);
+            System.out.println(message);
         }
         else
         {
-            System.out.printf(reply + "%n", formatObjects);
+            System.out.printf(message + "%n", formatObjects);
         }
 
-        return reply;
+        return message;
     }
 
     /**
